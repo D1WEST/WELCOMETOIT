@@ -1,0 +1,40 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Modules/PlayerModule/UI/MainScene/MainMenu.uss?fileID=7433441132597879392&amp;guid=75c439a7b1a979e43aa7c83080b2b2b4&amp;type=3#MainMenu"/>
+    <ui:VisualElement name="screen-bg" class="screen-bg">
+        <ui:VisualElement name="main-menu" class="tilted-container">
+            <ui:Button name="btn-play" class="menu-btn bg-green">
+                <ui:VisualElement class="btn-icon icon-play"/>
+                <ui:VisualElement class="divider"/>
+                <ui:VisualElement class="text-group">
+                    <ui:Label text="PLAY" class="btn-title"/>
+                    <ui:Label text="FIGHT ONLINE" class="btn-subtitle"/>
+                </ui:VisualElement>
+            </ui:Button>
+            <ui:Button name="btn-options" class="menu-btn bg-blue">
+                <ui:VisualElement class="btn-icon icon-gear"/>
+                <ui:VisualElement class="divider"/>
+                <ui:VisualElement class="text-group">
+                    <ui:Label text="OPTIONS" class="btn-title"/>
+                    <ui:Label text="CONFIGURE THE GAME" class="btn-subtitle"/>
+                </ui:VisualElement>
+            </ui:Button>
+            <ui:Button name="btn-exit" class="menu-btn bg-red">
+                <ui:VisualElement class="btn-icon icon-exit"/>
+                <ui:VisualElement class="divider"/>
+                <ui:VisualElement class="text-group">
+                    <ui:Label text="EXIT" class="btn-title"/>
+                    <ui:Label text="GOODBYE" class="btn-subtitle"/>
+                </ui:VisualElement>
+            </ui:Button>
+        </ui:VisualElement>
+        <ui:VisualElement name="options-menu" class="options-container" style="display: none;">
+            <ui:Label text="SETTINGS" class="options-header"/>
+            <ui:ScrollView name="rebind-list" class="rebind-scroll"/>
+            <ui:VisualElement class="options-footer">
+                <ui:Button name="btn-save" text="SAVE" class="footer-btn"/>
+                <ui:Button name="btn-reset" text="RESET" class="footer-btn"/>
+                <ui:Button name="btn-back" text="BACK" class="footer-btn"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
