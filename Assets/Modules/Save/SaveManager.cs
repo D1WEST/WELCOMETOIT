@@ -44,9 +44,9 @@ namespace Assets.Modules.Save
             for (int i = 0; i < 6; i++)
             {
                 var randomTemplate = allPossibleTemplates[Random.Range(0, allPossibleTemplates.Count)];
-                randomTemplate.workPower = (int)Mathf.Clamp((randomTemplate.workPower += Random.Range(-4, 5)), 1f, 20f);
-                randomTemplate.patience = (int)Mathf.Clamp((randomTemplate.patience += Random.Range(-4, 5)), 1f, 20f);
-                randomTemplate.sleepiness = (int)Mathf.Clamp((randomTemplate.sleepiness += Random.Range(-2, 3)), 1f, 20f);
+                randomTemplate.workPower = (int)Mathf.Clamp((randomTemplate.workPower += Random.Range(-5, 5)), 1f, 20f);
+                randomTemplate.patience = (int)Mathf.Clamp((randomTemplate.patience += Random.Range(-4, 5)), 1f, 10f);
+                randomTemplate.sleepiness = (int)Mathf.Clamp((randomTemplate.sleepiness += Random.Range(-2, 3)), 1f, 10f);
                 randomTemplate.angriness = (int)Mathf.Clamp((randomTemplate.angriness += Random.Range(-2, 3)), 1f, 10f);
                 randomTemplate.buyPrice = (int)(randomTemplate.sellPrice * 1.5f - randomTemplate.sleepiness - randomTemplate.angriness + randomTemplate.patience * 1.5f + randomTemplate.workPower * 2f);
                 randomTemplate.sellPrice = (int)Mathf.Clamp(randomTemplate.buyPrice, 1f, 10f);
