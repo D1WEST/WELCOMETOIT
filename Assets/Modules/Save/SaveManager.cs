@@ -8,6 +8,7 @@ namespace Assets.Modules.Save
 {
     public class GameDataManager : MonoBehaviour
     {
+        public int playerMoney = 1000;
         public static GameDataManager Instance { get; private set; }
 
         public List<WorkerInstance> myWorkers = new List<WorkerInstance>();
@@ -102,9 +103,31 @@ namespace Assets.Modules.Save
             }
         }
 
+        public int GetUpgradeCost(WorkerInstance worker)
+        {
+            if (worker.currentPosition == Position.Eng_LEGEND) return 0;
+
+            int currentMarketValue = CalculateValue(worker, true);
+
+            Position nextPos = worker.currentPosition + 1;
+
+            float predictedSkillValue = ((worker.workPower + 3) * 25f)
+                                        + (worker.patience * 10f)
+                                        - (worker.sleepiness * 8f)
+                                        - (worker.angriness * 8f);
+
+            float nextMultiplier = GetPositionMultiplier(nextPos);
+            int nextLevelValue = (int)((100f + predictedSkillValue) * nextMultiplier);
+
+            int priceDifference = nextLevelValue - currentMarketValue;
+            int upgradePrice = (int)(priceDifference * 0.90f);
+
+            return Mathf.Max(100, upgradePrice);
+        }
+
         private int CalculateValue(WorkerInstance worker, bool isBuying)
         {
-            float basePrice = 100f; // Базовая константа
+            float basePrice = 100f;
 
             float skillValue = (worker.workPower * 25f)
                                + (worker.patience * 10f)
@@ -122,20 +145,26 @@ namespace Assets.Modules.Save
         {
             if (worker.currentPosition == Position.Eng_LEGEND) return;
 
-            int upgradeCost = (int)(GetPositionMultiplier(worker.currentPosition) * 400f);
+            int cost = GetUpgradeCost(worker);
 
-            // TODO: Здесь должна быть твоя проверка денег игрока
+            if (playerMoney >= cost)
+            {
+                playerMoney -= cost; // Списываем деньги
 
-            worker.currentPosition++;
-            worker.workPower += Random.Range(2, 5);
-            worker.patience += Random.Range(1, 3);
+                // Улучшаем рабочего
+                worker.currentPosition++;
+                worker.workPower += Random.Range(2, 5);
+                worker.patience += Random.Range(1, 3);
 
-            worker.sleepiness = Mathf.Max(1, worker.sleepiness - Random.Range(0, 2));
-            worker.angriness = Mathf.Max(1, worker.angriness - Random.Range(0, 2));
+                // Обучение снижает негатив
+                worker.sleepiness = Mathf.Max(1, worker.sleepiness - 1);
+                worker.angriness = Mathf.Max(1, worker.angriness - 1);
 
-            worker.sellPrice = CalculateValue(worker, false);
+                // Пересчитываем цену продажи (она вырастет согласно новому уровню)
+                worker.sellPrice = CalculateValue(worker, false);
 
-            SaveGame();
+                SaveGame();
+            }
         }
 
         [System.Serializable] private class SaveWrapper { public List<WorkerInstance> workers; }

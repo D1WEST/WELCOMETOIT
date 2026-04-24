@@ -4,6 +4,7 @@ using Assets.Modules.Save;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
+using Position = Assets.Modules.NPC.Position;
 
 public class ComputerUIController : MonoBehaviour
 {
@@ -108,15 +109,30 @@ public class ComputerUIController : MonoBehaviour
     private void ShowManageMenu(VisualElement card, WorkerInstance data)
     {
         var container = card.Q<VisualElement>("action-container");
-        container.Clear(); // Убираем кнопку "Manage" или старые кнопки
+        container.Clear();
 
-        // Создаем горизонтальный ряд кнопок
+        // Кнопка отдыха
         var restBtn = CreateMenuButton(data.isResting ? "Wake" : "Rest", "#2196F3");
         restBtn.clicked += () => { data.isResting = !data.isResting; RefreshUI(); };
 
-        var upBtn = CreateMenuButton("Upgrade", "#FF9800");
-        upBtn.clicked += () => { GameDataManager.Instance.PromoteWorker(data); RefreshUI(); };
+        // Кнопка Улучшения с ценой
+        int upCost = GameDataManager.Instance.GetUpgradeCost(data);
+        string upText = data.currentPosition == Position.Eng_LEGEND ? "MAX" : $"Up ${upCost}";
 
+        var upBtn = CreateMenuButton(upText, "#FF9800");
+        if (data.currentPosition != Position.Eng_LEGEND)
+        {
+            upBtn.clicked += () => {
+                GameDataManager.Instance.PromoteWorker(data);
+                RefreshUI();
+            };
+
+            // Если денег мало — делаем кнопку полупрозрачной (визуальный фидбек)
+            if (GameDataManager.Instance.playerMoney < upCost)
+                upBtn.style.opacity = 0.5f;
+        }
+
+        // Кнопка Продажи
         var sellBtn = CreateMenuButton($"Sell ${data.sellPrice}", "#F44336");
         sellBtn.clicked += () => { GameDataManager.Instance.SellWorker(data); RefreshUI(); };
 
