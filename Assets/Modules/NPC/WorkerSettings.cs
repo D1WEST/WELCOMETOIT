@@ -28,6 +28,7 @@ namespace Assets.Modules.NPC
         [System.NonSerialized] public Sprite avatar; // Не сохраняем в JSON
         public int buyPrice;
         public int sellPrice;
+        public bool isAssigned;
 
         public WorkerInstance(WorkerSettings settings)
         {
