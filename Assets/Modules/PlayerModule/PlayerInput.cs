@@ -9,6 +9,7 @@ namespace Assets.Modules.PlayerModule
     {
         [SerializeField] private PlayerInputActions _playerInputActions;
         [SerializeField] private PlayerLocomotion _playerLocomotion;
+        [SerializeField] private PlayerInteraction _playerInteraction;
         [SerializeField] private PlayerCameraService _playerCamera;
 
         /// <summary>
@@ -26,6 +27,9 @@ namespace Assets.Modules.PlayerModule
             _playerInputActions.PlayerMovementActions.Crouch.canceled += _playerLocomotion.StopCrouch;
             _playerInputActions.PlayerMovementActions.Sprint.performed += _playerLocomotion.DoSprint;
             _playerInputActions.PlayerMovementActions.Sprint.canceled += _playerLocomotion.DoSprint;
+
+            _playerInputActions.PlayerInteractionActions.Enable();
+            _playerInputActions.PlayerInteractionActions.Interaction.performed += _playerInteraction.PerformInteraction;
         }
 
         /// <summary>
@@ -39,6 +43,9 @@ namespace Assets.Modules.PlayerModule
             _playerInputActions.PlayerMovementActions.Crouch.canceled -= _playerLocomotion.StopCrouch;
             _playerInputActions.PlayerMovementActions.Sprint.performed -= _playerLocomotion.DoSprint;
             _playerInputActions.PlayerMovementActions.Sprint.canceled -= _playerLocomotion.DoSprint;
+
+            _playerInputActions.PlayerInteractionActions.Disable();
+            _playerInputActions.PlayerInteractionActions.Interaction.performed -= _playerInteraction.PerformInteraction;
         }
 
         private void Update()

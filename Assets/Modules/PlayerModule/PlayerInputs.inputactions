@@ -243,7 +243,7 @@
             ]
         },
         {
-            "name": "PlayerInterractionActions",
+            "name": "PlayerInteractionActions",
             "id": "fa5f1b42-cfb8-4927-bd05-d2e2820082ff",
             "actions": [
                 {
@@ -265,7 +265,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Interraction",
+                    "name": "Interaction",
                     "type": "Button",
                     "id": "e1c1f5d8-ef00-4e66-b283-cdb12bb168b9",
                     "expectedControlType": "",
@@ -304,7 +304,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Interraction",
+                    "action": "Interaction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
