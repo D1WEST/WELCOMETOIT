@@ -1,94 +1,118 @@
 ﻿using System;
 using System.Collections.Generic;
-using Assets.Modules.Room;
+using Assets.Modules.Save;
 using UnityEngine;
 
-namespace Assets.Modules.Shift
+public class ShiftManager : MonoBehaviour
 {
-    public class ShiftManager : MonoBehaviour
+    public static ShiftManager Instance { get; private set; }
+
+    [Header("Настройки времени")]
+    public float timeMultiplier = 120.0f; // 1 сек реал = 2 мин игр
+    private float _currentTimeInSeconds;
+    private bool _isShiftActive;
+
+    [Header("Прогресс")]
+    public int currentDay = 1;
+    public float currentProgress;
+    public float targetGoal;
+
+    [Header("Комнаты")]
+    [SerializeField] private List<RoomState> rooms;
+
+    public event Action<float, float> OnProgressChanged;
+    public event Action<string> OnTimeChanged;
+    public bool IsShiftActive => _isShiftActive;
+
+    private void Awake()
     {
-        public static ShiftManager Instance { get; private set; }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
-        [Header("Time Settings")]
-        public float timeMultiplier = 2.0f; // 1 сек реальная = 2 сек игровые
-        private float _currentTimeInSeconds;
-        private bool _isShiftActive;
+    private void Start() => SetupNewDay();
 
-        [Header("Shift Data")]
-        public int currentDay = 1;
-        public float currentProgress;
-        public float targetGoal = 5000;
+    public void StartShift()
+    {
+        if (_isShiftActive) return;
 
-        [Header("Rooms")]
-        [SerializeField] private List<RoomState> rooms;
+        _currentTimeInSeconds = 10 * 3600; // Старт в 10:00
+        _isShiftActive = true;
+        currentProgress = 0;
 
-        public event Action<float, float> OnProgressChanged;
-        public event Action<string> OnTimeChanged;
-        public bool IsShiftActive => _isShiftActive;
+        Debug.Log($"Смена дня {currentDay} началась!");
+        OnProgressChanged?.Invoke(currentProgress, targetGoal);
+    }
 
-        private void Awake() => Instance = this;
+    private void Update()
+    {
+        if (!_isShiftActive) return;
 
-        private void Start() => SetupDay();
+        _currentTimeInSeconds += Time.deltaTime * timeMultiplier;
+        UpdateClockUI();
 
-        public void StartShift()
+        if (_currentTimeInSeconds >= 20 * 3600) // Финиш в 20:00
         {
-            if (_isShiftActive) return;
-            _isShiftActive = true;
-            _currentTimeInSeconds = 10 * 3600; // 10:00 в секундах
-            Debug.Log($"Смена дня {currentDay} началась!");
-        }
-
-        private void Update()
-        {
-            if (!_isShiftActive) return;
-
-            // Двигаем время
-            _currentTimeInSeconds += Time.deltaTime * timeMultiplier;
-            UpdateClockUI();
-
-            // Проверка завершения (20:00)
-            if (_currentTimeInSeconds >= 20 * 3600)
-            {
-                EndShift();
-            }
-        }
-
-        private void SetupDay()
-        {
-            // Высчитываем общую цель на день на основе открытых комнат
-            targetGoal = 0;
-            foreach (var room in rooms)
-            {
-                bool shouldBeOpen = currentDay >= room.unlockDay;
-                room.blackBlocker.SetActive(!shouldBeOpen);
-                room.roomManager.isOpened = shouldBeOpen;
-
-                if (shouldBeOpen) targetGoal += room.goalTarget;
-            }
-            currentProgress = 0;
-            OnProgressChanged?.Invoke(0, targetGoal);
-        }
-
-        public void AddProgress(float amount)
-        {
-            if (!_isShiftActive) return;
-            currentProgress += amount;
-            OnProgressChanged?.Invoke(currentProgress, targetGoal);
-        }
-
-        private void EndShift()
-        {
-            _isShiftActive = false;
-            currentDay++;
-            Debug.Log("Смена окончена!");
-            SetupDay(); // Готовим следующий день
-        }
-
-        private void UpdateClockUI()
-        {
-            int hours = (int)(_currentTimeInSeconds / 3600);
-            int minutes = (int)((_currentTimeInSeconds % 3600) / 60);
-            OnTimeChanged?.Invoke($"{hours:00}:{minutes:00}");
+            EndShift();
         }
     }
+
+    private void SetupNewDay()
+    {
+        targetGoal = 0;
+        foreach (var room in rooms)
+        {
+            // Если день игрока >= дня открытия комнаты - убираем блок
+            bool isUnlocked = currentDay >= room.unlockDay;
+
+            if (room.blackBlocker != null)
+                room.blackBlocker.SetActive(!isUnlocked);
+
+            room.roomManager.isOpened = isUnlocked;
+
+            if (isUnlocked) targetGoal += room.goalTarget;
+        }
+
+        OnProgressChanged?.Invoke(0, targetGoal);
+    }
+
+    public void AddProgress(float amount, Vector3 worldPos)
+    {
+        // Если здесь будет false, прогресс никогда не прибавится
+        if (!_isShiftActive)
+        {
+            Debug.LogWarning("AddProgress вызван, но смена не активна!");
+            return;
+        }
+
+        currentProgress += amount;
+
+        // Проверка: вызывается ли событие?
+        OnProgressChanged?.Invoke(currentProgress, targetGoal);
+    }
+
+    private void EndShift()
+    {
+        _isShiftActive = false;
+        currentDay++;
+        Debug.Log("Смена завершена. Подготовка к следующему дню...");
+        SetupNewDay();
+    }
+
+    private void UpdateClockUI()
+    {
+        TimeSpan t = TimeSpan.FromSeconds(_currentTimeInSeconds);
+        string timeStr = string.Format("{0:D2}:{1:D2}", t.Hours, t.Minutes);
+        OnTimeChanged?.Invoke(timeStr);
+    }
+}
+
+[System.Serializable]
+public class RoomState
+{
+    public string name;
+    public RoomManager roomManager;
+    public GameObject blackBlocker;
+    public int unlockDay;
+    public int goalTarget; // Сколько очков прогресса должна давать эта комната
 }

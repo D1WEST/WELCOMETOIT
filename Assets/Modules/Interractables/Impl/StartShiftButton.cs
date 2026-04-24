@@ -1,16 +1,21 @@
-﻿using Assets.Modules.Interractables;
-using Assets.Modules.Shift;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class StartShiftButton : MonoBehaviour, IInteractable
+namespace Assets.Modules.Interractables.Impl
 {
-    public string InteractionPrompt => "Начать рабочую смену";
-    public Transform InteractionPivot => transform; // или твой пивот
-    public InteractionType InteractionType => InteractionType.Click;
-    public float HoldDuration => 0;
-
-    public void Interact(GameObject interactor)
+    public class ShiftStartButton : MonoBehaviour, IInteractable
     {
-        ShiftManager.Instance.StartShift();
+        [SerializeField] private Transform pivot;
+        public string InteractionPrompt => ShiftManager.Instance.IsShiftActive ? "Смена уже идет" : "Начать смену";
+        public Transform InteractionPivot => pivot;
+        public InteractionType InteractionType => InteractionType.Click;
+        public float HoldDuration => 0;
+
+        public void Interact(GameObject interactor)
+        {
+            if (!ShiftManager.Instance.IsShiftActive)
+            {
+                ShiftManager.Instance.StartShift();
+            }
+        }
     }
 }

@@ -149,7 +149,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1986539710}
-  - {fileID: 829063874}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &77527683
@@ -826,6 +825,8 @@ GameObject:
   m_Component:
   - component: {fileID: 501358449}
   - component: {fileID: 501358450}
+  - component: {fileID: 501358451}
+  - component: {fileID: 501358452}
   m_Layer: 0
   m_Name: ShiftUI
   m_TagString: Untagged
@@ -871,6 +872,46 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
+--- !u!114 &501358451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501358448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95edf61284217754c9dd6c19655443fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShiftUIController
+  uiDocument: {fileID: 501358450}
+--- !u!114 &501358452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501358448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69f942e41edf2b741ad94d03e7dc47a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Shift.ShiftManager
+  timeMultiplier: 120
+  currentDay: 1
+  currentProgress: 0
+  targetGoal: 5000
+  rooms:
+  - name: R1
+    roomManager: {fileID: 1862574999}
+    blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
+    unlockDay: 0
+    goalTarget: 2000
+  - name: R2
+    roomManager: {fileID: 210238263}
+    blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
+    unlockDay: 1
+    goalTarget: 3000
 --- !u!1 &516731457
 GameObject:
   m_ObjectHideFlags: 0
@@ -1280,65 +1321,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d56c8cd175d6ead48b6cc8e1968bdee5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Money.MoneyHUDController
---- !u!1 &829063873
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 829063874}
-  - component: {fileID: 829063875}
-  m_Layer: 0
-  m_Name: ShiftManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &829063874
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 829063873}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 22804175}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &829063875
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 829063873}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69f942e41edf2b741ad94d03e7dc47a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Shift.ShiftManager
-  timeMultiplier: 2
-  currentDay: 1
-  currentProgress: 0
-  targetGoal: 5000
-  rooms:
-  - roomName: R1
-    roomManager: {fileID: 1862574999}
-    blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
-    unlockDay: 0
-    goalTarget: 2000
-  - roomName: R2
-    roomManager: {fileID: 210238263}
-    blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
-    unlockDay: 1
-    goalTarget: 3000
 --- !u!1 &834323114
 GameObject:
   m_ObjectHideFlags: 0
@@ -2766,6 +2748,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4ed4f5b40d04dc49a366546faf734f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartShiftButton
+  pivot: {fileID: 1443358733}
 --- !u!65 &1443358735
 BoxCollider:
   m_ObjectHideFlags: 0

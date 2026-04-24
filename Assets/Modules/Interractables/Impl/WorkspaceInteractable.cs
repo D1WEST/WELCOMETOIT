@@ -4,7 +4,6 @@ using Assets.Modules.Save;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
-using Assets.Modules.Shift;
 using UnityEngine;
 
 namespace Assets.Modules.Interractables.Impl
@@ -85,18 +84,18 @@ namespace Assets.Modules.Interractables.Impl
 
         private async UniTaskVoid StartWorkLoop()
         {
-            // 1. Проверяем, создан ли токен отмены
-            if (_workCts == null) _workCts = new CancellationTokenSource();
+            StopWork();
+            _workCts = new CancellationTokenSource();
 
             while (_currentWorker != null && !_workCts.IsCancellationRequested)
             {
                 if (ShiftManager.Instance == null)
                 {
-                    Debug.LogError($"[Workplace] {gameObject.name}: ShiftManager не найден на сцене! Работа невозможна.");
-                    return;
+                    await UniTask.Delay(500, cancellationToken: _workCts.Token);
+                    continue;
                 }
 
-                if (!ShiftManager.Instance.IsShiftActive || (_currentWorker != null && _currentWorker.isResting))
+                if (!ShiftManager.Instance.IsShiftActive || _currentWorker.isResting)
                 {
                     await UniTask.Yield(PlayerLoopTiming.Update, _workCts.Token);
                     continue;
@@ -112,9 +111,12 @@ namespace Assets.Modules.Interractables.Impl
 
                 if (_currentWorker == null) break;
 
-                int profit = (int)(_currentWorker.workPower * 2.5f);
-                GameDataManager.Instance.ChangeMoney(profit);
-                ShiftManager.Instance.AddProgress(profit);
+                int power = _currentWorker.workPower;
+
+                Debug.Log($"[DEBUG] Стол {name}: рабочий {_currentWorker.name} выдал {power} PTS");
+
+                GameDataManager.Instance.ChangeMoney(power * 2);
+                ShiftManager.Instance.AddProgress(power, transform.position);
             }
         }
 
