@@ -2,11 +2,14 @@
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
 using Assets.Modules.Interractables;
+using System.Collections.Generic;
+using System.Linq;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    [Header("Settings")]
-    [SerializeField] private float interactionDistance = 4f;
+    [Header("Detection Settings")]
+    [SerializeField] private float detectionRadius = 5f; // Дистанция появления надписи
+    [SerializeField] private float interactionDistance = 3f; // Дистанция рейкаста для клика
     [SerializeField] private LayerMask interactableLayer;
     [SerializeField] private Camera playerCamera;
 
@@ -23,17 +26,16 @@ public class PlayerInteraction : MonoBehaviour
     private VisualElement _progressBg;
     private VisualElement _progressFill;
 
-    private IInteractable _currentInteractable;
+    private IInteractable _nearestInteractable; // Тот, кто просто рядом
+    private IInteractable _focusedInteractable; // Тот, на кого смотрим рейкастом
     private float _holdTimer = 0f;
     private bool _isHolding = false;
 
     private void OnEnable()
     {
         var root = promptTemplate.Instantiate();
-        // Берем первый дочерний элемент, чтобы управлять именно контейнером
         _promptRoot = root.Q<VisualElement>("prompt-container");
-        _promptRoot.style.display = DisplayStyle.None; // СРАЗУ СКРЫВАЕМ
-
+        _promptRoot.style.display = DisplayStyle.None;
         uiDocument.rootVisualElement.Add(_promptRoot);
 
         _keyLabel = _promptRoot.Q<Label>("key-label");
@@ -42,9 +44,7 @@ public class PlayerInteraction : MonoBehaviour
         _progressFill = _promptRoot.Q<VisualElement>("progress-fill");
 
         interactAction.action.Enable();
-
-        // Подписки для Hold логики
-        interactAction.action.started += _ => _isHolding = true;
+        interactAction.action.started += OnActionStarted;
         interactAction.action.canceled += _ => ResetHold();
     }
 
@@ -52,63 +52,98 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
-        CheckForInteractable();
-        HandleHoldLogic();
+        FindInteractables();
+        HandleInteractionLogic();
     }
 
     private void LateUpdate() => UpdateUIPosition();
 
-    private void CheckForInteractable()
+    private void FindInteractables()
     {
+        // 1. Поиск всех объектов в радиусе
+        Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRadius, interactableLayer);
+
+        IInteractable bestCandidate = null;
+        float minDistance = float.MaxValue;
+
+        foreach (var col in colliders)
+        {
+            var interactable = col.GetComponentInParent<IInteractable>();
+            if (interactable == null) continue;
+
+            float dist = Vector3.Distance(transform.position, col.transform.position);
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                bestCandidate = interactable;
+            }
+        }
+
+        // Обновляем ближайший объект (для отображения UI)
+        if (bestCandidate != _nearestInteractable)
+        {
+            _nearestInteractable = bestCandidate;
+            if (_nearestInteractable != null) ShowUI(_nearestInteractable);
+            else HideUI();
+        }
+
+        // 2. Проверка Рейкастом (для возможности взаимодействия)
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
         {
-            IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
-            if (interactable != null)
-            {
-                if (_currentInteractable != interactable)
-                {
-                    _currentInteractable = interactable;
-                    ShowUI(interactable);
-                }
-                return;
-            }
+            _focusedInteractable = hit.collider.GetComponentInParent<IInteractable>();
+        }
+        else
+        {
+            _focusedInteractable = null;
         }
 
-        if (_currentInteractable != null)
+        // Визуальный фидбек: если смотрим на объект, делаем UI ярче, если нет — полупрозрачным
+        if (_promptRoot != null && _promptRoot.style.display == DisplayStyle.Flex)
         {
-            _currentInteractable = null;
-            ResetHold();
-            HideUI();
+            // Если мы смотрим на тот же объект, который ближайший
+            bool isTargeting = (_focusedInteractable != null && _focusedInteractable == _nearestInteractable);
+            _promptRoot.style.opacity = isTargeting ? 1.0f : 0.5f;
+            _keyLabel.style.display = isTargeting ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 
-    private void HandleHoldLogic()
+    private void HandleInteractionLogic()
     {
-        if (_currentInteractable == null) return;
-
-        // Если это обычный клик
-        if (_currentInteractable.InteractionType == InteractionType.Click)
+        if (_focusedInteractable == null)
         {
-            if (interactAction.action.WasPerformedThisFrame())
-            {
-                _currentInteractable.Interact(gameObject);
-            }
+            ResetHold();
             return;
         }
 
-        // Если это Hold (Удержание)
-        if (_isHolding)
+        // Логика CLICK
+        if (_focusedInteractable.InteractionType == InteractionType.Click)
+        {
+            if (interactAction.action.WasPressedThisFrame()) // Мгновенный отклик
+            {
+                _focusedInteractable.Interact(gameObject);
+            }
+        }
+        // Логика HOLD
+        else if (_isHolding)
         {
             _holdTimer += Time.deltaTime;
-            float progress = Mathf.Clamp01(_holdTimer / _currentInteractable.HoldDuration);
+            float progress = Mathf.Clamp01(_holdTimer / _focusedInteractable.HoldDuration);
             _progressFill.style.width = Length.Percent(progress * 100);
 
-            if (_holdTimer >= _currentInteractable.HoldDuration)
+            if (_holdTimer >= _focusedInteractable.HoldDuration)
             {
-                _currentInteractable.Interact(gameObject);
+                _focusedInteractable.Interact(gameObject);
                 ResetHold();
             }
+        }
+    }
+
+    private void OnActionStarted(InputAction.CallbackContext context)
+    {
+        if (_focusedInteractable != null && _focusedInteractable.InteractionType == InteractionType.Hold)
+        {
+            _isHolding = true;
         }
     }
 
@@ -123,29 +158,25 @@ public class PlayerInteraction : MonoBehaviour
     {
         _promptLabel.text = interactable.InteractionPrompt;
         _keyLabel.text = $"[{interactAction.action.GetBindingDisplayString()}]";
-
-        // Показываем полоску только если тип - Hold
-        _progressBg.style.display = interactable.InteractionType == InteractionType.Hold
-            ? DisplayStyle.Flex : DisplayStyle.None;
-
+        _progressBg.style.display = interactable.InteractionType == InteractionType.Hold ? DisplayStyle.Flex : DisplayStyle.None;
         _promptRoot.style.display = DisplayStyle.Flex;
     }
 
     private void HideUI()
     {
-        _promptRoot.style.display = DisplayStyle.None;
+        if (_promptRoot != null) _promptRoot.style.display = DisplayStyle.None;
+        ResetHold();
     }
 
     private void UpdateUIPosition()
     {
-        if (_currentInteractable == null || _promptRoot.style.display == DisplayStyle.None) return;
+        if (_nearestInteractable == null || _promptRoot.style.display == DisplayStyle.None) return;
 
-        Vector3 worldPos = _currentInteractable.InteractionPivot != null
-            ? _currentInteractable.InteractionPivot.position
-            : (_currentInteractable as MonoBehaviour).transform.position;
+        Vector3 worldPos = _nearestInteractable.InteractionPivot != null
+            ? _nearestInteractable.InteractionPivot.position
+            : (_nearestInteractable as MonoBehaviour).transform.position;
 
-        Vector2 panelPos = RuntimePanelUtils.CameraTransformWorldToPanel(
-            _promptRoot.panel, worldPos, playerCamera);
+        Vector2 panelPos = RuntimePanelUtils.CameraTransformWorldToPanel(_promptRoot.panel, worldPos, playerCamera);
 
         _promptRoot.style.left = panelPos.x - (_promptRoot.layout.width / 2);
         _promptRoot.style.top = panelPos.y - (_promptRoot.layout.height / 2);
