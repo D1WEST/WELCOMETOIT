@@ -1,8 +1,16 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML 
+    xmlns:ui="UnityEngine.UIElements" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" 
+    editor-extension-mode="False">
+    
     <Style src="project://database/Assets/UI/UI/NPCMarket/MarketStyles.uss?fileID=7433441132597879392&amp;guid=7f60641056f37ee41835d81c1da42ed1&amp;type=3#MarketStyles"/>
+    
     <ui:VisualElement class="screen-overlay">
-        <ui:VisualElement class="main-window" style="width: 1250px;">
+        <ui:VisualElement class="main-window" style="width: 1250px; padding-bottom: 20px;">
             <ui:Label text="Назначить сотрудника на рабочее место" style="-unity-font-style: bold; font-size: 24px; margin-bottom: 20px; -unity-text-align: middle-center;"/>
+            
             <ui:VisualElement class="table-header" style="margin-bottom: 10px;">
                 <ui:Label text="Сотрудник" class="col-name" style="margin-left: 80px; width: 140px;"/>
                 <ui:Label text="Уровень умений" class="col-pos" style="width: 200px; -unity-text-align: middle-center;"/>
@@ -11,10 +19,12 @@
                 <ui:Label text="Сонливость" class="col-slp" style="width: 120px; -unity-text-align: middle-center;"/>
                 <ui:Label text="Раздражительность" class="col-ang" style="width: 180px; -unity-text-align: middle-center;"/>
             </ui:VisualElement>
-            <ui:ScrollView name="worker-list" style="flex-grow: 1;"/>
-            <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-top: 15px;">
-                <ui:Button name="btn-unassign" text="Освободить место" style="background-color: rgb(150, 150, 150); color: white; width: 250px; display: none;"/>
-                <ui:Button name="btn-close" text="Отмена" class="tab-button" style="width: 150px;"/>
+
+            <ui:ScrollView name="worker-list" style="flex-grow: 1;" show-horizontal-scroller="Never" />
+
+            <ui:VisualElement style="flex-direction: row; justify-content: center; margin-top: 15px;">
+                <ui:Button name="btn-unassign" text="Освободить место" style="background-color: rgb(150, 40, 40); color: white; width: 250px; margin-right: 20px; border-radius: 5px;"/>
+                <ui:Button name="btn-close" text="Отмена" class="tab-button" style="width: 200px;"/>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

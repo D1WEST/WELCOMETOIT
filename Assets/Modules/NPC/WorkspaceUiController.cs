@@ -37,6 +37,14 @@ public class WorkplaceUIController : MonoBehaviour
         _targetDesk = desk;
         _root.style.display = DisplayStyle.Flex;
 
+        // Управление видимостью кнопки программно:
+        var unassignBtn = _root.Q<Button>("btn-unassign");
+        if (unassignBtn != null)
+        {
+            // Показываем кнопку только если на столе ЕСТЬ рабочий
+            unassignBtn.style.display = desk.HasWorker ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
         _cachedPlayerInput = player.GetComponent<PlayerInput>();
         if (_cachedPlayerInput != null) _cachedPlayerInput.enabled = false;
 
@@ -92,7 +100,6 @@ public class WorkplaceUIController : MonoBehaviour
         var sleepLabel = card.Q<Label>("stat-sleep");
         var angerLabel = card.Q<Label>("stat-anger");
         var avatarBox = card.Q<VisualElement>("avatar");
-        var btn = card.Q<Button>("action-btn");
 
         // ПРИСВАИВАЕМ ЗНАЧЕНИЯ ТОЛЬКО ЕСЛИ ЭЛЕМЕНТЫ НАЙДЕНЫ
         if (nameLabel != null) nameLabel.text = data.name;
@@ -110,20 +117,45 @@ public class WorkplaceUIController : MonoBehaviour
         if (avatarBox != null && data.avatar != null)
             avatarBox.style.backgroundImage = new StyleBackground(data.avatar);
 
+        var btn = card.Q<Button>("action-btn");
         if (btn != null)
         {
-            btn.text = "Назначить";
+            // Если рабочий уже назначен на какой-то ДРУГОЙ стол
+            if (data.isAssigned)
+            {
+                var currentDesk = WorkplaceInteractable.FindDeskByWorker(data);
+                // Если он сидит именно за ЭТИМ столом, который мы открыли
+                if (currentDesk == _targetDesk)
+                {
+                    btn.text = "УЖЕ ТУТ";
+                    btn.SetEnabled(false); // Нельзя назначить на то же самое место
+                }
+                else
+                {
+                    btn.text = "ПЕРЕВЕСТИ";
+                    btn.style.backgroundColor = new StyleColor(Color.cyan);
+                    btn.SetEnabled(true);
+                }
+            }
+            else
+            {
+                btn.text = "НАЗНАЧИТЬ";
+                btn.SetEnabled(true);
+            }
+
             btn.clicked += () => {
                 _targetDesk.AssignWorker(data);
                 Close();
             };
         }
-        else Debug.LogWarning("FillCardData: Не найдена кнопка 'action-btn'");
     }
 
     private void Unassign()
     {
-        if (_targetDesk != null) _targetDesk.AssignWorker(null);
+        if (_targetDesk != null)
+        {
+            _targetDesk.AssignWorker(null); // Это само очистит и 3D модель, и статус рабочего
+        }
         Close();
     }
 

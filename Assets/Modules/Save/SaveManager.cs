@@ -1,4 +1,5 @@
-﻿using Assets.Modules.NPC;
+﻿using Assets.Modules.Interractables.Impl;
+using Assets.Modules.NPC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -110,6 +111,12 @@ namespace Assets.Modules.Save
         }
         public void SellWorker(WorkerInstance worker)
         {
+            var desk = WorkplaceInteractable.FindDeskByWorker(worker);
+            if (desk != null)
+            {
+                desk.AssignWorker(null);
+            }
+
             myWorkers.Remove(worker);
             ChangeMoney(worker.sellPrice);
             SaveGame();

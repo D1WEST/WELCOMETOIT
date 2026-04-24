@@ -2,6 +2,7 @@
 using Assets.Modules.NPC;
 using Assets.Modules.Save;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace Assets.Modules.Interractables.Impl
 {
     public class WorkplaceInteractable : MonoBehaviour, IInteractable
     {
+        public static List<WorkplaceInteractable> AllDesks = new List<WorkplaceInteractable>();
+
         [Header("Settings")]
         [SerializeField] private string promptEmpty = "Назначить работника";
         [SerializeField] private string promptOccupied = "Управление рабочим местом";
@@ -32,38 +35,44 @@ namespace Assets.Modules.Interractables.Impl
 
         private RoomManager _roomManager;
 
+        private void Awake() => AllDesks.Add(this);
+        private void OnDestroy()
+        {
+            StopWork();
+            AllDesks.Remove(this);
+        }
+
         public void Interact(GameObject interactor)
         {
-            // Открываем меню выбора, передавая этот стол как цель
             uiController.Open(this, interactor);
+        }
+
+        public static WorkplaceInteractable FindDeskByWorker(WorkerInstance worker)
+        {
+            if (worker == null) return null;
+            return AllDesks.Find(d => d.Worker != null && d.Worker.instanceId == worker.instanceId);
         }
 
         public void AssignWorker(WorkerInstance worker)
         {
-            // 1. Убираем старого рабочего и его модель
-            if (_currentWorker != null)
+            var previousDesk = FindDeskByWorker(worker);
+            if (previousDesk != null && previousDesk != this)
             {
-                _currentWorker.isAssigned = false;
+                previousDesk.AssignWorker(null);
             }
 
-            if (_spawnedNpcVisual != null)
-            {
-                Destroy(_spawnedNpcVisual);
-            }
+            if (_currentWorker != null) _currentWorker.isAssigned = false;
+            if (_spawnedNpcVisual != null) Destroy(_spawnedNpcVisual);
 
             _currentWorker = worker;
 
-            // 2. Если назначили нового
             if (_currentWorker != null)
             {
                 _currentWorker.isAssigned = true;
 
-                // СПАВН 3D МОДЕЛИ
                 GameObject prefab = GameDataManager.Instance.GetWorkerPrefab(_currentWorker.templateId);
                 if (prefab != null && npcSpawnPoint != null)
-                {
                     _spawnedNpcVisual = Instantiate(prefab, npcSpawnPoint.position, npcSpawnPoint.rotation, transform);
-                }
 
                 StartWorkLoop().Forget();
             }
@@ -115,6 +124,5 @@ namespace Assets.Modules.Interractables.Impl
             _workCts = null;
         }
 
-        private void OnDestroy() => StopWork();
     }
 }
