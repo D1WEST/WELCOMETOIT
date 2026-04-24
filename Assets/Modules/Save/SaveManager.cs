@@ -43,19 +43,34 @@ namespace Assets.Modules.Save
             marketWorkers.Clear();
             for (int i = 0; i < 6; i++)
             {
-                var randomTemplate = allPossibleTemplates[Random.Range(0, allPossibleTemplates.Count)];
-                randomTemplate.workPower = (int)Mathf.Clamp((randomTemplate.workPower += Random.Range(-5, 5)), 1f, 20f);
-                randomTemplate.patience = (int)Mathf.Clamp((randomTemplate.patience += Random.Range(-4, 5)), 1f, 10f);
-                randomTemplate.sleepiness = (int)Mathf.Clamp((randomTemplate.sleepiness += Random.Range(-2, 3)), 1f, 10f);
-                randomTemplate.angriness = (int)Mathf.Clamp((randomTemplate.angriness += Random.Range(-2, 3)), 1f, 10f);
-                randomTemplate.buyPrice = (int)(randomTemplate.sellPrice * 1.5f - randomTemplate.sleepiness - randomTemplate.angriness + randomTemplate.patience * 1.5f + randomTemplate.workPower * 2f);
-                randomTemplate.sellPrice = (int)Mathf.Clamp(randomTemplate.buyPrice, 1f, 10f);
-                if (randomTemplate.workPower > 0 && randomTemplate.workPower <= 2) { randomTemplate.position = Position.Junior; }
-                else if (randomTemplate.workPower > 2 && randomTemplate.workPower <= 4) { randomTemplate.position = Position.Middle; }
-                else if (randomTemplate.workPower > 4 && randomTemplate.workPower <= 6) { randomTemplate.position = Position.Senior; }
-                else if (randomTemplate.workPower > 6 && randomTemplate.workPower <= 10) { randomTemplate.position = Position.Prodigy; }
-                else if (randomTemplate.workPower > 10) { randomTemplate.position = Position.Eng_LEGEND; }
-                marketWorkers.Add(new WorkerInstance(randomTemplate));
+                var template = allPossibleTemplates[Random.Range(0, allPossibleTemplates.Count)];
+                var worker = new WorkerInstance(template);
+
+                worker.workPower = Random.Range(1, 11);
+                worker.patience = Random.Range(1, 8);
+                worker.sleepiness = Random.Range(1, 8);
+                worker.angriness = Random.Range(1, 8);
+
+                float positionMultiplier = 1f;
+                if (worker.workPower <= 2) { worker.currentPosition = Position.Junior; positionMultiplier = 1f; }
+                else if (worker.workPower <= 4) { worker.currentPosition = Position.Middle; positionMultiplier = 1.5f; }
+                else if (worker.workPower <= 6) { worker.currentPosition = Position.Senior; positionMultiplier = 2.5f; }
+                else if (worker.workPower <= 10) { worker.currentPosition = Position.Prodigy; positionMultiplier = 5f; }
+                else { worker.currentPosition = Position.Eng_LEGEND; positionMultiplier = 12f; }
+
+                float basePrice = template.buyPrice > 0 ? template.buyPrice : 50f;
+
+                float skillsValue = (worker.workPower * 25f)  // Скорость - самый дорогой стат
+                                  + (worker.patience * 10f)   // Концентрация - полезно
+                                  - (worker.sleepiness * 8f)  // Сонливость - штраф
+                                  - (worker.angriness * 8f);  // Гнев - штраф
+
+                float finalPrice = (basePrice + skillsValue) * positionMultiplier;
+
+                worker.buyPrice = (int)Mathf.Max(25, finalPrice);
+                worker.sellPrice = (int)(worker.buyPrice * 0.7f);
+
+                marketWorkers.Add(worker);
             }
         }
 
@@ -73,22 +88,52 @@ namespace Assets.Modules.Save
             // Добавить деньги игроку: PlayerWallet.Add(worker.sellPrice);
             SaveGame();
         }
+        // Единая логика множителей для всех расчетов
+        private float GetPositionMultiplier(Position pos)
+        {
+            switch (pos)
+            {
+                case Position.Junior: return 1.0f;
+                case Position.Middle: return 1.8f;
+                case Position.Senior: return 3.5f;
+                case Position.Prodigy: return 7.0f;
+                case Position.Eng_LEGEND: return 15.0f;
+                default: return 1.0f;
+            }
+        }
 
+        private int CalculateValue(WorkerInstance worker, bool isBuying)
+        {
+            float basePrice = 100f; // Базовая константа
+
+            float skillValue = (worker.workPower * 25f)
+                               + (worker.patience * 10f)
+                               - (worker.sleepiness * 8f)
+                               - (worker.angriness * 8f);
+
+            float multiplier = GetPositionMultiplier(worker.currentPosition);
+            float totalValue = (basePrice + skillValue) * multiplier;
+
+            float finalValue = isBuying ? totalValue : totalValue * 0.7f;
+
+            return (int)Mathf.Max(50, finalValue); // Минимум 50$
+        }
         public void PromoteWorker(WorkerInstance worker)
         {
             if (worker.currentPosition == Position.Eng_LEGEND) return;
 
-            // Стоимость повышения (например)
-            int cost = (int)worker.currentPosition * 50 + 50;
+            int upgradeCost = (int)(GetPositionMultiplier(worker.currentPosition) * 400f);
 
-            // Проверка денег...
+            // TODO: Здесь должна быть твоя проверка денег игрока
 
             worker.currentPosition++;
-            worker.workPower = (int)Mathf.Clamp((worker.workPower += Random.Range(0, 5)), 1f, 20f);
-            worker.patience = (int)Mathf.Clamp((worker.patience += Random.Range(-2, 3)), 1f, 20f);
-            worker.sleepiness = (int)Mathf.Clamp((worker.sleepiness += Random.Range(-2, 1)), 1f, 20f);
-            worker.angriness = (int)Mathf.Clamp((worker.angriness+=Random.Range(-2, 1)), 1f,10f);
-            worker.sellPrice = (int)(worker.sellPrice * 1.5f - worker.sleepiness - worker.angriness + worker.patience * 1.5f + worker.workPower);
+            worker.workPower += Random.Range(2, 5);
+            worker.patience += Random.Range(1, 3);
+
+            worker.sleepiness = Mathf.Max(1, worker.sleepiness - Random.Range(0, 2));
+            worker.angriness = Mathf.Max(1, worker.angriness - Random.Range(0, 2));
+
+            worker.sellPrice = CalculateValue(worker, false);
 
             SaveGame();
         }
