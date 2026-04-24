@@ -1,6 +1,6 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <ui:VisualElement name="money-container" style="position: absolute; top: 30px; right: 30px; flex-direction: row; align-items: center; justify-content: flex-end; width: auto; height: auto;">
-        <ui:Label name="money-delta" text="+$100" style="color: green; font-size: 20px; -unity-font-style: bold; margin-right: 15px; opacity: 0;" />
-        <ui:Label name="money-total" text="$ 1000" style="color: rgb(255, 215, 0); font-size: 35px; -unity-font-style: bold; -unity-text-outline-width: 1.5px; -unity-text-outline-color: black;" />
+        <ui:Label name="money-delta" text="+$100" style="color: green; font-size: 20px; -unity-font-style: bold; margin-right: 15px; opacity: 0;"/>
+        <ui:Label name="money-total" text="$ 1000" style="color: rgb(229, 229, 229); font-size: 35px; -unity-font-style: bold; -unity-text-outline-width: 0.5px; -unity-text-outline-color: black; -unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/Cascasdia%20Mono/CascadiaMono-Bold%20SDF.asset?fileID=11400000&amp;guid=a1bcee9ecfdd28a42a1c4fe90d81fe01&amp;type=2#CascadiaMono-Bold SDF&quot;);"/>
     </ui:VisualElement>
 </ui:UXML>

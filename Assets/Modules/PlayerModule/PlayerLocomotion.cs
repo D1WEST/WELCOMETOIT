@@ -48,17 +48,13 @@ namespace Assets.Modules.PlayerModule
 
         [SerializeField] private PlayerCameraService _playerCamera;
 
-        [SerializeField] private PlayerHUD _hud;
-
         [Header("Stamina Settings")]
         [SerializeField] private float _maxStamina = 100f;
         [SerializeField] private float _sprintDepletionRate = 16f;
         [SerializeField] private float _regenRate = 15f;
         [SerializeField] private float _regenDelay = 0.5f;
 
-        private float _currentStamina;
         private bool _isSprinting = false;
-        private CancellationTokenSource _staminaUpdateCTS;
 
         private void Start()
         {
@@ -72,7 +68,6 @@ namespace Assets.Modules.PlayerModule
             if (_camera == null) _camera = GetComponent<Camera>();
             if (_playerCamera == null) _playerCamera = GetComponent<PlayerCameraService>();
             _playerCamera.Initialize();
-            InitializeStamina();
         }
 
         private void Update()
@@ -87,10 +82,9 @@ namespace Assets.Modules.PlayerModule
         /// <param name="obj">Callback.</param>
         public void DoJump(InputAction.CallbackContext obj)
         {
-            if (_controller.isGrounded && _currentStamina >= 15f)
+            if (_controller.isGrounded)
             {
                 _velocity.y = Mathf.Sqrt(_jumpHeight * -2f * _gravity);
-                ConsumeStaminaInstant(15f);
             }
         }
 
@@ -122,7 +116,7 @@ namespace Assets.Modules.PlayerModule
         {
             if (isCrouching) return;
 
-            if (obj.performed && _currentStamina > 5f)
+            if (obj.performed)
             {
                 _isSprinting = true;
                 _selectedSpeed = _runSpeed;
@@ -132,9 +126,6 @@ namespace Assets.Modules.PlayerModule
                 _isSprinting = false;
                 _selectedSpeed = _walkSpeed;
             }
-
-            // Запускаем асинхронную логику стамины (бег + реген)
-            StartStaminaLogicTask().Forget();
         }
 
         public void StopSprint()
@@ -171,90 +162,6 @@ namespace Assets.Modules.PlayerModule
             _velocity.y += _gravity * Time.deltaTime;
             Vector3 finalVelocity = _currentHorizontalVelocity + new Vector3(0, _velocity.y, 0);
             _controller.Move(finalVelocity * Time.deltaTime);
-        }
-
-        /// <summary>
-        /// Метод для разового забора стамины (например, для прыжка).
-        /// </summary>
-        public void ConsumeStaminaInstant(float amount)
-        {
-            _currentStamina = Mathf.Clamp(_currentStamina - amount, 0, _maxStamina);
-            UpdateHUD();
-
-            // Если мы не бежим, перезапускаем цикл регенерации
-            if (!_isSprinting)
-            {
-                StartStaminaLogicTask().Forget();
-            }
-        }
-
-        private void InitializeStamina()
-        {
-            _currentStamina = _maxStamina;
-            if (_hud == null) _hud = FindObjectOfType<PlayerHUD>();
-        }
-
-        /// <summary>
-        /// Основной цикл обработки стамины.
-        /// </summary>
-        private async UniTaskVoid StartStaminaLogicTask()
-        {
-            // Отменяем предыдущую задачу, если она была
-            _staminaUpdateCTS?.Cancel();
-            _staminaUpdateCTS = new CancellationTokenSource();
-            CancellationToken token = _staminaUpdateCTS.Token;
-
-            try
-            {
-                float lastActionTime = Time.time;
-
-                while (true)
-                {
-                    if (_isSprinting)
-                    {
-                        // Трата стамины при беге
-                        _currentStamina -= _sprintDepletionRate * Time.deltaTime;
-
-                        if (_currentStamina <= 0)
-                        {
-                            _currentStamina = 0;
-                            StopSprint(); // Принудительно останавливаем бег
-                        }
-                        lastActionTime = Time.time;
-                    }
-                    else if (_currentStamina < _maxStamina)
-                    {
-                        // Логика регенерации с задержкой
-                        if (Time.time > lastActionTime + _regenDelay)
-                        {
-                            _currentStamina += _regenRate * Time.deltaTime;
-                            _currentStamina = Mathf.Clamp(_currentStamina, 0, _maxStamina);
-                        }
-                    }
-                    else
-                    {
-                        // Стамина полная и мы не бежим - выходим из цикла для экономии ресурсов
-                        _currentStamina = _maxStamina;
-                        UpdateHUD();
-                        break;
-                    }
-
-                    UpdateHUD();
-                    await UniTask.Yield(PlayerLoopTiming.Update, token);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Задача была отменена - это нормально
-            }
-        }
-
-        private void UpdateHUD()
-        {
-            if (_hud != null)
-            {
-                _hud.stamina = _currentStamina; // Передаем значение в ваш HUD
-            }
         }
 
         /// <summary>
