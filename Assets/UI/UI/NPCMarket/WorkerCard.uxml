@@ -1,0 +1,44 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <ui:VisualElement class="worker-card" style="height: 90px; padding: 10px;">
+        <!-- Аватар -->
+        <ui:VisualElement name="avatar" class="col-avatar" />
+
+        <!-- Имя и ID -->
+        <ui:VisualElement style="width: 150px; justify-content: center;">
+            <ui:Label name="name-label" text="Name" style="-unity-font-style: bold; font-size: 16px;" />
+            <ui:Label name="id-label" text="ID: eng_01" style="font-size: 10px; color: gray;" />
+        </ui:VisualElement>
+
+        <!-- Позиция -->
+        <ui:VisualElement class="stat-box" style="width: 100px;">
+            <ui:Label text="POSITION" class="stat-label-header" />
+            <ui:Label name="pos-label" text="Junior" class="stat-label-value" />
+        </ui:VisualElement>
+
+        <!-- Статы: Терпение, Сила, Сон, Гнев -->
+        <ui:VisualElement class="stat-box">
+            <ui:Label text="PATIENCE" class="stat-label-header" />
+            <ui:Label name="stat-patience" text="50" class="stat-label-value" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="stat-box">
+            <ui:Label text="POWER" class="stat-label-header" />
+            <ui:Label name="stat-power" text="5" class="stat-label-value" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="stat-box">
+            <ui:Label text="SLEEP" class="stat-label-header" />
+            <ui:Label name="stat-sleep" text="2" class="stat-label-value" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="stat-box">
+            <ui:Label text="ANGER" class="stat-label-header" />
+            <ui:Label name="stat-anger" text="1" class="stat-label-value" />
+        </ui:VisualElement>
+
+        <!-- Кнопки действия -->
+        <ui:VisualElement name="action-container" class="col-action">
+            <ui:Button name="action-btn" text="Buy $100" class="action-button" style="width: 120px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
