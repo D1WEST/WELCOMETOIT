@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="LoadingScreen.uss" />
+    
+    <!-- Главный контейнер (черный экран), изначально скрыт -->
+    <ui:VisualElement name="loading-container" class="loading-container" style="display: none;">
+        
+        <!-- Текст LOADING -->
+        <ui:Label text="LOADING" class="loading-text" />
+        
+        <!-- Блок самого прогресс-бара -->
+        <ui:VisualElement class="progress-block">
+            <!-- Левая декоративная палочка -->
+            <ui:VisualElement class="deco-line" />
+            
+            <!-- Рамка бара -->
+            <ui:VisualElement class="bar-frame">
+                <!-- Сама заливка (которую мы будем двигать скриптом) -->
+                <ui:VisualElement name="bar-fill" class="bar-fill" style="width: 0%;" />
+            </ui:VisualElement>
+            
+            <!-- Правая декоративная палочка -->
+            <ui:VisualElement class="deco-line" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

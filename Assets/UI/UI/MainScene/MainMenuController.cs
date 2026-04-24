@@ -39,9 +39,17 @@ public class MainMenuController : MonoBehaviour
 
     private void OnPlayClicked()
     {
-        Debug.Log("Загрузка Сцены 1...");
-        // Загружает сцену с индексом 1 (убедитесь, что она есть в Build Settings)
-        SceneManager.LoadScene(1);
+        Debug.Log("Запуск загрузочного экрана...");
+
+        // Вместо SceneManager.LoadScene(1) используем:
+        if (GlobalSceneLoader.Instance != null)
+        {
+            GlobalSceneLoader.Instance.LoadSceneAsync(1); // Грузим Сцену 1
+        }
+        else
+        {
+            Debug.LogError("Объект GlobalSceneLoader не найден на сцене!");
+        }
     }
 
     private void OnExitClicked()
