@@ -1,6 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/Modules/PlayerModule/UI/PlayerHUD.uss?fileID=7433441132597879392&amp;guid=e25a5c933cdb8204b9aa9aa33432179d&amp;type=3#PlayerHUD"/>
-    <ui:VisualElement name="hud-root" class="hud-root">
+    <ui:Template name="MoneyDisplay" src="project://database/Assets/UI/UI/Money/MoneyDisplay.uxml?fileID=9197481963319205126&amp;guid=f4fa264b5955821418fd4677e6ade088&amp;type=3#MoneyDisplay"/>
+    <Style src="project://database/Assets/UI/UI/PlayerHUD.uss?fileID=7433441132597879392&amp;guid=e25a5c933cdb8204b9aa9aa33432179d&amp;type=3#PlayerHUD"/>
+    <ui:VisualElement name="hud-root" class="hud-root" style="flex-grow: 1;">
         <ui:VisualElement name="hp-group" class="stat-container hp-bar">
             <ui:Label text="100" name="hp-text" class="stat-text"/>
             <ui:VisualElement name="hp-segments-container" class="segments-row"/>
@@ -10,4 +11,5 @@
             <ui:VisualElement name="stamina-segments-container" class="segments-row"/>
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:Instance template="MoneyDisplay" name="money-display"/>
 </ui:UXML>

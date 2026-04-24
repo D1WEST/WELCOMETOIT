@@ -1,15 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Modules.NPC;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Assets.Modules.NPC;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Assets.Modules.Save
 {
     public class GameDataManager : MonoBehaviour
     {
-        public int playerMoney = 1000;
+        [SerializeField] private int _playerMoney = 1000;
+        public int playerMoney => _playerMoney;
         public static GameDataManager Instance { get; private set; }
+
+        public static event Action<int, int, int> OnMoneyChanged;
 
         public List<WorkerInstance> myWorkers = new List<WorkerInstance>();
         public List<WorkerInstance> marketWorkers = new List<WorkerInstance>();
@@ -18,7 +23,11 @@ namespace Assets.Modules.Save
 
         private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
 
-        private void Awake() => Instance = this;
+        private void Awake()
+        {
+            Instance = this;
+            LoadGame();
+        }
 
         public void SaveGame()
         {
@@ -77,16 +86,27 @@ namespace Assets.Modules.Save
 
         public void HireWorker(WorkerInstance worker)
         {
-            // Тут можно добавить проверку на наличие денег
-            marketWorkers.Remove(worker);
-            myWorkers.Add(worker);
+            if (playerMoney >= worker.buyPrice)
+            {
+                ChangeMoney(-worker.buyPrice);
+                marketWorkers.Remove(worker);
+                myWorkers.Add(worker);
+                SaveGame();
+            }
+        }
+
+        public void ChangeMoney(int amount)
+        {
+            int oldMoney = _playerMoney;
+            _playerMoney += amount;
+            OnMoneyChanged?.Invoke(oldMoney, _playerMoney, amount);
             SaveGame();
         }
 
         public void SellWorker(WorkerInstance worker)
         {
             myWorkers.Remove(worker);
-            // Добавить деньги игроку: PlayerWallet.Add(worker.sellPrice);
+            ChangeMoney(worker.sellPrice);
             SaveGame();
         }
         // Единая логика множителей для всех расчетов
@@ -139,7 +159,7 @@ namespace Assets.Modules.Save
 
             float finalValue = isBuying ? totalValue : totalValue * 0.7f;
 
-            return (int)Mathf.Max(50, finalValue); // Минимум 50$
+            return (int)Mathf.Max(50, finalValue);
         }
         public void PromoteWorker(WorkerInstance worker)
         {
@@ -149,18 +169,15 @@ namespace Assets.Modules.Save
 
             if (playerMoney >= cost)
             {
-                playerMoney -= cost; // Списываем деньги
+                ChangeMoney(-cost);
 
-                // Улучшаем рабочего
                 worker.currentPosition++;
                 worker.workPower += Random.Range(2, 5);
                 worker.patience += Random.Range(1, 3);
 
-                // Обучение снижает негатив
                 worker.sleepiness = Mathf.Max(1, worker.sleepiness - 1);
                 worker.angriness = Mathf.Max(1, worker.angriness - 1);
 
-                // Пересчитываем цену продажи (она вырастет согласно новому уровню)
                 worker.sellPrice = CalculateValue(worker, false);
 
                 SaveGame();
