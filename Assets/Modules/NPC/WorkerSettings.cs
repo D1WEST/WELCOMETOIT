@@ -9,6 +9,7 @@ namespace Assets.Modules.NPC
     {
         public string templateId;
         public string workerName;
+        public GameObject npcPrefab;
         public Position position;
         public int patience, workPower, sleepiness, angriness;
         public Sprite avatar;

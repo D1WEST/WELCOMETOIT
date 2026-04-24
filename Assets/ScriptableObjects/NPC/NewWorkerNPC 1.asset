@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98b0b40dfd517da448d44accb7895904, type: 3}
   m_Name: NewWorkerNPC 1
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
-  templateId: 000
+  templateId: 001
   workerName: Bob
+  npcPrefab: {fileID: 6345741170225518943, guid: aa6dd2b006052d44ea8f3a5350f68889, type: 3}
   position: 2
   patience: 2
   workPower: 2

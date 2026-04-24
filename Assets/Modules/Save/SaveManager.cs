@@ -103,6 +103,11 @@ namespace Assets.Modules.Save
             SaveGame();
         }
 
+        public GameObject GetWorkerPrefab(string templateId)
+        {
+            var template = allPossibleTemplates.Find(t => t.templateId == templateId);
+            return template != null ? template.npcPrefab : null;
+        }
         public void SellWorker(WorkerInstance worker)
         {
             myWorkers.Remove(worker);

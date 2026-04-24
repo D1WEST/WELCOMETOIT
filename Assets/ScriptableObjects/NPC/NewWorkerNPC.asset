@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
   templateId: 000
   workerName: Max
+  npcPrefab: {fileID: 9285571226729687, guid: 2d3e19ae5928d074dbec190f17819f59, type: 3}
   position: 1
   patience: 2
   workPower: 2

@@ -13,11 +13,13 @@ namespace Assets.Modules.Interractables.Impl
         [SerializeField] private string promptEmpty = "Назначить работника";
         [SerializeField] private string promptOccupied = "Управление рабочим местом";
         [SerializeField] private Transform pivot;
+        [SerializeField] private Transform npcSpawnPoint;
 
         [Header("References")]
         [SerializeField] private WorkplaceUIController uiController;
 
         private WorkerInstance _currentWorker;
+        private GameObject _spawnedNpcVisual;
         private CancellationTokenSource _workCts;
 
         // Реализация интерфейса
@@ -36,14 +38,31 @@ namespace Assets.Modules.Interractables.Impl
 
         public void AssignWorker(WorkerInstance worker)
         {
-            // Если кто-то уже сидел — освобождаем его
-            if (_currentWorker != null) _currentWorker.isAssigned = false;
+            // 1. Убираем старого рабочего и его модель
+            if (_currentWorker != null)
+            {
+                _currentWorker.isAssigned = false;
+            }
+
+            if (_spawnedNpcVisual != null)
+            {
+                Destroy(_spawnedNpcVisual);
+            }
 
             _currentWorker = worker;
 
+            // 2. Если назначили нового
             if (_currentWorker != null)
             {
                 _currentWorker.isAssigned = true;
+
+                // СПАВН 3D МОДЕЛИ
+                GameObject prefab = GameDataManager.Instance.GetWorkerPrefab(_currentWorker.templateId);
+                if (prefab != null && npcSpawnPoint != null)
+                {
+                    _spawnedNpcVisual = Instantiate(prefab, npcSpawnPoint.position, npcSpawnPoint.rotation, transform);
+                }
+
                 StartWorkLoop().Forget();
             }
             else
