@@ -59,8 +59,6 @@ public class WorkplaceUIController : MonoBehaviour
         _listContainer.Clear();
         var myWorkers = GameDataManager.Instance.myWorkers;
 
-        Debug.Log($"WorkplaceUI: Найдено в базе {myWorkers.Count} рабочих. Начинаю отрисовку...");
-
         foreach (var worker in myWorkers)
         {
             // 1. Создаем экземпляр шаблона
@@ -77,8 +75,6 @@ public class WorkplaceUIController : MonoBehaviour
 
                 // 4. Добавляем в список
                 _listContainer.Add(card);
-
-                Debug.Log($"Карточка для {worker.name} успешно добавлена в ScrollView");
             }
             else
             {

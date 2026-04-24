@@ -113,8 +113,6 @@ namespace Assets.Modules.Interractables.Impl
 
                 int power = _currentWorker.workPower;
 
-                Debug.Log($"[DEBUG] Стол {name}: рабочий {_currentWorker.name} выдал {power} PTS");
-
                 GameDataManager.Instance.ChangeMoney(power * 2);
                 ShiftManager.Instance.AddProgress(power, transform.position);
             }

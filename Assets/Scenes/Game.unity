@@ -911,7 +911,7 @@ MonoBehaviour:
     roomManager: {fileID: 210238263}
     blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
     unlockDay: 1
-    goalTarget: 3000
+    goalTarget: 2000
 --- !u!1 &516731457
 GameObject:
   m_ObjectHideFlags: 0
