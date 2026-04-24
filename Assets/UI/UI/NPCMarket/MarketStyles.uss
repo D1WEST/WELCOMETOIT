@@ -1,0 +1,181 @@
+/* Основной контейнер */
+.screen-overlay {
+    flex-grow: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.main-window {
+    width: 900px;
+    height: 600px;
+    background-color: rgb(240, 240, 240);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+/* Табы */
+.tabs-container {
+    flex-direction: row;
+    margin-bottom: 10px;
+}
+
+.tab-button {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: rgb(220, 220, 220);
+    border-width: 0;
+    border-radius: 5px;
+    margin: 0 5px;
+    -unity-font-style: bold;
+}
+
+.tab-button:hover {
+    background-color: rgb(200, 200, 200);
+}
+
+.tab-button--active {
+    background-color: white;
+    color: rgb(50, 50, 50);
+}
+
+/* Шапка таблицы */
+.table-header {
+    flex-direction: row;
+    padding: 10px;
+    -unity-font-style: bold;
+    color: rgb(120, 120, 120);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(200, 200, 200);
+}
+
+.worker-card:hover {
+    background-color: rgb(230, 243, 250); /* Подсветка как на скрине */
+}
+
+/* Колонки */
+/* Аватарка: фиксируем размер и запрещаем искажение */
+.col-avatar {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+    border-radius: 30px;
+    background-color: #ddd;
+    flex-shrink: 0;
+    /* Чтобы картинка не сплющивалась, а обрезалась по кругу */
+    -unity-background-scale-mode: scale-and-crop; 
+    margin-right: 15px;
+}
+
+.col-name { width: 200px; -unity-font-style: bold; }
+.col-type { width: 100px; justify-content: center; align-items: center; }
+.col-level { width: 120px; color: gray; }
+.col-speed { width: 150px; }
+.col-time { width: 150px; color: gray; }
+
+.action-button:hover {
+    background-color: rgb(180, 70, 40);
+}
+
+.refresh-btn {
+    align-self: flex-end;
+    margin-bottom: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+}
+
+/* Карточка работника */
+.worker-card {
+    flex-direction: row;
+    background-color: white;
+    margin-bottom: 8px; /* Чуть больше отступ */
+    padding: 10px;
+    align-items: center;
+    border-radius: 8px;
+    min-height: 80px; /* Фиксируем минимальную высоту, чтобы не сплющивало */
+    min-width: 150px;
+    flex-shrink: 0;   /* ЗАПРЕЩАЕМ сжатие карточки */
+    border-width: 1px;
+    border-color: rgb(220, 220, 220);
+}
+
+/* Стили для кнопок внутри Manage */
+.action-button {
+    width: 100%;
+    margin-bottom: 2px;
+    font-size: 11px;
+    padding: 4px;
+}
+
+/* Общий стиль для кнопок управления */
+.action-button-managed {
+    flex-grow: 1;
+    margin: 0 4px;
+    padding: 8px 12px;
+    height: 35px;
+    border-radius: 4px;
+    border-width: 0;
+    color: white;
+    -unity-font-style: bold;
+    font-size: 12px;
+}
+
+/* Настройка ScrollView, чтобы он не сжимал содержимое */
+#worker-list #unity-content-container {
+    padding: 10px;
+}
+
+/* Стили для колонок статов */
+/* Увеличиваем ширину всего окна, чтобы влезли расширенные колонки */
+.main-window {
+    width: 1250px; /* Было 900, теперь 1250 */
+    height: 700px;
+    background-color: rgb(240, 240, 240);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+/* Общий контейнер стата */
+.stat-box {
+    margin: 0 10px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; 
+}
+
+/* Подпись (верхняя часть) */
+.stat-label-header {
+    font-size: 13px;
+    color: rgb(51, 51, 51);
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+    -unity-text-align: middle-center;
+    white-space: normal; 
+    height: 32px;
+}
+
+/* Значение (нижняя часть) */
+.stat-label-value {
+    -unity-font-style: bold;
+    font-size: 17px;
+    color: rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+}
+
+/* Настраиваем ширину колонок под длинные русские слова */
+.col-pos { width: 200px; }      /* Уровень умений */
+.col-pat { width: 150px; }      /* Концентрация */
+.col-spd { width: 160px; }      /* Скорость работы */
+.col-slp { width: 120px; }      /* Сонливость */
+.col-ang { width: 180px; }      /* Раздражительность */
+
+/* Контейнер кнопок (даем ему тоже больше места) */
+.col-action {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    width: 320px; 
+    flex-shrink: 0;
+}

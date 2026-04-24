@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML 
+    xmlns:ui="UnityEngine.UIElements" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" 
+    editor-extension-mode="False">
+    
+    <Style src="project://database/Assets/UI/UI/NPCMarket/MarketStyles.uss?fileID=7433441132597879392&amp;guid=7f60641056f37ee41835d81c1da42ed1&amp;type=3#MarketStyles"/>
+    
+    <ui:VisualElement class="screen-overlay">
+        <ui:VisualElement class="main-window">
+            <ui:VisualElement class="tabs-container">
+                <ui:Button name="tab-market" text="Market" class="tab-button tab-button--active"/>
+                <ui:Button name="tab-my-workers" text="My Workers" class="tab-button"/>
+            </ui:VisualElement>
+            
+            <ui:Button name="btn-refresh" text="Refresh Market" class="refresh-btn"/>
+            
+            <ui:VisualElement class="table-header">
+                <ui:Label text="Name" class="col-name" style="margin-left: 60px;"/>
+                <ui:Label text="Type" class="col-type"/>
+                <ui:Label text="Level" class="col-level"/>
+                <ui:Label text="Speed" class="col-speed"/>
+                <ui:Label text="Time Left" class="col-time"/>
+            </ui:VisualElement>
+
+            <ui:ScrollView name="worker-list" style="flex-grow: 1; margin-top: 10px;" show-horizontal-scroller="Never" />
+            
+            <ui:Button name="btn-close" text="Close" style="margin-top: 15px; background-color: rgb(100, 100, 100); color: white; height: 40px; border-radius: 5px;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

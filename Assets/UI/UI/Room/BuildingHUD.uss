@@ -1,0 +1,54 @@
+﻿/* Главный контейнер (плашка) */
+.hud-main-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(43, 43, 43, 0.85); /* Темный полупрозрачный фон */
+    border-width: 2px;
+    border-color: rgb(255, 255, 255); /* Белая обводка */
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 200px;
+}
+
+/* Заголовок "КОМНАТЫ :" */
+.hud-header {
+    color: white;
+    font-size: 22px;
+    -unity-font-style: bold;
+    margin-bottom: 10px;
+    -unity-text-align: middle-left;
+}
+
+/* Контейнер для списка комнат */
+.room-container {
+    flex-direction: column;
+}
+
+/* Стиль одной строки (К 1 : 25/48) */
+.room-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+/* Название комнаты (К 1 :) */
+.room-name-label {
+    color: white;
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-right: 5px;
+}
+
+/* Значение дроби (цвет меняем из кода) */
+.room-value-label {
+    font-size: 20px;
+    -unity-font-style: bold;
+}
+
+/* Восклицательный знак ⚠️ */
+.room-warning-icon {
+    color: rgb(255, 230, 0); /* Желтый */
+    font-size: 24px;
+    -unity-font-style: bold;
+}

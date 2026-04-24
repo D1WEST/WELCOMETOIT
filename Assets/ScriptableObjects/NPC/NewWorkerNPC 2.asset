@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98b0b40dfd517da448d44accb7895904, type: 3}
+  m_Name: NewWorkerNPC 2
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
+  templateId: 002
+  workerName: Sarah
+  npcPrefab: {fileID: 4135268344513719, guid: 7305c8b4d8e154e4d9070be3e5021599, type: 3}
+  position: 1
+  patience: 6
+  workPower: 6
+  sleepiness: 6
+  angriness: 6
+  avatar: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  buyPrice: 11
+  sellPrice: 12

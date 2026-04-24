@@ -40,6 +40,12 @@ namespace Assets.Modules.PlayerModule
             _playerInputActions.PlayerMovementActions.Crouch.canceled -= _playerLocomotion.StopCrouch;
             _playerInputActions.PlayerMovementActions.Sprint.performed -= _playerLocomotion.DoSprint;
             _playerInputActions.PlayerMovementActions.Sprint.canceled -= _playerLocomotion.DoSprint;
+
+            if (_playerLocomotion != null)
+            {
+                _playerLocomotion.MovementVector = Vector2.zero;
+                _playerLocomotion.LookVectorDelta = Vector2.zero;
+            }
         }
 
         private void Update()

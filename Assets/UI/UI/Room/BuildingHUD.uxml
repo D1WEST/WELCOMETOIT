@@ -1,0 +1,7 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/UI/Room/BuildingHUD.uss?fileID=7433441132597879392&amp;guid=21552ed738a62174da80564a6043815e&amp;type=3#BuildingHUD"/>
+    <ui:VisualElement name="building-hud" class="hud-main-container">
+        <ui:Label text="КОМНАТЫ :" name="header" class="hud-header"/>
+        <ui:VisualElement name="room-list" class="room-container"/>
+    </ui:VisualElement>
+</ui:UXML>
