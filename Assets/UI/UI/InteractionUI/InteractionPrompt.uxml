@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <ui:VisualElement name="prompt-container" style="position: absolute; display: none;">
+        <ui:VisualElement style="background-color: rgba(0, 0, 0, 0.8); padding: 8px; border-radius: 5px; border-width: 1px; border-color: white;">
+            <ui:VisualElement style="flex-direction: row; align-items: center;">
+                <ui:Label name="key-label" text="[E]" style="color: yellow; -unity-font-style: bold; margin-right: 5px;" />
+                <ui:Label name="prompt-label" text="Взаимодействовать" style="color: white;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="progress-bg" style="height: 4px; background-color: rgba(255,255,255,0.2); margin-top: 5px; display: none; overflow: hidden;">
+                <ui:VisualElement name="progress-fill" style="height: 100%; width: 0%; background-color: yellow;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
