@@ -2,7 +2,6 @@
 using Assets.Modules.NPC;
 using Assets.Modules.PlayerModule;
 using Assets.Modules.Save;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
@@ -10,12 +9,12 @@ using Cursor = UnityEngine.Cursor;
 public class WorkplaceUIController : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
-    [SerializeField] private VisualTreeAsset cardTemplate; // Твой WorkerCard.uxml
+    [SerializeField] private VisualTreeAsset cardTemplate;
 
     private VisualElement _root;
     private ScrollView _listContainer;
     private WorkplaceInteractable _targetDesk;
-    private PlayerInput _cachedPlayer;
+    private PlayerInput _cachedPlayerInput;
 
     private void OnEnable()
     {
@@ -23,14 +22,14 @@ public class WorkplaceUIController : MonoBehaviour
         _root.style.display = DisplayStyle.None;
 
         _listContainer = _root.Q<ScrollView>("worker-list");
-        _root.Q<Button>("btn-close").clicked += Close;
 
-        // Кнопка очистки места
+        // Кнопка закрытия
+        var closeBtn = _root.Q<Button>("btn-close");
+        if (closeBtn != null) closeBtn.clicked += Close;
+
+        // Кнопка "Освободить место"
         var unassignBtn = _root.Q<Button>("btn-unassign");
-        unassignBtn.clicked += () => {
-            _targetDesk.AssignWorker(null);
-            Close();
-        };
+        if (unassignBtn != null) unassignBtn.clicked += Unassign;
     }
 
     public void Open(WorkplaceInteractable desk, GameObject player)
@@ -38,80 +37,100 @@ public class WorkplaceUIController : MonoBehaviour
         _targetDesk = desk;
         _root.style.display = DisplayStyle.Flex;
 
-        // Блокируем игрока
-        _cachedPlayer = player.GetComponent<PlayerInput>();
-        if (_cachedPlayer != null) _cachedPlayer.enabled = false;
+        _cachedPlayerInput = player.GetComponent<PlayerInput>();
+        if (_cachedPlayerInput != null) _cachedPlayerInput.enabled = false;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-        // Показываем кнопку "Освободить", если кто-то уже сидит
-        _root.Q<Button>("btn-unassign").style.display = desk.HasWorker ? DisplayStyle.Flex : DisplayStyle.None;
 
         RefreshUI();
     }
 
     private void RefreshUI()
     {
-        // Используем уже найденный в OnEnable контейнер
         _listContainer.Clear();
+        var myWorkers = GameDataManager.Instance.myWorkers;
 
-        // Если на столе никто не работает, выходим (или показываем пустую плашку)
-        if (_targetDesk.Worker == null) return;
+        Debug.Log($"WorkplaceUI: Найдено в базе {myWorkers.Count} рабочих. Начинаю отрисовку...");
 
-        // 1. Клонируем шаблон карточки
-        // ВАЖНО: CloneTree возвращает TemplateContainer. 
-        // Чтобы поиск .Q работал корректно, лучше брать первый элемент.
-        VisualElement card = cardTemplate.CloneTree().ElementAt(0);
+        foreach (var worker in myWorkers)
+        {
+            // 1. Создаем экземпляр шаблона
+            var cardInstance = cardTemplate.Instantiate();
 
-        // 2. Заполняем данными
-        FillCard(card, _targetDesk.Worker);
+            // 2. ГЛАВНЫЙ МОМЕНТ: Берем самый первый элемент внутри префаба.
+            // Это надежнее, чем искать по классу "worker-card"
+            var card = cardInstance.ElementAt(0);
 
-        // 3. Добавляем в список
-        _listContainer.Add(card);
+            if (card != null)
+            {
+                // 3. Заполняем данными
+                FillCardData(card, worker);
+
+                // 4. Добавляем в список
+                _listContainer.Add(card);
+
+                Debug.Log($"Карточка для {worker.name} успешно добавлена в ScrollView");
+            }
+            else
+            {
+                Debug.LogError("Ошибка: Не удалось получить корневой элемент из cardTemplate!");
+            }
+        }
     }
 
-    private void FillCard(VisualElement card, WorkerInstance data)
+    private void FillCardData(VisualElement card, WorkerInstance data)
     {
         if (data == null) return;
 
-        // Сверяем имена с твоим UXML!
-        var nameLabel = card.Q<Label>("name-label"); // Было worker-name
+        // Безопасно ищем элементы. Если имя в UXML не совпадет, переменная будет null
+        var nameLabel = card.Q<Label>("name-label");
         var idLabel = card.Q<Label>("id-label");
         var posLabel = card.Q<Label>("pos-label");
-
-        // Статы
         var patienceLabel = card.Q<Label>("stat-patience");
         var powerLabel = card.Q<Label>("stat-power");
         var sleepLabel = card.Q<Label>("stat-sleep");
         var angerLabel = card.Q<Label>("stat-anger");
+        var avatarBox = card.Q<VisualElement>("avatar");
+        var btn = card.Q<Button>("action-btn");
 
-        // Заполняем (предполагаю поля в твоем WorkerInstance)
+        // ПРИСВАИВАЕМ ЗНАЧЕНИЯ ТОЛЬКО ЕСЛИ ЭЛЕМЕНТЫ НАЙДЕНЫ
         if (nameLabel != null) nameLabel.text = data.name;
-        if (idLabel != null) idLabel.text = $"ID: {data.instanceId}"; // если есть id
+        else Debug.LogWarning("FillCardData: Не найден элемент 'name-label'");
 
-        // Если у тебя есть данные по статам, заполняем их так:
+        if (idLabel != null) idLabel.text = $"ID: {data.templateId}";
+
+        if (posLabel != null) posLabel.text = data.currentPosition.ToString();
+
         if (patienceLabel != null) patienceLabel.text = data.patience.ToString();
         if (powerLabel != null) powerLabel.text = data.workPower.ToString();
         if (sleepLabel != null) sleepLabel.text = data.sleepiness.ToString();
         if (angerLabel != null) angerLabel.text = data.angriness.ToString();
 
-        // Обработка кнопки внутри карточки
-        var actionBtn = card.Q<Button>("action-btn");
-        if (actionBtn != null)
+        if (avatarBox != null && data.avatar != null)
+            avatarBox.style.backgroundImage = new StyleBackground(data.avatar);
+
+        if (btn != null)
         {
-            actionBtn.text = "Уволить"; // Например
-            actionBtn.clicked += () => {
-                Debug.Log($"Действие с рабочим {data.name}");
-                // Тут твоя логика
+            btn.text = "Назначить";
+            btn.clicked += () => {
+                _targetDesk.AssignWorker(data);
+                Close();
             };
         }
+        else Debug.LogWarning("FillCardData: Не найдена кнопка 'action-btn'");
+    }
+
+    private void Unassign()
+    {
+        if (_targetDesk != null) _targetDesk.AssignWorker(null);
+        Close();
     }
 
     public void Close()
     {
         _root.style.display = DisplayStyle.None;
-        if (_cachedPlayer != null) _cachedPlayer.enabled = true;
+        if (_cachedPlayerInput != null) _cachedPlayerInput.enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }

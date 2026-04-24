@@ -1771,7 +1771,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorkplaceUIController
   uiDocument: {fileID: 1720159729}
-  cardTemplate: {fileID: 9197481963319205126, guid: 63106ba8d57561e41a00cea05f414d17, type: 3}
+  cardTemplate: {fileID: 9197481963319205126, guid: 59cbaf4281e861249b02abbf44a70d06, type: 3}
 --- !u!114 &1720159729
 MonoBehaviour:
   m_ObjectHideFlags: 0
