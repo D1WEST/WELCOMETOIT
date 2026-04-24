@@ -4,56 +4,66 @@ using Assets.Modules.Interractables.Impl;
 using Assets.Modules.NPC;
 using UnityEngine;
 
-namespace Assets.Modules.Room
+public class RoomManager : MonoBehaviour
 {
-    public class RoomManager : MonoBehaviour
+    public string roomName = "К 1";
+    public bool isRoomActive = true; // Глобальный выключатель комнаты
+
+    [SerializeField] private List<WorkplaceInteractable> desks;
+
+    private void OnValidate() => desks = GetComponentsInChildren<WorkplaceInteractable>().ToList();
+
+    // Метод для управления всей комнатой (например, через щиток или кнопку)
+    public void SetRoomPower(bool state)
     {
-        public string roomName = "K 1";
-        public bool isOpened = true;
+        isRoomActive = state;
+        Debug.Log($"Комната {roomName} теперь {(isRoomActive ? "ВКЛ" : "ВЫКЛ")}");
+    }
 
-        [SerializeField] private List<WorkplaceInteractable> desks;
+    public (int current, int target, bool hasError) GetProductivity()
+    {
+        if (desks.Count == 0) return (0, 0, true);
 
-        // Авто-поиск всех столов в комнате при настройке в инспекторе
-        private void OnValidate()
+        float sumActivePower = 0;
+        float sumInactivePower = 0;
+        int workingPeopleCount = 0;
+        int totalWorkersAtDesks = 0;
+        int maxPossiblePower = 0;
+
+        foreach (var desk in desks)
         {
-            if (desks == null || desks.Count == 0)
-                desks = GetComponentsInChildren<WorkplaceInteractable>().ToList();
-        }
+            if (desk.Worker == null) continue;
 
-        public (int current, int target) GetProductivity()
-        {
-            if (!isOpened || desks.Count == 0) return (0, 0);
+            totalWorkersAtDesks++;
+            int power = desk.Worker.workPower;
 
-            int sumActivePower = 0;
-            int sumInactivePower = 0;
-            int activeWorkersCount = 0;
-            int totalMaxPower = 0;
+            maxPossiblePower += power;
 
-            foreach (var desk in desks)
+            if (!isRoomActive) continue;
+
+            if (desk.Worker.isResting) continue;
+
+            if (desk.Worker.status == WorkerStatus.Working)
             {
-                if (desk.Worker == null) continue;
-
-                int power = desk.Worker.workPower;
-                totalMaxPower += power;
-
-                if (desk.Worker.status == WorkerStatus.Working)
-                {
-                    sumActivePower += power;
-                    activeWorkersCount++;
-                }
-                else
-                {
-                    sumInactivePower += power;
-                }
+                sumActivePower += power;
+                workingPeopleCount++;
             }
-
-            float workingPercent = (float)activeWorkersCount / desks.Count;
-
-            // Формула: (Сумма работающих - Сумма неработающих) * % работающих в комнате
-            float currentCalc = (sumActivePower - sumInactivePower) * workingPercent;
-
-            int finalCurrent = Mathf.Max(0, Mathf.RoundToInt(currentCalc));
-            return (finalCurrent, totalMaxPower);
+            else
+            {
+                sumInactivePower += power;
+            }
         }
+
+        if (totalWorkersAtDesks == 0) return (0, 0, true);
+
+        float workingRatio = (float)workingPeopleCount / totalWorkersAtDesks;
+
+        float calc = (sumActivePower - sumInactivePower) * workingRatio;
+
+        int finalCurrent = Mathf.Max(0, Mathf.RoundToInt(calc));
+
+        bool hasError = !isRoomActive || finalCurrent <= 0;
+
+        return (finalCurrent, maxPossiblePower, hasError);
     }
 }

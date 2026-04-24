@@ -7,53 +7,64 @@ namespace Assets.Modules.Room
     public class BuildingUIController : MonoBehaviour
     {
         [SerializeField] private UIDocument uiDocument;
-        [SerializeField] private List<RoomManager> rooms;
+        [SerializeField] private List<RoomManager> rooms; // Список всех комнат в здании
 
         private VisualElement _roomListContainer;
 
         private void OnEnable()
         {
             var root = uiDocument.rootVisualElement;
+
             _roomListContainer = root.Q<VisualElement>("room-list");
-            InvokeRepeating(nameof(RefreshUI), 0f, 0.5f); // Обновляем раз в полсекунды
+
+            if (_roomListContainer == null)
+            {
+                Debug.LogError("BuildingUIController: Не найден элемент 'room-list' в UXML!");
+                return;
+            }
+
+            InvokeRepeating(nameof(RefreshUI), 0f, 0.5f);
         }
 
         private void RefreshUI()
         {
+            if (_roomListContainer == null) return;
+
             _roomListContainer.Clear();
 
             foreach (var room in rooms)
             {
-                var (current, target) = room.GetProductivity();
-                _roomListContainer.Add(CreateRoomRow(room.roomName, current, target));
+                if (room == null) continue;
+
+                var (current, target, error) = room.GetProductivity();
+
+                _roomListContainer.Add(CreateRoomRow(room.roomName, current, target, error));
             }
         }
 
-        private VisualElement CreateRoomRow(string name, int current, int target)
+        private VisualElement CreateRoomRow(string roomName, int current, int target, bool hasError)
         {
             var row = new VisualElement();
             row.AddToClassList("room-row");
 
-            // Название комнаты
-            var nameLabel = new Label($"{name} :");
+            var nameLabel = new Label($"{roomName} : ");
             nameLabel.AddToClassList("room-name-label");
             row.Add(nameLabel);
 
-            // Логика отображения значения или варнинга
-            if (target == 0 || current == 0)
+            if (hasError)
             {
-                var warn = new Label("⚠️");
-                warn.AddToClassList("room-warning-icon");
-                row.Add(warn);
+                var warnIcon = new Label("⚠️");
+                warnIcon.AddToClassList("room-warning-icon");
+                row.Add(warnIcon);
             }
             else
             {
-                float ratio = (float)current / target;
                 var valueLabel = new Label($"{current}/{target}");
                 valueLabel.AddToClassList("room-value-label");
 
-                // Красим текст в зависимости от эффективности
+                float ratio = (target > 0) ? (float)current / target : 0;
                 valueLabel.style.color = GetColorByRatio(ratio);
+
                 row.Add(valueLabel);
             }
 
@@ -62,9 +73,10 @@ namespace Assets.Modules.Room
 
         private Color GetColorByRatio(float ratio)
         {
-            if (ratio >= 0.95f) return new Color(0.2f, 1f, 0.2f); // Зеленый
+            // Твоя логика цветов:
+            if (ratio >= 0.95f) return new Color(0.2f, 1f, 0.2f);
             if (ratio >= 0.75f) return Color.yellow;
-            if (ratio >= 0.5f) return new Color(1f, 0.6f, 0f); // Оранжевый
+            if (ratio >= 0.50f) return new Color(1f, 0.6f, 0f);
             return Color.red;
         }
     }

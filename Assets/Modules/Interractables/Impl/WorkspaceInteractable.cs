@@ -30,6 +30,8 @@ namespace Assets.Modules.Interractables.Impl
         public bool HasWorker => _currentWorker != null;
         public WorkerInstance Worker => _currentWorker;
 
+        private RoomManager _roomManager;
+
         public void Interact(GameObject interactor)
         {
             // Открываем меню выбора, передавая этот стол как цель
@@ -76,14 +78,22 @@ namespace Assets.Modules.Interractables.Impl
             StopWork(); // На всякий случай
             _workCts = new CancellationTokenSource();
 
-            Debug.Log($"[Workplace] {_currentWorker.name} приступил к работе.");
-
             try
             {
                 while (_currentWorker != null && !_workCts.IsCancellationRequested)
                 {
-                    // Время тика работы зависит от концентрации (patience)
-                    // Чем выше концентрация, тем чаще он выдает результат
+                    if (_roomManager == null)
+                    {
+                        _roomManager = GetComponentInParent<RoomManager>();
+                    }
+
+                    // Если комната выключена или рабочий отдыхает — ждем и ничего не делаем
+                    if (_roomManager != null && (!_roomManager.isRoomActive || _currentWorker.isResting))
+                    {
+                        await UniTask.Yield(); // Просто ждем следующий кадр
+                        continue;
+                    }
+
                     int intervalMs = Mathf.Max(1000, 5000 - (_currentWorker.patience * 300));
 
                     await UniTask.Delay(intervalMs, cancellationToken: _workCts.Token);
@@ -93,8 +103,6 @@ namespace Assets.Modules.Interractables.Impl
 
                     // Добавляем деньги через наш менеджер
                     GameDataManager.Instance.ChangeMoney(profit);
-
-                    Debug.Log($"[Workplace] {_currentWorker.name} заработал ${profit}");
                 }
             }
             catch (System.OperationCanceledException) { }
