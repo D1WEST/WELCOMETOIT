@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace Assets.Modules.NPC
 {
+    public enum WorkerStatus { Working, Sleeping, Angry, NoEquipment }
+
     [CreateAssetMenu(fileName = "NewWorkerNPC", menuName = "NPCWorker/New NPC")]
     public class WorkerSettings : ScriptableObject
     {
@@ -26,6 +28,7 @@ namespace Assets.Modules.NPC
         public Position currentPosition;
         public int patience, workPower, sleepiness, angriness;
         public bool isResting;
+        public WorkerStatus status = WorkerStatus.Working;
         [System.NonSerialized] public Sprite avatar; // Не сохраняем в JSON
         public int buyPrice;
         public int sellPrice;
