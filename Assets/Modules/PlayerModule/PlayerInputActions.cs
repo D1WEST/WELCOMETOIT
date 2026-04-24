@@ -395,54 +395,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
-        },
-        {
-            ""name"": ""PlayerCameraActions"",
-            ""id"": ""172e98b6-2bfd-455b-a60e-c4be15bbdf7e"",
-            ""actions"": [
-                {
-                    ""name"": ""ChangeView"",
-                    ""type"": ""Button"",
-                    ""id"": ""21b31342-da66-431c-a5ec-246ee22bac0e"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""ChangeLookDistance"",
-                    ""type"": ""PassThrough"",
-                    ""id"": ""4c044b46-5629-4f98-b51b-a03b7674de82"",
-                    ""expectedControlType"": ""Axis"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                }
-            ],
-            ""bindings"": [
-                {
-                    ""name"": """",
-                    ""id"": ""f18b1c2a-299a-4ce2-9abc-f7e0301b6fec"",
-                    ""path"": ""<Keyboard>/v"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ChangeView"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""3112da17-67f8-4ed9-9cd8-eab8848772b2"",
-                    ""path"": ""<Mouse>/scroll/y"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ChangeLookDistance"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                }
-            ]
         }
     ],
     ""controlSchemes"": []
@@ -459,17 +411,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerInterractionActions_MainAction = m_PlayerInterractionActions.FindAction("MainAction", throwIfNotFound: true);
         m_PlayerInterractionActions_SecondAction = m_PlayerInterractionActions.FindAction("SecondAction", throwIfNotFound: true);
         m_PlayerInterractionActions_Interraction = m_PlayerInterractionActions.FindAction("Interraction", throwIfNotFound: true);
-        // PlayerCameraActions
-        m_PlayerCameraActions = asset.FindActionMap("PlayerCameraActions", throwIfNotFound: true);
-        m_PlayerCameraActions_ChangeView = m_PlayerCameraActions.FindAction("ChangeView", throwIfNotFound: true);
-        m_PlayerCameraActions_ChangeLookDistance = m_PlayerCameraActions.FindAction("ChangeLookDistance", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
     {
         UnityEngine.Debug.Assert(!m_PlayerMovementActions.enabled, "This will cause a leak and performance issues, PlayerInputActions.PlayerMovementActions.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_PlayerInterractionActions.enabled, "This will cause a leak and performance issues, PlayerInputActions.PlayerInterractionActions.Disable() has not been called.");
-        UnityEngine.Debug.Assert(!m_PlayerCameraActions.enabled, "This will cause a leak and performance issues, PlayerInputActions.PlayerCameraActions.Disable() has not been called.");
     }
 
     /// <summary>
@@ -799,113 +746,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="PlayerInterractionActionsActions" /> instance referencing this action map.
     /// </summary>
     public PlayerInterractionActionsActions @PlayerInterractionActions => new PlayerInterractionActionsActions(this);
-
-    // PlayerCameraActions
-    private readonly InputActionMap m_PlayerCameraActions;
-    private List<IPlayerCameraActionsActions> m_PlayerCameraActionsActionsCallbackInterfaces = new List<IPlayerCameraActionsActions>();
-    private readonly InputAction m_PlayerCameraActions_ChangeView;
-    private readonly InputAction m_PlayerCameraActions_ChangeLookDistance;
-    /// <summary>
-    /// Provides access to input actions defined in input action map "PlayerCameraActions".
-    /// </summary>
-    public struct PlayerCameraActionsActions
-    {
-        private @PlayerInputActions m_Wrapper;
-
-        /// <summary>
-        /// Construct a new instance of the input action map wrapper class.
-        /// </summary>
-        public PlayerCameraActionsActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
-        /// <summary>
-        /// Provides access to the underlying input action "PlayerCameraActions/ChangeView".
-        /// </summary>
-        public InputAction @ChangeView => m_Wrapper.m_PlayerCameraActions_ChangeView;
-        /// <summary>
-        /// Provides access to the underlying input action "PlayerCameraActions/ChangeLookDistance".
-        /// </summary>
-        public InputAction @ChangeLookDistance => m_Wrapper.m_PlayerCameraActions_ChangeLookDistance;
-        /// <summary>
-        /// Provides access to the underlying input action map instance.
-        /// </summary>
-        public InputActionMap Get() { return m_Wrapper.m_PlayerCameraActions; }
-        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
-        public void Enable() { Get().Enable(); }
-        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
-        public void Disable() { Get().Disable(); }
-        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
-        public bool enabled => Get().enabled;
-        /// <summary>
-        /// Implicitly converts an <see ref="PlayerCameraActionsActions" /> to an <see ref="InputActionMap" /> instance.
-        /// </summary>
-        public static implicit operator InputActionMap(PlayerCameraActionsActions set) { return set.Get(); }
-        /// <summary>
-        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
-        /// </summary>
-        /// <param name="instance">Callback instance.</param>
-        /// <remarks>
-        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
-        /// </remarks>
-        /// <seealso cref="PlayerCameraActionsActions" />
-        public void AddCallbacks(IPlayerCameraActionsActions instance)
-        {
-            if (instance == null || m_Wrapper.m_PlayerCameraActionsActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_PlayerCameraActionsActionsCallbackInterfaces.Add(instance);
-            @ChangeView.started += instance.OnChangeView;
-            @ChangeView.performed += instance.OnChangeView;
-            @ChangeView.canceled += instance.OnChangeView;
-            @ChangeLookDistance.started += instance.OnChangeLookDistance;
-            @ChangeLookDistance.performed += instance.OnChangeLookDistance;
-            @ChangeLookDistance.canceled += instance.OnChangeLookDistance;
-        }
-
-        /// <summary>
-        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
-        /// </summary>
-        /// <remarks>
-        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
-        /// </remarks>
-        /// <seealso cref="PlayerCameraActionsActions" />
-        private void UnregisterCallbacks(IPlayerCameraActionsActions instance)
-        {
-            @ChangeView.started -= instance.OnChangeView;
-            @ChangeView.performed -= instance.OnChangeView;
-            @ChangeView.canceled -= instance.OnChangeView;
-            @ChangeLookDistance.started -= instance.OnChangeLookDistance;
-            @ChangeLookDistance.performed -= instance.OnChangeLookDistance;
-            @ChangeLookDistance.canceled -= instance.OnChangeLookDistance;
-        }
-
-        /// <summary>
-        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="PlayerCameraActionsActions.UnregisterCallbacks(IPlayerCameraActionsActions)" />.
-        /// </summary>
-        /// <seealso cref="PlayerCameraActionsActions.UnregisterCallbacks(IPlayerCameraActionsActions)" />
-        public void RemoveCallbacks(IPlayerCameraActionsActions instance)
-        {
-            if (m_Wrapper.m_PlayerCameraActionsActionsCallbackInterfaces.Remove(instance))
-                UnregisterCallbacks(instance);
-        }
-
-        /// <summary>
-        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
-        /// </summary>
-        /// <remarks>
-        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
-        /// </remarks>
-        /// <seealso cref="PlayerCameraActionsActions.AddCallbacks(IPlayerCameraActionsActions)" />
-        /// <seealso cref="PlayerCameraActionsActions.RemoveCallbacks(IPlayerCameraActionsActions)" />
-        /// <seealso cref="PlayerCameraActionsActions.UnregisterCallbacks(IPlayerCameraActionsActions)" />
-        public void SetCallbacks(IPlayerCameraActionsActions instance)
-        {
-            foreach (var item in m_Wrapper.m_PlayerCameraActionsActionsCallbackInterfaces)
-                UnregisterCallbacks(item);
-            m_Wrapper.m_PlayerCameraActionsActionsCallbackInterfaces.Clear();
-            AddCallbacks(instance);
-        }
-    }
-    /// <summary>
-    /// Provides a new <see cref="PlayerCameraActionsActions" /> instance referencing this action map.
-    /// </summary>
-    public PlayerCameraActionsActions @PlayerCameraActions => new PlayerCameraActionsActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "PlayerMovementActions" which allows adding and removing callbacks.
     /// </summary>
@@ -977,27 +817,5 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnInterraction(InputAction.CallbackContext context);
-    }
-    /// <summary>
-    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "PlayerCameraActions" which allows adding and removing callbacks.
-    /// </summary>
-    /// <seealso cref="PlayerCameraActionsActions.AddCallbacks(IPlayerCameraActionsActions)" />
-    /// <seealso cref="PlayerCameraActionsActions.RemoveCallbacks(IPlayerCameraActionsActions)" />
-    public interface IPlayerCameraActionsActions
-    {
-        /// <summary>
-        /// Method invoked when associated input action "ChangeView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnChangeView(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "ChangeLookDistance" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnChangeLookDistance(InputAction.CallbackContext context);
     }
 }

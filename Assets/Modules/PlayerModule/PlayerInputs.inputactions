@@ -309,54 +309,6 @@
                     "isPartOfComposite": false
                 }
             ]
-        },
-        {
-            "name": "PlayerCameraActions",
-            "id": "172e98b6-2bfd-455b-a60e-c4be15bbdf7e",
-            "actions": [
-                {
-                    "name": "ChangeView",
-                    "type": "Button",
-                    "id": "21b31342-da66-431c-a5ec-246ee22bac0e",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "ChangeLookDistance",
-                    "type": "PassThrough",
-                    "id": "4c044b46-5629-4f98-b51b-a03b7674de82",
-                    "expectedControlType": "Axis",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "f18b1c2a-299a-4ce2-9abc-f7e0301b6fec",
-                    "path": "<Keyboard>/v",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ChangeView",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "3112da17-67f8-4ed9-9cd8-eab8848772b2",
-                    "path": "<Mouse>/scroll/y",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ChangeLookDistance",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
         }
     ],
     "controlSchemes": []

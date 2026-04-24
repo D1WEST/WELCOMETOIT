@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
+using UnityEngine.SceneManagement; // Добавлено для загрузки сцен
 
 public class MainMenuController : MonoBehaviour
 {
@@ -20,17 +20,42 @@ public class MainMenuController : MonoBehaviour
         _optionsMenu = root.Q<VisualElement>("options-menu");
         _rebindList = root.Q<VisualElement>("rebind-list");
 
-        // Кнопки главного меню
+        // --- Кнопки главного меню ---
+        root.Q<Button>("btn-play").clicked += OnPlayClicked; // Новая кнопка "Играть"
         root.Q<Button>("btn-options").clicked += OpenOptions;
-        root.Q<Button>("btn-exit").clicked += () => Application.Quit();
+        root.Q<Button>("btn-exit").clicked += OnExitClicked; // Выход из игры
 
-        // Кнопки настроек
+        // --- Кнопки настроек ---
         root.Q<Button>("btn-back").clicked += CloseOptions;
         root.Q<Button>("btn-save").clicked += SaveBindings;
         root.Q<Button>("btn-reset").clicked += ResetBindings;
 
         LoadBindings();
     }
+
+    // ==========================================
+    // ЛОГИКА ГЛАВНОГО МЕНЮ
+    // ==========================================
+
+    private void OnPlayClicked()
+    {
+        Debug.Log("Загрузка Сцены 1...");
+        // Загружает сцену с индексом 1 (убедитесь, что она есть в Build Settings)
+        SceneManager.LoadScene(1);
+    }
+
+    private void OnExitClicked()
+    {
+        Debug.Log("Выход из игры...");
+        Application.Quit();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
+
+    // ==========================================
+    // ЛОГИКА НАСТРОЕК (ВАШ КОД)
+    // ==========================================
 
     void OpenOptions()
     {
@@ -51,17 +76,14 @@ public class MainMenuController : MonoBehaviour
 
         foreach (var map in _inputActions.actionMaps)
         {
-            // Добавляем заголовок группы (Action Map Name)
             Label header = new Label(map.name.Replace("Actions", "").ToUpper());
             header.AddToClassList("group-header");
             _rebindList.Add(header);
 
             foreach (var action in map.actions)
             {
-                // Проверяем, является ли это композитом (как Move WASD)
                 if (action.bindings.Count > 1 && action.bindings[0].isComposite)
                 {
-                    // Если это композит, создаем строки для каждой его части (Up, Down...)
                     for (int i = 1; i < action.bindings.Count && action.bindings[i].isPartOfComposite; i++)
                     {
                         CreateRebindRow(action, i, $"{action.name} {action.bindings[i].name}");
@@ -69,7 +91,6 @@ public class MainMenuController : MonoBehaviour
                 }
                 else
                 {
-                    // Обычная одиночная кнопка
                     CreateRebindRow(action, 0, action.name);
                 }
             }
@@ -86,10 +107,7 @@ public class MainMenuController : MonoBehaviour
 
         Button btn = new Button();
         btn.AddToClassList("rebind-button");
-
-        // Получаем текущую клавишу для конкретного индекса бинда
         btn.text = action.GetBindingDisplayString(bindingIndex);
-
         btn.clicked += () => StartRebind(action, bindingIndex, btn);
 
         row.Add(label);
@@ -120,10 +138,12 @@ public class MainMenuController : MonoBehaviour
 
         rebind.Start();
     }
+
     void SaveBindings()
     {
         PlayerPrefs.SetString("rebinds", _inputActions.SaveBindingOverridesAsJson());
         PlayerPrefs.Save();
+        Debug.Log("Настройки управления сохранены!");
     }
 
     void LoadBindings()
