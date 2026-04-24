@@ -7,22 +7,23 @@ using UnityEngine;
 public class RoomManager : MonoBehaviour
 {
     public string roomName = "К 1";
-    public bool isRoomActive = true; // Глобальный выключатель комнаты
+
+    public bool isOpened = true;
+
+    public bool isRoomActive = true;
 
     [SerializeField] private List<WorkplaceInteractable> desks;
 
     private void OnValidate() => desks = GetComponentsInChildren<WorkplaceInteractable>().ToList();
 
-    // Метод для управления всей комнатой (например, через щиток или кнопку)
     public void SetRoomPower(bool state)
     {
         isRoomActive = state;
-        Debug.Log($"Комната {roomName} теперь {(isRoomActive ? "ВКЛ" : "ВЫКЛ")}");
     }
 
     public (int current, int target, bool hasError) GetProductivity()
     {
-        if (desks.Count == 0) return (0, 0, true);
+        if (!isOpened || desks.Count == 0) return (0, 0, true);
 
         float sumActivePower = 0;
         float sumInactivePower = 0;
@@ -36,12 +37,9 @@ public class RoomManager : MonoBehaviour
 
             totalWorkersAtDesks++;
             int power = desk.Worker.workPower;
-
             maxPossiblePower += power;
 
-            if (!isRoomActive) continue;
-
-            if (desk.Worker.isResting) continue;
+            if (!isRoomActive || desk.Worker.isResting) continue;
 
             if (desk.Worker.status == WorkerStatus.Working)
             {
@@ -57,7 +55,6 @@ public class RoomManager : MonoBehaviour
         if (totalWorkersAtDesks == 0) return (0, 0, true);
 
         float workingRatio = (float)workingPeopleCount / totalWorkersAtDesks;
-
         float calc = (sumActivePower - sumInactivePower) * workingRatio;
 
         int finalCurrent = Mathf.Max(0, Mathf.RoundToInt(calc));

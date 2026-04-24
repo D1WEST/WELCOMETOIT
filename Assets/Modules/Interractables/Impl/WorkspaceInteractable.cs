@@ -4,6 +4,7 @@ using Assets.Modules.Save;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using Assets.Modules.Shift;
 using UnityEngine;
 
 namespace Assets.Modules.Interractables.Impl
@@ -84,37 +85,37 @@ namespace Assets.Modules.Interractables.Impl
 
         private async UniTaskVoid StartWorkLoop()
         {
-            StopWork(); // На всякий случай
-            _workCts = new CancellationTokenSource();
+            // 1. Проверяем, создан ли токен отмены
+            if (_workCts == null) _workCts = new CancellationTokenSource();
 
-            try
+            while (_currentWorker != null && !_workCts.IsCancellationRequested)
             {
-                while (_currentWorker != null && !_workCts.IsCancellationRequested)
+                if (ShiftManager.Instance == null)
                 {
-                    if (_roomManager == null)
-                    {
-                        _roomManager = GetComponentInParent<RoomManager>();
-                    }
-
-                    // Если комната выключена или рабочий отдыхает — ждем и ничего не делаем
-                    if (_roomManager != null && (!_roomManager.isRoomActive || _currentWorker.isResting))
-                    {
-                        await UniTask.Yield(); // Просто ждем следующий кадр
-                        continue;
-                    }
-
-                    int intervalMs = Mathf.Max(1000, 5000 - (_currentWorker.patience * 300));
-
-                    await UniTask.Delay(intervalMs, cancellationToken: _workCts.Token);
-
-                    // Эффективность работы (сколько денег приносит за один раз)
-                    int profit = (int)(_currentWorker.workPower * 2.5f);
-
-                    // Добавляем деньги через наш менеджер
-                    GameDataManager.Instance.ChangeMoney(profit);
+                    Debug.LogError($"[Workplace] {gameObject.name}: ShiftManager не найден на сцене! Работа невозможна.");
+                    return;
                 }
+
+                if (!ShiftManager.Instance.IsShiftActive || (_currentWorker != null && _currentWorker.isResting))
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update, _workCts.Token);
+                    continue;
+                }
+
+                int intervalMs = Mathf.Max(1000, 5000 - (_currentWorker.patience * 300));
+
+                try
+                {
+                    await UniTask.Delay(intervalMs, cancellationToken: _workCts.Token);
+                }
+                catch (System.OperationCanceledException) { break; }
+
+                if (_currentWorker == null) break;
+
+                int profit = (int)(_currentWorker.workPower * 2.5f);
+                GameDataManager.Instance.ChangeMoney(profit);
+                ShiftManager.Instance.AddProgress(profit);
             }
-            catch (System.OperationCanceledException) { }
         }
 
         private void StopWork()

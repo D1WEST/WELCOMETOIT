@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML 
+    xmlns:ui="UnityEngine.UIElements" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" 
+    editor-extension-mode="False">
+
+    <ui:VisualElement name="shift-hud-root" style="position: absolute; top: 20px; align-self: center; flex-direction: row; background-color: rgba(30, 30, 30, 0.9); padding: 10px 20px; border-radius: 8px; border-width: 2px; border-color: white; align-items: center;">
+        
+        <ui:VisualElement style="flex-direction: column; margin-right: 25px;">
+            <ui:Label name="day-label" text="Day 1" style="color: white; -unity-font-style: bold; font-size: 18px; margin-bottom: -2px;" />
+            <ui:Label name="time-label" text="10:00" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 24px;" />
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-direction: column; width: 350px;">
+            <ui:Label text="Shift progress" style="color: rgba(255, 255, 255, 0.5); font-size:20px; -unity-font-style: bold; margin-bottom: 4px;" />
+            <ui:VisualElement name="progress-bg" style="height: 18px; background-color: rgb(45, 45, 45); border-radius: 9px; overflow: hidden; border-width: 1px; border-color: rgba(255, 255, 255, 0.1);">
+                <ui:VisualElement name="progress-bar-fill" style="width: 0%; height: 100%; background-color: rgb(76, 175, 80); transition-property: width; transition-duration: 0.3s;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="margin-left: 20px; justify-content: center;">
+            <ui:Label name="progress-text" text="0 / 5000" style="color: white; font-size: 20px; -unity-font-style: bold;" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
