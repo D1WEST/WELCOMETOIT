@@ -57,6 +57,13 @@ namespace Assets.Modules.Interractables.Impl
 
             RestoreAssignedWorker();
         }
+
+        public void OnMonitorManualPickUp()
+        {
+            hasMonitor = false;
+            _activeMonitor = null;
+        }
+
         private void SpawnInitialMonitor()
         {
             // Если монитор уже стоит (например, мы его установили руками или он выжил после перезагрузки)
@@ -70,7 +77,7 @@ namespace Assets.Modules.Interractables.Impl
 
                 if (_activeMonitor != null)
                 {
-                    _activeMonitor.Initialize(this.workplaceId);
+                    _activeMonitor.Initialize(this.workplaceId, this);
                     _activeMonitor.SetPhysics(false); // Выключаем физику на старте
                     hasMonitor = true;
                 }
@@ -98,7 +105,7 @@ namespace Assets.Modules.Interractables.Impl
             _activeMonitor.transform.localPosition = Vector3.zero;
             _activeMonitor.transform.localRotation = Quaternion.identity;
 
-            _activeMonitor.Initialize(this.workplaceId);
+            _activeMonitor.Initialize(this.workplaceId, this);
             hasMonitor = true;
         }
 

@@ -10,6 +10,8 @@ using UnityEngine.UIElements;
 public class PlayerInteraction : MonoBehaviour
 {
     public static PlayerInteraction Instance { get; private set; }
+    public bool IsCarryingItem => _carriedMonitor != null;
+
     private MonitorPhysical _carriedMonitor;
 
     [Header("Equipment Carrying")]
@@ -23,6 +25,7 @@ public class PlayerInteraction : MonoBehaviour
 
     [Header("Input")]
     [SerializeField] private InputActionReference interactAction;
+    [SerializeField] private InputActionReference dropAction;
 
     [Header("UI Toolkit")]
     [SerializeField] private UIDocument uiDocument;
@@ -61,9 +64,31 @@ public class PlayerInteraction : MonoBehaviour
         interactAction.action.Enable();
         interactAction.action.started += OnActionStarted;
         interactAction.action.canceled += _ => ResetHold();
+
+        dropAction.action.Enable();
+        dropAction.action.performed += _ => DropItem();
     }
 
     private void OnDisable() => interactAction.action.Disable();
+
+    private void DropItem()
+    {
+        if (_carriedMonitor == null) return;
+
+        Debug.Log("Предмет выброшен");
+
+        _carriedMonitor.transform.SetParent(null);
+        _carriedMonitor.SetPhysics(true);
+
+        if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
+
+        if (_carriedMonitor.TryGetComponent<Rigidbody>(out var rb))
+        {
+            rb.AddForce(playerCamera.transform.forward * 3f + Vector3.up * 2f, ForceMode.Impulse);
+        }
+
+        _carriedMonitor = null;
+    }
 
     private void Update()
     {
@@ -125,7 +150,7 @@ public class PlayerInteraction : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
         {
-            // Проверяем, не рабочий ли это
+            // Приоритет 1: Рабочий (WorkerPhysical)
             if (hit.collider.TryGetComponent<WorkerPhysical>(out var worker))
             {
                 if (_lastLookedWorker != worker)
@@ -135,11 +160,22 @@ public class PlayerInteraction : MonoBehaviour
                 }
                 rayHitInteractable = worker;
             }
+            // Приоритет 2: Монитор (MonitorPhysical)
+            else if (hit.collider.TryGetComponent<MonitorPhysical>(out var mon))
+            {
+                rayHitInteractable = mon;
+                if (_lastLookedWorker != null) { WorkerTooltipUI.Instance.Hide(); _lastLookedWorker = null; }
+            }
+            // Приоритет 3: Стол или что-то еще (IInteractable на родителе)
             else
             {
-                // Если не рабочий, ищем обычный интерактив
                 rayHitInteractable = hit.collider.GetComponentInParent<IInteractable>();
+                if (_lastLookedWorker != null) { WorkerTooltipUI.Instance.Hide(); _lastLookedWorker = null; }
             }
+        }
+        else
+        {
+            if (_lastLookedWorker != null) { WorkerTooltipUI.Instance.Hide(); _lastLookedWorker = null; }
         }
 
         _focusedInteractable = rayHitInteractable;
@@ -195,6 +231,12 @@ public class PlayerInteraction : MonoBehaviour
 
     private void HandleInteractionLogic()
     {
+        if (_carriedMonitor != null && dropAction.action.WasPressedThisFrame())
+        {
+            DropItem();
+            return;
+        }
+
         if (_focusedInteractable == null)
         {
             ResetHold();
@@ -212,13 +254,13 @@ public class PlayerInteraction : MonoBehaviour
                         if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
                         desk.InstallMonitor(_carriedMonitor);
                         _carriedMonitor = null;
+                        _focusedInteractable = null;
                         return;
                     }
                 }
             }
             return;
         }
-
         if (_focusedInteractable.InteractionType == InteractionType.Click)
         {
             if (interactAction.action.WasPressedThisFrame())

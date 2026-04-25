@@ -1,11 +1,14 @@
-﻿using UnityEngine;
-using Assets.Modules.Interractables;
+﻿using Assets.Modules.Interractables;
+using Assets.Modules.Interractables.Impl;
 using Unity.Collections;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class MonitorPhysical : MonoBehaviour, IInteractable
 {
     [ReadOnly] public string targetWorkplaceId; // Помечаем как ReadOnly (если есть такой атрибут) или просто прячем
+    public WorkplaceInteractable sourceDesk;
+
     private Rigidbody _rb;
     private bool _isCarried = false;
 
@@ -21,25 +24,35 @@ public class MonitorPhysical : MonoBehaviour, IInteractable
         SetPhysics(false);
     }
 
-    public void Initialize(string id)
+    public void Initialize(string id, WorkplaceInteractable desk)
     {
         targetWorkplaceId = id;
+        sourceDesk = desk;
         SetPhysics(false);
     }
 
     public void Interact(GameObject interactor)
     {
+        // Если в руках уже что-то есть - игнорируем
+        if (PlayerInteraction.Instance.IsCarryingItem) return;
+
+        if (sourceDesk != null)
+        {
+            sourceDesk.OnMonitorManualPickUp();
+            sourceDesk = null;
+        }
         PlayerInteraction.Instance.PickUpMonitor(this);
     }
 
     public void SetPhysics(bool state)
     {
         if (_rb == null) _rb = GetComponent<Rigidbody>();
-
         _rb.isKinematic = !state;
         _rb.useGravity = state;
-
-        _rb.interpolation = state ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
+        if (state)
+        {
+            if (TryGetComponent<Collider>(out var col)) col.enabled = true;
+        }
     }
 
     public void GetKicked()

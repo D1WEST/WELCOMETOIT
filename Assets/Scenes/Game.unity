@@ -544,6 +544,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.BreakerSwitch
   breakerName: "\u0413\u043B\u0430\u0432\u043D\u044B\u0439 \u0440\u0443\u0431\u0438\u043B\u044C\u043D\u0438\u043A"
   isOn: 1
+  interactionType: 1
+  holdDuration: 2
   currentLoad: 0
   interactionPivot: {fileID: 254541043}
   targetLights:
@@ -2170,6 +2172,7 @@ MonoBehaviour:
     m_Bits: 64
   playerCamera: {fileID: 2062521596}
   interactAction: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  dropAction: {fileID: 461340270572339381, guid: 27a1423ede6f14d4cb0f0f1b07d11f47, type: 3}
   uiDocument: {fileID: 1935522504}
   promptTemplate: {fileID: 9197481963319205126, guid: dcf8af0c2c0c1224eb94894a8aeb462e, type: 3}
 --- !u!1 &959417551

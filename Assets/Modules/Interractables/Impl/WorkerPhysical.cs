@@ -138,7 +138,6 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
             {
                 GameDataManager.Instance.ChangeMoney(-200);
                 _data.currentRestlessness = 0;
-                Debug.Log($"Премия дана {_data.name}.");
             }
             return;
         }
@@ -151,6 +150,5 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     {
         _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - 25f);
         _data.currentAnger = Mathf.Min(100, _data.currentAnger + 30f);
-        Debug.Log("ШЛЕПОК!");
     }
 }
