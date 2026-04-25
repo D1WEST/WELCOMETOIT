@@ -64,15 +64,17 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         {
             _data.currentSleepiness += _sleepGrowthPerSec * gameTimeStep;
             _data.currentRestlessness += _restlessGrowthPerSec * gameTimeStep;
-            _data.currentAnger += (_angerGrowthPerSec * 0.3f) * gameTimeStep;
+            _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * gameTimeStep;
         }
         else if (_data.status == WorkerStatus.Sleeping)
         {
             _data.currentSleepiness -= (_sleepGrowthPerSec * 4f) * gameTimeStep;
+            _data.currentAnger -= (_angerGrowthPerSec * 4f) * gameTimeStep;
         }
         else if (_data.status == WorkerStatus.Fidgeting)
         {
             _data.currentRestlessness -= (_restlessGrowthPerSec * 1.5f) * gameTimeStep;
+            _data.currentAnger -= (_angerGrowthPerSec * 1.5f) * gameTimeStep;
         }
 
         _data.currentSleepiness = Mathf.Clamp(_data.currentSleepiness, 0, 100.1f);
@@ -126,7 +128,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         }
 
         await UniTask.Delay(3000);
-        _data.currentAnger = 40;
+        _data.currentAnger = 10;
         _isKicking = false;
     }
 

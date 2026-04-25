@@ -4995,7 +4995,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1acbc33bd5bc4344c92a56b875697f2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Save.GameDataManager
-  _playerMoney: 10000
+  _playerMoney: 1000
   myWorkers: []
   marketWorkers: []
   allPossibleTemplates:
