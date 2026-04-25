@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 773e55f56a235d14fa1993e3bc8536cf, type: 3}
   m_Name: AudioConfig
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Audio.AudioConfig
-  relations: []
+  relations:
+  - key: Music
+    clips:
+    - {fileID: 8300000, guid: c349c09a11b96fe4db7e41ec513fdf7e, type: 3}

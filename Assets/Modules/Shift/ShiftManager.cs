@@ -1,4 +1,5 @@
-﻿using Assets.Modules.Save;
+﻿using Assets.Modules.Audio;
+using Assets.Modules.Save;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ public class ShiftManager : MonoBehaviour
         {
             currentDay = GameDataManager.Instance.loadedDay;
         }
-
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").ByIndex(1).WithVolume(0.2f).Cycle()).Forget();
         SetupNewDay();
     }
 
