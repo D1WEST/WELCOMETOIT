@@ -63,9 +63,9 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
         if (_data.status == WorkerStatus.Working)
         {
-            _data.currentSleepiness += _sleepGrowthPerSec * 5 * gameTimeStep;
-            _data.currentRestlessness += _restlessGrowthPerSec * 5 * gameTimeStep;
-            _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * 5 * gameTimeStep;
+            _data.currentSleepiness += _sleepGrowthPerSec * 4 * gameTimeStep;
+            _data.currentRestlessness += _restlessGrowthPerSec * 4 * gameTimeStep;
+            _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * 4 * gameTimeStep;
         }
         else if (_data.status == WorkerStatus.Sleeping)
         {
