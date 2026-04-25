@@ -40,15 +40,21 @@ namespace Assets.Modules.Save
             {
                 workers = myWorkers,
                 money = _playerMoney,
-                currentDay = currentDay // Сохраняем день
+                currentDay = currentDay,
+                perks = playerPerks
             });
             File.WriteAllText(SavePath, json);
         }
 
         public void CreateCheckpoint()
         {
-            // Сохраняем текущее состояние в строку перед началом смены
-            _checkpointJson = JsonUtility.ToJson(new SaveWrapper { workers = myWorkers, money = _playerMoney });
+            _checkpointJson = JsonUtility.ToJson(new SaveWrapper
+            {
+                workers = myWorkers,
+                money = _playerMoney,
+                currentDay = ShiftManager.Instance != null ? ShiftManager.Instance.currentDay : loadedDay,
+                perks = playerPerks
+            });
         }
 
         public void RestoreCheckpoint()
@@ -58,15 +64,16 @@ namespace Assets.Modules.Save
             var data = JsonUtility.FromJson<SaveWrapper>(_checkpointJson);
             myWorkers = data.workers;
             _playerMoney = data.money;
+            playerPerks = data.perks;
 
             foreach (var worker in myWorkers)
             {
-                worker.avatar = allPossibleTemplates.Find(t => t.templateId == worker.templateId).avatar;
+                var template = allPossibleTemplates.Find(t => t.templateId == worker.templateId);
+                if (template != null) worker.avatar = template.avatar;
                 worker.isAssigned = false;
             }
 
-            SaveGame(ShiftManager.Instance.currentDay);
-            Debug.Log("[Save] Состояние игры откачено к началу дня.");
+            SaveGame(data.currentDay);
         }
 
         public void LoadGame()
@@ -76,19 +83,19 @@ namespace Assets.Modules.Save
                 string json = File.ReadAllText(SavePath);
                 var data = JsonUtility.FromJson<SaveWrapper>(json);
 
-                myWorkers = JsonUtility.FromJson<SaveWrapper>(json).workers;
+                myWorkers = data.workers;
                 _playerMoney = data.money;
-
-                // ЗАПОМИНАЕМ ДЕНЬ
                 loadedDay = data.currentDay > 0 ? data.currentDay : 1;
 
-                // Если менеджер смены УЖЕ есть (редкий случай), передаем сразу
+                playerPerks = data.perks ?? new PerkData();
+
                 if (ShiftManager.Instance != null)
                     ShiftManager.Instance.currentDay = loadedDay;
 
                 foreach (var worker in myWorkers)
                 {
-                    worker.avatar = allPossibleTemplates.Find(t => t.templateId == worker.templateId).avatar;
+                    var template = allPossibleTemplates.Find(t => t.templateId == worker.templateId);
+                    if (template != null) worker.avatar = template.avatar;
                 }
             }
         }
@@ -115,10 +122,10 @@ namespace Assets.Modules.Save
 
                 float basePrice = template.buyPrice > 0 ? template.buyPrice : 50f;
 
-                float skillsValue = (worker.workPower * 25f)  // Скорость - самый дорогой стат
-                                  + (worker.patience * 10f)   // Концентрация - полезно
-                                  - (worker.sleepiness * 8f)  // Сонливость - штраф
-                                  - (worker.angriness * 8f);  // Гнев - штраф
+                float skillsValue = (worker.workPower * 25f)
+                                  + (worker.patience * 10f)
+                                  - (worker.sleepiness * 8f)
+                                  - (worker.angriness * 8f);
 
                 float finalPrice = (basePrice + skillsValue) * positionMultiplier;
 
@@ -246,6 +253,26 @@ namespace Assets.Modules.Save
             public List<WorkerInstance> workers;
             public int money;
             public int currentDay; // ДОБАВЬ ЭТО СЮДА
+            public PerkData perks;
+        }
+
+        [System.Serializable]
+        public class PerkData
+        {
+            public int slapLevel = 0;      // Хлесткий шлепок
+            public int noseLevel = 0;      // Чуткий нос
+            public int goldMineLevel = 0;  // Золотая жила
+            public int tastyBonusLevel = 0;// Вкусная поручка
+        }
+
+        public PerkData playerPerks = new PerkData();
+
+        private readonly int[] perkPrices = { 1000, 5000, 10000, 25000, 75000 };
+
+        public int GetPerkPrice(int currentLevel)
+        {
+            if (currentLevel >= 5) return -1;
+            return perkPrices[currentLevel];
         }
     }
 }

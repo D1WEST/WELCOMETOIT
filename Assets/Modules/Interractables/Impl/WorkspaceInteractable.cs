@@ -203,7 +203,8 @@ namespace Assets.Modules.Interractables.Impl
                 // 1. ПРОВЕРКА: Есть ли менеджеры?
                 if (ShiftManager.Instance == null || room == null)
                 {
-                    if (room == null) Debug.LogWarning($"[Workplace] {gameObject.name} не находится внутри объекта с RoomManager!");
+                    if (room == null)
+                        Debug.LogWarning($"[Workplace] {gameObject.name} не находится внутри объекта с RoomManager!");
                     await UniTask.Delay(500, cancellationToken: _workCts.Token);
                     continue;
                 }
@@ -255,18 +256,25 @@ namespace Assets.Modules.Interractables.Impl
                 {
                     await UniTask.Delay(intervalMs, cancellationToken: _workCts.Token);
                 }
-                catch (System.OperationCanceledException) { break; }
+                catch (System.OperationCanceledException)
+                {
+                    break;
+                }
 
                 if (_currentWorker == null || _currentWorker.status != WorkerStatus.Working) continue;
 
                 // 4. НАЧИСЛЕНИЕ (Деньги и Прогресс)
                 int profit = Mathf.RoundToInt(_currentWorker.workPower * 2.5f);
 
+                // 1. Начисляем деньги
                 if (GameDataManager.Instance != null)
                     GameDataManager.Instance.ChangeMoney(profit);
 
                 if (ShiftManager.Instance != null)
-                    ShiftManager.Instance.AddProgress(profit, transform.position);
+                {
+                    int goldMineBonus = 30 * GameDataManager.Instance.playerPerks.goldMineLevel;
+                    ShiftManager.Instance.AddProgress(profit + goldMineBonus, transform.position);
+                }
             }
         }
 

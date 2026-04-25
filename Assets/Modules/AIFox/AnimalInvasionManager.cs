@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using Assets.Modules.Interractables.Impl;
+﻿using Assets.Modules.Interractables.Impl;
+using Assets.Modules.Save;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Modules.AIFox
@@ -36,18 +37,17 @@ namespace Assets.Modules.AIFox
         {
             if (!ShiftManager.Instance.IsShiftActive) return;
 
-            // 1. Считаем общую эффективность офиса
             float totalEfficiency = CalculateGlobalEfficiency();
 
-            // 2. Рассчитываем множитель (от 1.0 до 2.0)
-            // Если эффективность >= 90% (0.9), множитель = 2.0
             float efficiencyMultiplier = Mathf.Lerp(1f, 2f, totalEfficiency / 0.9f);
 
-            // 3. Добавляем энергию с учетом рандома (небольшой разброс, чтобы не было предсказуемо)
-            float randomJitter = Random.Range(0.8f, 1.5f);
-            currentInvasionEnergy += _baseGrowthRate * efficiencyMultiplier * randomJitter * Time.deltaTime * (1 + (ShiftManager.Instance.currentDay*0.1f));
+            float noseModifier = 1f - (GameDataManager.Instance.playerPerks.noseLevel * 0.1f);
 
-            // 4. Проверка порога
+            float randomJitter = Random.Range(0.8f, 1.5f);
+            float dayMultiplier = 1 + (ShiftManager.Instance.currentDay * 0.1f);
+
+            currentInvasionEnergy += _baseGrowthRate * efficiencyMultiplier * randomJitter * Time.deltaTime * dayMultiplier * noseModifier;
+
             if (currentInvasionEnergy >= energyThreshold)
             {
                 currentInvasionEnergy = 0f;

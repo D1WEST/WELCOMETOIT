@@ -137,21 +137,35 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     {
         if (_data == null || _isKicking) return;
 
+        // ЛОГИКА ПРЕМИИ
         if (_data.currentRestlessness > 50)
         {
             if (GameDataManager.Instance.playerMoney >= _prem)
             {
                 GameDataManager.Instance.ChangeMoney(-_prem);
                 _data.currentRestlessness = 0;
+                _data.status = WorkerStatus.Working;
+                int tastyLevel = GameDataManager.Instance.playerPerks.tastyBonusLevel;
+                if (tastyLevel > 0)
+                {
+                    _data.currentAnger = Mathf.Max(0, _data.currentAnger - (tastyLevel * 10f));
+                    _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - (tastyLevel * 10f));
+                }
             }
             return;
         }
+
         PerformSlap();
     }
 
     private void PerformSlap()
     {
-        _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - 25f);
+        float baseSlapPower = 25f;
+        float perkBonus = baseSlapPower * (0.2f * GameDataManager.Instance.playerPerks.slapLevel);
+        float finalSlapEffect = baseSlapPower + perkBonus;
+
+        _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - finalSlapEffect);
         _data.currentAnger = Mathf.Min(100, _data.currentAnger + 30f);
+        _data.status = WorkerStatus.Working;
     }
 }
