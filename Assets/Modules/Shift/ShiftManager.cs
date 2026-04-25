@@ -83,7 +83,7 @@ public class ShiftManager : MonoBehaviour
 
             if (isUnlocked) targetGoal += room.goalTarget;
         }
-        targetGoal += (1 + (currentDay * 0.05f));
+        targetGoal *= (1 + (currentDay * 0.05f));
 
         OnProgressChanged?.Invoke(0, targetGoal);
     }
