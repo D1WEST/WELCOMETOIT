@@ -39,8 +39,9 @@ namespace Assets.Modules.Interractables.Impl
 
         private void Awake() => AllDesks.Add(this);
 
-        private void Start()
+        private async void Start()
         {
+            await UniTask.Delay(100);
             RestoreAssignedWorker();
         }
 
