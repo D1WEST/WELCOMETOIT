@@ -195,37 +195,60 @@ public class PlayerInteraction : MonoBehaviour
 
     private void HandleInteractionLogic()
     {
-        if (_focusedInteractable == null) { ResetHold(); return; }
-
-        if (interactAction.action.WasPressedThisFrame())
+        if (_focusedInteractable == null)
         {
-            // Если несем монитор
-            if (_carriedMonitor != null)
+            ResetHold();
+            return;
+        }
+
+        if (_carriedMonitor != null)
+        {
+            if (interactAction.action.WasPressedThisFrame())
             {
                 if (_focusedInteractable is WorkplaceInteractable desk)
                 {
-                    // Проверяем: это тот самый стол?
-                    if (desk.workplaceId == _carriedMonitor.targetWorkplaceId)
+                    if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
                     {
-                        if (!desk.hasMonitor)
-                        {
-                            if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
-                            desk.InstallMonitor(_carriedMonitor);
-                            _carriedMonitor = null;
-                            Debug.Log("Монитор успешно установлен!");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log($"Этот монитор от стола {_carriedMonitor.targetWorkplaceId}, а не от {desk.workplaceId}!");
+                        if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
+                        desk.InstallMonitor(_carriedMonitor);
+                        _carriedMonitor = null;
+                        return;
                     }
                 }
-                return; // Блокируем всё остальное, пока в руках монитор
             }
+            return;
+        }
 
-            // Обычный клик
-            _focusedInteractable.Interact(gameObject);
+        if (_focusedInteractable.InteractionType == InteractionType.Click)
+        {
+            if (interactAction.action.WasPressedThisFrame())
+            {
+                _focusedInteractable.Interact(gameObject);
+            }
+        }
+        else if (_focusedInteractable.InteractionType == InteractionType.Hold)
+        {
+            if (interactAction.action.IsPressed())
+            {
+                _isHolding = true;
+                _holdTimer += Time.deltaTime;
+
+                float progress = Mathf.Clamp01(_holdTimer / _focusedInteractable.HoldDuration);
+                if (_progressFill != null)
+                {
+                    _progressFill.style.width = Length.Percent(progress * 100);
+                }
+
+                if (_holdTimer >= _focusedInteractable.HoldDuration)
+                {
+                    _focusedInteractable.Interact(gameObject);
+                    ResetHold();
+                }
+            }
+            else
+            {
+                ResetHold();
+            }
         }
     }
 
