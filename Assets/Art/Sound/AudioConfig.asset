@@ -43,3 +43,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 7f8f2eaa403209c4f8ed88dfe4f2b1b3, type: 3}
     - {fileID: 8300000, guid: 4882b8d37ef07e74081d9c2b600c875e, type: 3}
     - {fileID: 8300000, guid: 6dc3d341d2b66134ab8694afb041721d, type: 3}
+  - key: AirCon
+    clips:
+    - {fileID: 8300000, guid: 26aede55755c33a45b9bf9bde22e4f0d, type: 3}
+    - {fileID: 8300000, guid: fd18a0cc1a8005d4e96cb8adf1922677, type: 3}
