@@ -92,6 +92,9 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
+        if (_focusedInteractable is MonoBehaviour mb1 && mb1 == null) _focusedInteractable = null;
+        if (_nearestInteractable is MonoBehaviour mb2 && mb2 == null) _nearestInteractable = null;
+
         FindInteractables();
         HandleInteractionLogic();
     }
@@ -150,8 +153,21 @@ public class PlayerInteraction : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
         {
+            if (hit.collider.TryGetComponent<AnimalAI>(out var fox))
+            {
+                // ПРОВЕРКА: Если лиса уже "мертва" (в процессе удаления), игнорируем её
+                if (fox != null)
+                {
+                    _focusedInteractable = fox;
+                    _nearestInteractable = fox;
+                    ShowUI(fox);
+
+                    if (_lastLookedWorker != null) { WorkerTooltipUI.Instance.Hide(); _lastLookedWorker = null; }
+                    return;
+                }
+            }
             // Приоритет 1: Рабочий (WorkerPhysical)
-            if (hit.collider.TryGetComponent<WorkerPhysical>(out var worker))
+            else if (hit.collider.TryGetComponent<WorkerPhysical>(out var worker))
             {
                 if (_lastLookedWorker != worker)
                 {
@@ -324,18 +340,26 @@ public class PlayerInteraction : MonoBehaviour
 
     private void HideUI()
     {
+        _nearestInteractable = null;
         if (_promptRoot != null) _promptRoot.style.display = DisplayStyle.None;
         ResetHold();
     }
 
     private void UpdateUIPosition()
     {
-        if (_nearestInteractable == null || _promptRoot.style.display == DisplayStyle.None) return;
+        // 2. Если объект удален, скрываем UI и выходим
+        if (_nearestInteractable == null || _nearestInteractable is MonoBehaviour mb && mb == null)
+        {
+            HideUI();
+            return;
+        }
 
-        Vector3 worldPos = _nearestInteractable.InteractionPivot != null
-            ? _nearestInteractable.InteractionPivot.position
-            : (_nearestInteractable as MonoBehaviour).transform.position;
+        if (_promptRoot.style.display == DisplayStyle.None) return;
 
+        Transform pivot = _nearestInteractable.InteractionPivot;
+        if (pivot == null) return;
+
+        Vector3 worldPos = pivot.position;
         Vector2 panelPos = RuntimePanelUtils.CameraTransformWorldToPanel(_promptRoot.panel, worldPos, playerCamera);
 
         _promptRoot.style.left = panelPos.x - (_promptRoot.layout.width / 2);

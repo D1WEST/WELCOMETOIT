@@ -44,8 +44,8 @@ namespace Assets.Modules.AIFox
             float efficiencyMultiplier = Mathf.Lerp(1f, 2f, totalEfficiency / 0.9f);
 
             // 3. Добавляем энергию с учетом рандома (небольшой разброс, чтобы не было предсказуемо)
-            float randomJitter = Random.Range(0.8f, 1.2f);
-            currentInvasionEnergy += _baseGrowthRate * efficiencyMultiplier * randomJitter * Time.deltaTime;
+            float randomJitter = Random.Range(0.8f, 1.5f);
+            currentInvasionEnergy += _baseGrowthRate * efficiencyMultiplier * randomJitter * Time.deltaTime * (1 + (ShiftManager.Instance.currentDay*0.1f));
 
             // 4. Проверка порога
             if (currentInvasionEnergy >= energyThreshold)

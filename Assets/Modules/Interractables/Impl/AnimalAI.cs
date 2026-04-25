@@ -1,169 +1,214 @@
-﻿using System.Collections.Generic;
+﻿using UnityEngine;
+using System.Collections.Generic;
+using Assets.Modules.Interractables;
+using Assets.Modules.Interractables.Impl;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
+using System.Threading;
 
-namespace Assets.Modules.Interractables.Impl
+public class AnimalAI : MonoBehaviour, IInteractable
 {
-    public class AnimalAI : MonoBehaviour, IInteractable
+    [Header("Movement")]
+    public float speed = 9f;
+    public float panicDistance = 8f;      // Боятся игрока из далека
+    public float wallDetectionDist = 3f;  // Раннее обнаружение стен
+
+    private Rigidbody _rb;
+    private Transform _player;
+    private SpringJoint _leash;
+    private MonitorPhysical _capturedMonitor;
+    private CancellationTokenSource _cts;
+
+    private GameObject _target;
+    private bool _isBurst = false;
+
+    public string InteractionPrompt => "Лопнуть вредителя";
+    public Transform InteractionPivot
     {
-        [Header("Settings")]
-        public float speed = 8.5f;
-        public float panicDistance = 6f;
-        public float wallAvoidDistance = 1.5f;
-
-        private Rigidbody _rb;
-        private Transform _player;
-        private SpringJoint _leash;
-        private MonitorPhysical _capturedMonitor;
-
-        private GameObject _targetObject; // Может быть столом или другой лисой
-        private bool _hasMonitor = false;
-
-        // Оставляем только кнопку "Лопнуть"
-        public string InteractionPrompt => "Лопнуть вредителя";
-        public Transform InteractionPivot => transform;
-        public InteractionType InteractionType => InteractionType.Click;
-        public float HoldDuration => 0;
-
-        private void Awake()
+        get
         {
-            _rb = GetComponent<Rigidbody>();
-            _player = GameObject.FindGameObjectWithTag("Player")?.transform;
-            _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            // Если объект уничтожается, возвращаем null, чтобы PlayerInteraction не упал
+            if (this == null || _isBurst) return null;
+            return transform;
         }
+    }
+    public InteractionType InteractionType => InteractionType.Click;
+    public float HoldDuration => 0;
 
-        public void Init()
-        {
-            SearchForTarget().Forget();
-            MoveLoop().Forget();
-        }
+    private void Awake()
+    {
+        _rb = GetComponent<Rigidbody>();
+        _player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        _rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-        private async UniTaskVoid SearchForTarget()
+        _cts = new CancellationTokenSource();
+    }
+
+    public void Init()
+    {
+        LogicLoop(_cts.Token).Forget();
+    }
+
+    private async UniTaskVoid LogicLoop(CancellationToken token)
+    {
+        try
         {
-            while (this != null)
+            while (!token.IsCancellationRequested)
             {
-                if (!_hasMonitor)
-                {
-                    // 1. Ищем столы с мониторами
-                    var allDesks = WorkplaceInteractable.AllDesks.FindAll(d => d.hasMonitor);
-                    // 2. Ищем других лис, у которых есть монитор
-                    var allFoxes = FindObjectsOfType<AnimalAI>();
-                    var targetFoxes = new List<AnimalAI>(allFoxes).FindAll(f => f != this && f._hasMonitor);
-
-                    if (targetFoxes.Count > 0 && Random.value > 0.5f) // 50% шанс пойти воровать у лисы
-                    {
-                        _targetObject = targetFoxes[Random.Range(0, targetFoxes.Count)].gameObject;
-                    }
-                    else if (allDesks.Count > 0)
-                    {
-                        _targetObject = allDesks[Random.Range(0, allDesks.Count)].gameObject;
-                    }
-                }
-                await UniTask.Delay(2000); // Пересчитываем цель каждые 2 сек
+                UpdateTarget();
+                HandleMovement();
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
         }
+        catch (System.OperationCanceledException) { }
+    }
 
-        private async UniTaskVoid MoveLoop()
+    private void UpdateTarget()
+    {
+        // Постоянно ищем цель, даже если уже что-то тащим (жадность)
+        float minDist = float.MaxValue;
+        GameObject bestTarget = null;
+
+        // 1. Ищем мониторы на столах
+        foreach (var desk in WorkplaceInteractable.AllDesks)
         {
-            while (this != null)
+            if (!desk.hasMonitor) continue;
+            float d = Vector3.Distance(transform.position, desk.transform.position);
+            if (d < minDist) { minDist = d; bestTarget = desk.gameObject; }
+        }
+
+        // 2. Ищем других лис с мониторами (чтобы отнять)
+        var allFoxes = FindObjectsOfType<AnimalAI>();
+        foreach (var fox in allFoxes)
+        {
+            if (fox == this || !fox.HasMonitor()) continue;
+            float d = Vector3.Distance(transform.position, fox.transform.position);
+            if (d < minDist) { minDist = d; bestTarget = fox.gameObject; }
+        }
+
+        _target = bestTarget;
+    }
+
+    private void HandleMovement()
+    {
+        Vector3 moveDir = Vector3.zero;
+        float distToPlayer = _player ? Vector3.Distance(transform.position, _player.position) : 100f;
+
+        // --- 1. СТРАХ ПЕРЕД ИГРОКОМ (Самый высокий приоритет) ---
+        if (distToPlayer < panicDistance)
+        {
+            moveDir = (transform.position - _player.position).normalized;
+        }
+        // --- 2. СТРАХ ПЕРЕД СТЕНАМИ (Whiskers system) ---
+        moveDir += CalculateWallAvoidance() * 3f;
+
+        // --- 3. ЖАЖДА НАЖИВЫ ---
+        if (moveDir == Vector3.zero && _target != null)
+        {
+            moveDir = (_target.transform.position - transform.position).normalized;
+
+            if (Vector3.Distance(transform.position, _target.transform.position) < 1.5f)
+                TrySteal();
+        }
+
+        // ПРИМЕНЕНИЕ ФИЗИКИ
+        if (moveDir != Vector3.zero)
+        {
+            moveDir.y = 0;
+            Vector3 targetVelocity = moveDir.normalized * speed;
+            _rb.linearVelocity = new Vector3(targetVelocity.x, _rb.linearVelocity.y, targetVelocity.z);
+
+            if (targetVelocity != Vector3.zero)
+                _rb.rotation = Quaternion.Slerp(_rb.rotation, Quaternion.LookRotation(moveDir.normalized), Time.deltaTime * 8f);
+        }
+    }
+
+    private Vector3 CalculateWallAvoidance()
+    {
+        Vector3 avoidance = Vector3.zero;
+        // Лучи: вперед, влево-вперед, вправо-вперед
+        Vector3[] directions = { transform.forward, transform.forward + transform.right, transform.forward - transform.right };
+
+        foreach (var dir in directions)
+        {
+            if (Physics.Raycast(transform.position, dir.normalized, out RaycastHit hit, wallDetectionDist))
             {
-                Vector3 moveDir = Vector3.zero;
-                float distToPlayer = _player ? Vector3.Distance(transform.position, _player.position) : 100f;
-
-                // 1. ПРИОРИТЕТ: УБЕГАЕМ ОТ ИГРОКА
-                if (distToPlayer < panicDistance)
-                {
-                    moveDir = (transform.position - _player.position).normalized;
-                }
-                // 2. ИДЕМ К ЦЕЛИ (красть)
-                else if (_targetObject != null && !_hasMonitor)
-                {
-                    moveDir = (_targetObject.transform.position - transform.position).normalized;
-
-                    if (Vector3.Distance(transform.position, _targetObject.transform.position) < 1.8f)
-                    {
-                        TrySteal();
-                    }
-                }
-                // 3. БРОДИМ
-                else
-                {
-                    moveDir = transform.forward;
-                }
-
-                // --- ОБХОД СТЕН (Raycast Steering) ---
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position, transform.forward, out hit, wallAvoidDistance))
-                {
-                    // Поворачиваемся в сторону от нормали стены
-                    moveDir += hit.normal * 2f;
-                }
-
-                // ПРИМЕНЯЕМ ДВИЖЕНИЕ
-                moveDir.y = 0;
-                if (moveDir != Vector3.zero)
-                {
-                    _rb.linearVelocity = new Vector3(moveDir.normalized.x * speed, _rb.linearVelocity.y, moveDir.normalized.z * speed);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDir), Time.deltaTime * 10f);
-                }
-
-                await UniTask.Yield();
+                // Если стена — толкаем в противоположную от неё сторону
+                avoidance += hit.normal;
             }
         }
+        return avoidance.normalized;
+    }
 
-        private void TrySteal()
+    private void TrySteal()
+    {
+        if (_target == null) return;
+
+        if (_target.TryGetComponent<WorkplaceInteractable>(out var desk))
         {
-            if (_targetObject == null) return;
-
-            // Если цель - стол
-            if (_targetObject.TryGetComponent<WorkplaceInteractable>(out var desk))
+            if (desk.hasMonitor)
             {
-                if (desk.hasMonitor)
-                {
-                    MonitorPhysical mon = desk.GetComponentInChildren<MonitorPhysical>();
-                    desk.KickMonitor();
-                    AttachMonitor(mon);
-                }
-            }
-            // Если цель - другая лиса
-            else if (_targetObject.TryGetComponent<AnimalAI>(out var otherFox))
-            {
-                if (otherFox._hasMonitor && otherFox._capturedMonitor != null)
-                {
-                    var mon = otherFox._capturedMonitor;
-                    otherFox.ReleaseMonitor();
-                    AttachMonitor(mon);
-                }
+                MonitorPhysical mon = desk.GetComponentInChildren<MonitorPhysical>();
+                desk.KickMonitor();
+                AttachMonitor(mon);
             }
         }
-
-        private void AttachMonitor(MonitorPhysical mon)
+        else if (_target.TryGetComponent<AnimalAI>(out var otherFox))
         {
-            if (mon == null) return;
-            _capturedMonitor = mon;
-            _leash = gameObject.AddComponent<SpringJoint>();
-            _leash.connectedBody = mon.GetComponent<Rigidbody>();
-            _leash.autoConfigureConnectedAnchor = false;
-            _leash.anchor = new Vector3(0, 0, -0.6f); // Тащим сзади
-            _leash.spring = 200f;
-            _leash.damper = 10f;
-            _leash.minDistance = 0.5f;
-            _leash.maxDistance = 1.5f;
-            _hasMonitor = true;
+            if (otherFox.HasMonitor())
+            {
+                var mon = otherFox._capturedMonitor;
+                otherFox.ReleaseMonitor();
+                AttachMonitor(mon);
+            }
         }
+    }
 
-        public void ReleaseMonitor()
-        {
-            if (_leash != null) Destroy(_leash);
-            _capturedMonitor = null;
-            _hasMonitor = false;
-            _targetObject = null;
-        }
+    private void AttachMonitor(MonitorPhysical mon)
+    {
+        if (mon == null) return;
+        ReleaseMonitor(); // Сбрасываем старый, если был
 
-        public void Interact(GameObject interactor)
-        {
-            ReleaseMonitor();
-            Destroy(gameObject);
-        }
+        _capturedMonitor = mon;
+        _leash = gameObject.AddComponent<SpringJoint>();
+        _leash.connectedBody = mon.GetComponent<Rigidbody>();
+        _leash.autoConfigureConnectedAnchor = false;
+        _leash.anchor = new Vector3(0, 0, -0.6f);
+        _leash.spring = 250f; // Жесткая пружина
+        _leash.damper = 15f;
+        _leash.minDistance = 0.3f;
+        _leash.maxDistance = 1f;
+    }
+
+    public void ReleaseMonitor()
+    {
+        if (_leash != null) Destroy(_leash);
+        _capturedMonitor = null;
+    }
+
+    public bool HasMonitor() => _capturedMonitor != null;
+
+    public void Interact(GameObject interactor)
+    {
+        if (_isBurst || this == null) return;
+        _isBurst = true;
+
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+
+        ReleaseMonitor();
+
+        if (TryGetComponent<Collider>(out var col)) col.enabled = false;
+
+        gameObject.SetActive(false);
+
+        Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }
