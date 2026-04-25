@@ -60,10 +60,35 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
         float gameTimeStep = Time.deltaTime * ShiftManager.Instance.timeMultiplier;
 
-        // 1. ОПРЕДЕЛЕНИЕ ТЕКУЩЕГО СТАТУСА (Логика "в обе стороны")
+        if (_data.status == WorkerStatus.Working)
+        {
+            _data.currentSleepiness += _sleepGrowthPerSec * gameTimeStep;
+            _data.currentRestlessness += _restlessGrowthPerSec * gameTimeStep;
+            _data.currentAnger += (_angerGrowthPerSec * 0.3f) * gameTimeStep;
+        }
+        else if (_data.status == WorkerStatus.Sleeping)
+        {
+            _data.currentSleepiness -= (_sleepGrowthPerSec * 4f) * gameTimeStep;
+        }
+        else if (_data.status == WorkerStatus.Fidgeting)
+        {
+            _data.currentRestlessness -= (_restlessGrowthPerSec * 1.5f) * gameTimeStep;
+        }
+
+        _data.currentSleepiness = Mathf.Clamp(_data.currentSleepiness, 0, 100.1f);
+        _data.currentRestlessness = Mathf.Clamp(_data.currentRestlessness, 0, 100.1f);
+
         if (_isKicking)
         {
             _data.status = WorkerStatus.Angry;
+        }
+        else if (_data.status == WorkerStatus.Sleeping)
+        {
+            if (_data.currentSleepiness <= 70f) _data.status = WorkerStatus.Working;
+        }
+        else if (_data.status == WorkerStatus.Fidgeting)
+        {
+            if (_data.currentRestlessness <= 70f) _data.status = WorkerStatus.Working;
         }
         else if (_data.currentSleepiness >= 100)
         {
@@ -79,31 +104,9 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         }
         else
         {
-            // Если ни одно критическое условие не выполнено - он работает
             _data.status = WorkerStatus.Working;
         }
 
-        // 2. ИЗМЕНЕНИЕ ШКАЛ В ЗАВИСИМОСТИ ОТ СТАТУСА
-        if (_data.status == WorkerStatus.Working)
-        {
-            _data.currentSleepiness += _sleepGrowthPerSec * gameTimeStep;
-            _data.currentRestlessness += _restlessGrowthPerSec * gameTimeStep;
-            _data.currentAnger += (_angerGrowthPerSec * 0.3f) * gameTimeStep;
-        }
-        else if (_data.status == WorkerStatus.Sleeping)
-        {
-            // Во время сна сонливость падает быстрее
-            _data.currentSleepiness -= (_sleepGrowthPerSec * 4f) * gameTimeStep;
-            _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness);
-        }
-        else if (_data.status == WorkerStatus.Fidgeting || _data.status == WorkerStatus.NoEquipment)
-        {
-            // Если он не работает, он потихоньку "успокаивается" сам, но очень медленно
-            _data.currentRestlessness -= (_restlessGrowthPerSec * 0.5f) * gameTimeStep;
-            _data.currentRestlessness = Mathf.Max(0, _data.currentRestlessness);
-        }
-
-        // 3. ПРОВЕРКА НА ПИНОК МОНИТОРА
         if (_data.currentAnger >= 100 && !_isKicking)
         {
             PerformKick().Forget();
@@ -118,12 +121,12 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         if (desk != null && desk.hasMonitor)
         {
             Debug.Log($"{_data.name} ПИНАЕТ МОНИТОР!");
-            await UniTask.Delay(800); // Время на замах
+            await UniTask.Delay(800);
             desk.KickMonitor();
         }
 
-        await UniTask.Delay(3000); // 3 секунды ярости
-        _data.currentAnger = 40; // Гнев падает после разрядки
+        await UniTask.Delay(3000);
+        _data.currentAnger = 40;
         _isKicking = false;
     }
 
@@ -131,7 +134,6 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     {
         if (_data == null || _isKicking) return;
 
-        // Приоритет 1: Премия (от непоседливости)
         if (_data.currentRestlessness > 50)
         {
             if (GameDataManager.Instance.playerMoney >= 200)
@@ -141,8 +143,6 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
             }
             return;
         }
-
-        // Приоритет 2: Шлепок (от сна или просто так)
         PerformSlap();
     }
 
