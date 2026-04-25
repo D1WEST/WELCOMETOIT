@@ -1,29 +1,36 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI/UI/MainScene/MainMenu.uss?fileID=7433441132597879392&amp;guid=75c439a7b1a979e43aa7c83080b2b2b4&amp;type=3#MainMenu"/>
+    <Style src="project://database/Assets/UI/UI/MainScene/MainMenu.uss" />
     <ui:VisualElement name="screen-bg" class="screen-bg">
         <ui:VisualElement name="main-menu" class="menu-container">
             <ui:VisualElement class="header-block">
-                <ui:Label text="OverTask" class="header-title" style="-unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/Cascasdia%20Mono/CascadiaMono-Bold%20SDF.asset?fileID=11400000&amp;guid=a1bcee9ecfdd28a42a1c4fe90d81fe01&amp;type=2#CascadiaMono-Bold SDF&quot;);"/>
+                <ui:Label text="OverTask" class="header-title" />
                 <ui:VisualElement class="header-line"/>
-                <ui:Label text="by ScainetTeam" class="header-subtitle" style="-unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/Cascasdia%20Mono/CascadiaMono-Bold%20SDF.asset?fileID=11400000&amp;guid=a1bcee9ecfdd28a42a1c4fe90d81fe01&amp;type=2#CascadiaMono-Bold SDF&quot;);"/>
+                <ui:Label text="by ScainetTeam" class="header-subtitle" />
             </ui:VisualElement>
+            
             <ui:VisualElement class="buttons-block">
-                <ui:VisualElement class="button-wrapper">
+                <ui:VisualElement class="button-wrapper" name="wrapper-continue">
                     <ui:Label text="▶" class="pointer-icon"/>
-                    <ui:Button name="btn-play" text="ИГРАТЬ" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/Cascasdia%20Mono/CascadiaMono-Bold%20SDF.asset?fileID=11400000&amp;guid=a1bcee9ecfdd28a42a1c4fe90d81fe01&amp;type=2#CascadiaMono-Bold SDF&quot;);"/>
+                    <ui:Button name="btn-continue" text="ПРОДОЛЖИТЬ" class="menu-button" />
                 </ui:VisualElement>
                 <ui:VisualElement class="button-wrapper">
                     <ui:Label text="▶" class="pointer-icon"/>
-                    <ui:Button name="btn-options" text="НАСТРОЙКИ" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/Cascasdia%20Mono/CascadiaMono-Bold%20SDF.asset?fileID=11400000&amp;guid=a1bcee9ecfdd28a42a1c4fe90d81fe01&amp;type=2#CascadiaMono-Bold SDF&quot;);"/>
+                    <ui:Button name="btn-new-game" text="НОВАЯ ИГРА" class="menu-button" />
                 </ui:VisualElement>
+
                 <ui:VisualElement class="button-wrapper">
                     <ui:Label text="▶" class="pointer-icon"/>
-                    <ui:Button name="btn-exit" text="ВЫЙТИ ИЗ ИГРЫ" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/Cascasdia%20Mono/CascadiaMono-Bold%20SDF.asset?fileID=11400000&amp;guid=a1bcee9ecfdd28a42a1c4fe90d81fe01&amp;type=2#CascadiaMono-Bold SDF&quot;);"/>
+                    <ui:Button name="btn-options" text="НАСТРОЙКИ" class="menu-button" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="button-wrapper">
+                    <ui:Label text="▶" class="pointer-icon"/>
+                    <ui:Button name="btn-exit" text="ВЫЙТИ ИЗ ИГРЫ" class="menu-button" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="options-menu" class="options-container" style="display: none; -unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/Cascasdia%20Mono/CascadiaMono-Bold%20SDF.asset?fileID=11400000&amp;guid=a1bcee9ecfdd28a42a1c4fe90d81fe01&amp;type=2#CascadiaMono-Bold SDF&quot;);">
-            <ui:Label text="SETTINGS" class="options-header" style="color: white; font-size: 30px; -unity-font-style: bold; margin-bottom: 20px;"/>
+        <ui:VisualElement name="options-menu" class="options-container" style="display: none;">
+            <ui:Label text="SETTINGS" class="options-header" />
             <ui:ScrollView name="rebind-list" class="rebind-scroll"/>
             <ui:VisualElement class="options-footer">
                 <ui:Button name="btn-save" text="SAVE" class="footer-btn"/>
