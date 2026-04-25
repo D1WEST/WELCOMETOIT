@@ -20,14 +20,11 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         get
         {
             if (_data == null) return "";
+            if (_isKicking) return "РАЗЪЯРЕН!";
 
             // Если шкала непоседливости выше 50 — приоритет на премию
-            if (_data.currentRestlessness > 50)
-            {
-                return $"Дать премию $200";
-            }
+            if (_data.currentRestlessness > 50) return $"Дать премию $200";
 
-            // В любом другом случае (спит он или просто работает) — опция шлепка
             return "Пнуть/Шлепнуть";
         }
     }
@@ -44,95 +41,116 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
     private void CalculateSpeeds()
     {
-        // Рассчитываем скорость заполнения (на 1 игровую секунду)
-        // Мапим стат 1-10 на время заполнения 2.5дня - 0.5дня
+        if (_data == null) return;
         _sleepGrowthPerSec = CalculateStatSpeed(_data.sleepiness);
-        _restlessGrowthPerSec = CalculateStatSpeed(_data.workPower); // Непоседливость привяжем к силе/скорости
+        _restlessGrowthPerSec = CalculateStatSpeed(_data.workPower);
         _angerGrowthPerSec = CalculateStatSpeed(_data.angriness);
     }
 
     private float CalculateStatSpeed(int statValue)
     {
-        float hoursToFill = Mathf.Lerp(25f, 5f, (statValue - 1) / 9f); // от 25 до 5 игровых часов
+        float hoursToFill = Mathf.Lerp(25f, 5f, (statValue - 1) / 9f);
         float secondsToFill = hoursToFill * 3600f;
         return 100f / secondsToFill;
     }
 
-    private async void Update()
+    private void Update()
     {
-
         if (_data == null || !ShiftManager.Instance.IsShiftActive || _data.isResting) return;
 
         float gameTimeStep = Time.deltaTime * ShiftManager.Instance.timeMultiplier;
 
+        // 1. ОПРЕДЕЛЕНИЕ ТЕКУЩЕГО СТАТУСА (Логика "в обе стороны")
+        if (_isKicking)
+        {
+            _data.status = WorkerStatus.Angry;
+        }
+        else if (_data.currentSleepiness >= 100)
+        {
+            _data.status = WorkerStatus.Sleeping;
+        }
+        else if (_data.currentRestlessness >= 100)
+        {
+            _data.status = WorkerStatus.Fidgeting;
+        }
+        else if (GetComponentInParent<WorkplaceInteractable>() != null && !GetComponentInParent<WorkplaceInteractable>().hasMonitor)
+        {
+            _data.status = WorkerStatus.NoEquipment;
+        }
+        else
+        {
+            // Если ни одно критическое условие не выполнено - он работает
+            _data.status = WorkerStatus.Working;
+        }
+
+        // 2. ИЗМЕНЕНИЕ ШКАЛ В ЗАВИСИМОСТИ ОТ СТАТУСА
         if (_data.status == WorkerStatus.Working)
         {
             _data.currentSleepiness += _sleepGrowthPerSec * gameTimeStep;
             _data.currentRestlessness += _restlessGrowthPerSec * gameTimeStep;
-            _data.currentAnger += (_angerGrowthPerSec * 0.5f) * gameTimeStep; // Гнев растет медленнее при работе
+            _data.currentAnger += (_angerGrowthPerSec * 0.3f) * gameTimeStep;
         }
-
-        if (_data.currentSleepiness >= 100) _data.status = WorkerStatus.Sleeping;
-        if (_data.currentRestlessness >= 100) _data.status = WorkerStatus.Fidgeting;
-
-        if (_data.status == WorkerStatus.Sleeping)
+        else if (_data.status == WorkerStatus.Sleeping)
         {
-            _data.currentSleepiness -= (_sleepGrowthPerSec * 2f) * gameTimeStep;
-            if (_data.currentSleepiness <= 0) _data.status = WorkerStatus.Working;
+            // Во время сна сонливость падает быстрее
+            _data.currentSleepiness -= (_sleepGrowthPerSec * 4f) * gameTimeStep;
+            _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness);
+        }
+        else if (_data.status == WorkerStatus.Fidgeting || _data.status == WorkerStatus.NoEquipment)
+        {
+            // Если он не работает, он потихоньку "успокаивается" сам, но очень медленно
+            _data.currentRestlessness -= (_restlessGrowthPerSec * 0.5f) * gameTimeStep;
+            _data.currentRestlessness = Mathf.Max(0, _data.currentRestlessness);
         }
 
+        // 3. ПРОВЕРКА НА ПИНОК МОНИТОРА
         if (_data.currentAnger >= 100 && !_isKicking)
         {
-            await PerformKick();
+            PerformKick().Forget();
         }
     }
 
-    private async UniTask PerformKick()
+    private async UniTaskVoid PerformKick()
     {
         _isKicking = true;
-        _data.status = WorkerStatus.Angry;
 
-        // Находим стол
         var desk = GetComponentInParent<WorkplaceInteractable>();
         if (desk != null && desk.hasMonitor)
         {
             Debug.Log($"{_data.name} ПИНАЕТ МОНИТОР!");
-            await UniTask.Delay(1000);
+            await UniTask.Delay(800); // Время на замах
             desk.KickMonitor();
         }
 
-        await UniTask.Delay(4000);
-        _data.currentAnger = 50;
+        await UniTask.Delay(3000); // 3 секунды ярости
+        _data.currentAnger = 40; // Гнев падает после разрядки
         _isKicking = false;
     }
 
     public void Interact(GameObject interactor)
     {
-        if (_data == null) return;
+        if (_data == null || _isKicking) return;
+
+        // Приоритет 1: Премия (от непоседливости)
         if (_data.currentRestlessness > 50)
         {
             if (GameDataManager.Instance.playerMoney >= 200)
             {
                 GameDataManager.Instance.ChangeMoney(-200);
                 _data.currentRestlessness = 0;
-                _data.status = WorkerStatus.Working;
-                Debug.Log($"Премия дана {_data.name}. Он доволен.");
-            }
-            else
-            {
-                Debug.Log("Недостаточно денег!");
+                Debug.Log($"Премия дана {_data.name}.");
             }
             return;
         }
 
+        // Приоритет 2: Шлепок (от сна или просто так)
         PerformSlap();
     }
+
     private void PerformSlap()
     {
-        _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - 20f);
-
+        _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - 25f);
         _data.currentAnger = Mathf.Min(100, _data.currentAnger + 30f);
-
-        _data.status = WorkerStatus.Working;
+        Debug.Log("ШЛЕПОК!");
     }
 }

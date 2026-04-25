@@ -199,23 +199,32 @@ public class PlayerInteraction : MonoBehaviour
 
         if (interactAction.action.WasPressedThisFrame())
         {
-            // СИТУАЦИЯ А: В руках ЕСТЬ монитор
+            // Если несем монитор
             if (_carriedMonitor != null)
             {
                 if (_focusedInteractable is WorkplaceInteractable desk)
                 {
-                    if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
+                    // Проверяем: это тот самый стол?
+                    if (desk.workplaceId == _carriedMonitor.targetWorkplaceId)
                     {
-                        if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
-                        desk.InstallMonitor(_carriedMonitor);
-                        _carriedMonitor = null;
-                        return;
+                        if (!desk.hasMonitor)
+                        {
+                            if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
+                            desk.InstallMonitor(_carriedMonitor);
+                            _carriedMonitor = null;
+                            Debug.Log("Монитор успешно установлен!");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log($"Этот монитор от стола {_carriedMonitor.targetWorkplaceId}, а не от {desk.workplaceId}!");
                     }
                 }
-                return;
+                return; // Блокируем всё остальное, пока в руках монитор
             }
 
-            // СИТУАЦИЯ Б: Руки пустые - обычное взаимодействие (меню, шлепок, подбор)
+            // Обычный клик
             _focusedInteractable.Interact(gameObject);
         }
     }
