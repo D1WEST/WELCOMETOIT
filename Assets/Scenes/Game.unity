@@ -638,6 +638,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07a8783f65a45b45abac25c4c6ddbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.WorkplaceInteractable
+  workplaceId: 0003
   promptEmpty: "\u041D\u0430\u0437\u043D\u0430\u0447\u0438\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u043D\u0438\u043A\u0430"
   promptOccupied: "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0440\u0430\u0431\u043E\u0447\u0438\u043C
     \u043C\u0435\u0441\u0442\u043E\u043C"
@@ -960,6 +961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07a8783f65a45b45abac25c4c6ddbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.WorkplaceInteractable
+  workplaceId: 0002
   promptEmpty: "\u041D\u0430\u0437\u043D\u0430\u0447\u0438\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u043D\u0438\u043A\u0430"
   promptOccupied: "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0440\u0430\u0431\u043E\u0447\u0438\u043C
     \u043C\u0435\u0441\u0442\u043E\u043C"
@@ -2003,6 +2005,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07a8783f65a45b45abac25c4c6ddbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.WorkplaceInteractable
+  workplaceId: 0004
   promptEmpty: "\u041D\u0430\u0437\u043D\u0430\u0447\u0438\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u043D\u0438\u043A\u0430"
   promptOccupied: "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0440\u0430\u0431\u043E\u0447\u0438\u043C
     \u043C\u0435\u0441\u0442\u043E\u043C"
@@ -2480,6 +2483,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07a8783f65a45b45abac25c4c6ddbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.WorkplaceInteractable
+  workplaceId: 0001
   promptEmpty: "\u041D\u0430\u0437\u043D\u0430\u0447\u0438\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u043D\u0438\u043A\u0430"
   promptOccupied: "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0440\u0430\u0431\u043E\u0447\u0438\u043C
     \u043C\u0435\u0441\u0442\u043E\u043C"
@@ -3102,6 +3106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07a8783f65a45b45abac25c4c6ddbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.WorkplaceInteractable
+  workplaceId: 0006
   promptEmpty: "\u041D\u0430\u0437\u043D\u0430\u0447\u0438\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u043D\u0438\u043A\u0430"
   promptOccupied: "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0440\u0430\u0431\u043E\u0447\u0438\u043C
     \u043C\u0435\u0441\u0442\u043E\u043C"
@@ -3836,6 +3841,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07a8783f65a45b45abac25c4c6ddbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.WorkplaceInteractable
+  workplaceId: 0005
   promptEmpty: "\u041D\u0430\u0437\u043D\u0430\u0447\u0438\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u043D\u0438\u043A\u0430"
   promptOccupied: "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0440\u0430\u0431\u043E\u0447\u0438\u043C
     \u043C\u0435\u0441\u0442\u043E\u043C"

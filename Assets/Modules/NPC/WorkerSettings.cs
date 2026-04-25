@@ -30,6 +30,7 @@ namespace Assets.Modules.NPC
         public bool isResting;
         public WorkerStatus status = WorkerStatus.Working;
         [System.NonSerialized] public Sprite avatar; // Не сохраняем в JSON
+        public string assignedWorkplaceId;
         public int buyPrice;
         public int sellPrice;
         public bool isAssigned;

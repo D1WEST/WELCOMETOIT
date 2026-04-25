@@ -11,6 +11,8 @@ namespace Assets.Modules.Interractables.Impl
     public class WorkplaceInteractable : MonoBehaviour, IInteractable
     {
         public static List<WorkplaceInteractable> AllDesks = new List<WorkplaceInteractable>();
+        [Header("Save Settings")]
+        [SerializeField] private string workplaceId;
 
         [Header("Settings")]
         [SerializeField] private string promptEmpty = "Назначить работника";
@@ -36,6 +38,71 @@ namespace Assets.Modules.Interractables.Impl
         private RoomManager _roomManager;
 
         private void Awake() => AllDesks.Add(this);
+
+        private void Start()
+        {
+            RestoreAssignedWorker();
+        }
+
+        private void RestoreAssignedWorker()
+        {
+            if (GameDataManager.Instance == null) return;
+
+            // Ищем в списке моих рабочих того, у кого assignedWorkplaceId совпадает с ID этого стола
+            var savedWorker = GameDataManager.Instance.myWorkers.Find(w => w.assignedWorkplaceId == this.workplaceId);
+
+            if (savedWorker != null)
+            {
+                // Назначаем его БЕЗ сохранения (чтобы не зациклить), просто визуально
+                ApplyWorkerVisuals(savedWorker);
+            }
+        }
+
+        public void AssignWorker(WorkerInstance worker)
+        {
+            // 1. Очистка старого рабочего
+            if (_currentWorker != null)
+            {
+                _currentWorker.isAssigned = false;
+                _currentWorker.assignedWorkplaceId = null; // Очищаем ID стола у рабочего
+            }
+
+            if (_spawnedNpcVisual != null) Destroy(_spawnedNpcVisual);
+
+            _currentWorker = worker;
+
+            // 2. Назначение нового
+            if (_currentWorker != null)
+            {
+                _currentWorker.isAssigned = true;
+                _currentWorker.assignedWorkplaceId = this.workplaceId; // ПРИВЯЗЫВАЕМ ID СТОЛА
+
+                ApplyWorkerVisuals(_currentWorker);
+
+                // Сохраняем игру, так как данные рабочего изменились
+                GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
+            }
+            else
+            {
+                StopWork();
+                GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
+            }
+        }
+
+        // Вынес визуальную часть в отдельный метод, чтобы вызывать его и при загрузке
+        private void ApplyWorkerVisuals(WorkerInstance worker)
+        {
+            _currentWorker = worker;
+
+            GameObject prefab = GameDataManager.Instance.GetWorkerPrefab(worker.templateId);
+            if (prefab != null && npcSpawnPoint != null)
+            {
+                _spawnedNpcVisual = Instantiate(prefab, npcSpawnPoint.position, npcSpawnPoint.rotation, transform);
+            }
+
+            StartWorkLoop().Forget();
+        }
+
         private void OnDestroy()
         {
             StopWork();
@@ -51,35 +118,6 @@ namespace Assets.Modules.Interractables.Impl
         {
             if (worker == null) return null;
             return AllDesks.Find(d => d.Worker != null && d.Worker.instanceId == worker.instanceId);
-        }
-
-        public void AssignWorker(WorkerInstance worker)
-        {
-            var previousDesk = FindDeskByWorker(worker);
-            if (previousDesk != null && previousDesk != this)
-            {
-                previousDesk.AssignWorker(null);
-            }
-
-            if (_currentWorker != null) _currentWorker.isAssigned = false;
-            if (_spawnedNpcVisual != null) Destroy(_spawnedNpcVisual);
-
-            _currentWorker = worker;
-
-            if (_currentWorker != null)
-            {
-                _currentWorker.isAssigned = true;
-
-                GameObject prefab = GameDataManager.Instance.GetWorkerPrefab(_currentWorker.templateId);
-                if (prefab != null && npcSpawnPoint != null)
-                    _spawnedNpcVisual = Instantiate(prefab, npcSpawnPoint.position, npcSpawnPoint.rotation, transform);
-
-                StartWorkLoop().Forget();
-            }
-            else
-            {
-                StopWork();
-            }
         }
 
         private async UniTaskVoid StartWorkLoop()
