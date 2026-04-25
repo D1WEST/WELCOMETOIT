@@ -14,7 +14,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     private float _restlessGrowthPerSec;
     private float _angerGrowthPerSec;
     private bool _isKicking = false;
-    private int _prem => GameDataManager.Instance.loadedDay * 100;
+    private int _prem => 200 + (GameDataManager.Instance.loadedDay * 10);
 
     public string InteractionPrompt
     {

@@ -67,13 +67,11 @@ public class ShiftManager : MonoBehaviour
             EndShift();
         }
     }
-
     private void SetupNewDay()
     {
         targetGoal = 0;
         foreach (var room in rooms)
         {
-            // Если день игрока >= дня открытия комнаты - убираем блок
             bool isUnlocked = currentDay >= room.unlockDay;
 
             if (room.blackBlocker != null)
@@ -81,9 +79,12 @@ public class ShiftManager : MonoBehaviour
 
             room.roomManager.isOpened = isUnlocked;
 
-            if (isUnlocked) targetGoal += room.goalTarget;
+            if (isUnlocked)
+                targetGoal += room.goalTarget;
         }
-        targetGoal *= (1 + (currentDay * 0.05f));
+
+        float dayMultiplier = 1f + (currentDay * 0.05f);
+        targetGoal = Mathf.RoundToInt(targetGoal * dayMultiplier);
 
         OnProgressChanged?.Invoke(0, targetGoal);
     }
@@ -109,16 +110,16 @@ public class ShiftManager : MonoBehaviour
 
         if (currentProgress < targetGoal - 0.1f)
         {
-            // Показываем красный чек "Уволен"
             PaycheckUIController.Instance.ShowResult(false, 0, player);
         }
         else
         {
-            // УСПЕХ: считаем бонус
-            int activeRooms = rooms.FindAll(r => r.roomManager.isOpened).Count;
-            int bonus = Mathf.RoundToInt((activeRooms * 2000) * (1 + currentDay * 0.05f));
+            int activeRoomsCount = rooms.FindAll(r => r.roomManager.isOpened).Count;
 
-            PaycheckUIController.Instance.ShowResult(true, bonus, player);
+            float bonusCalc = (activeRoomsCount * 1000f) * (currentDay * 0.05f);
+            int finalBonus = Mathf.Max(100, Mathf.RoundToInt(bonusCalc));
+
+            PaycheckUIController.Instance.ShowResult(true, finalBonus, player);
         }
     }
 
