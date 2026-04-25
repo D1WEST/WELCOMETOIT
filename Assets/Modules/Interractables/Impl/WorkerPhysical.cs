@@ -64,6 +64,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
         if (_data.status == WorkerStatus.Working)
         {
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Keyboard").WithVolume(1f).AsRandomPlaylist().AsKeyInstance().At(this.transform));
             _data.currentSleepiness += _sleepGrowthPerSec * 4 * gameTimeStep;
             _data.currentRestlessness += _restlessGrowthPerSec * 4 * gameTimeStep;
             _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * 4 * gameTimeStep;
