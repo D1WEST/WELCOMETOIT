@@ -11,27 +11,41 @@ namespace Assets.Modules.Interractables.Impl
         [SerializeField] private string breakerName = "Главный рубильник";
         public bool isOn = true;
 
+        [Header("Visuals")]
+        [SerializeField] private Material materialOn;  // Материал когда работает
+        [SerializeField] private Material materialOff; // Материал когда выбило
+        [SerializeField] private GameObject modelRoot;  // Сюда перетащи объект "Generator" из иерархии
+        private List<MeshRenderer> _modelRenderers = new List<MeshRenderer>();
+
         [Header("Interaction Settings")]
         [SerializeField] private InteractionType interactionType = InteractionType.Hold;
-        [SerializeField]
-        private float holdDuration = 2.0f;
+        [SerializeField] private float holdDuration = 2.0f;
 
         [Header("Load Logic (0-100)")]
         [SerializeField] private float currentLoad = 0f;
-        private float _loadSpeed; // Рассчитаем при старте
+        private float _loadSpeed;
 
         [Header("Dependencies")]
         [SerializeField] private Transform interactionPivot;
         [SerializeField] private List<GameObject> targetLights = new List<GameObject>();
         [SerializeField] private List<RoomManager> targetRooms = new List<RoomManager>();
 
-        // Интерфейс
         public string InteractionPrompt => isOn
             ? $"Система стабильна (Нагрузка: {(int)currentLoad}%)"
             : $"ВЫБИЛО ПРОБКИ! Поднять рубильник [E]";
+
         public Transform InteractionPivot => interactionPivot;
         public InteractionType InteractionType => interactionType;
         public float HoldDuration => holdDuration;
+
+        private void Awake()
+        {
+            // Автоматически находим все MeshRenderer внутри модели генератора
+            if (modelRoot != null)
+            {
+                _modelRenderers.AddRange(modelRoot.GetComponentsInChildren<MeshRenderer>());
+            }
+        }
 
         private void Start()
         {
@@ -62,10 +76,10 @@ namespace Assets.Modules.Interractables.Impl
         private void TripBreaker()
         {
             isOn = false;
-            currentLoad = 0f; 
+            currentLoad = 0f;
             CalculateNewRandomSpeed();
             ApplyState();
-            Debug.LogWarning($"[BREAKER] {breakerName} ВЫБИЛО! Энергия отключена.");
+            Debug.LogWarning($"[BREAKER] {breakerName} ВЫБИЛО!");
         }
 
         public void Interact(GameObject interactor)
@@ -79,14 +93,34 @@ namespace Assets.Modules.Interractables.Impl
 
         private void ApplyState()
         {
+            // 1. Управляем светом
             foreach (var lightObj in targetLights)
             {
                 if (lightObj != null) lightObj.SetActive(isOn);
             }
 
+            // 2. Управляем комнатами
             foreach (var room in targetRooms)
             {
                 if (room != null) room.SetRoomPower(isOn);
+            }
+
+            // 3. МЕНЯЕМ МАТЕРИАЛЫ ВСЕМ КУБИКАМ
+            UpdateModelMaterials();
+        }
+
+        private void UpdateModelMaterials()
+        {
+            Material targetMat = isOn ? materialOn : materialOff;
+
+            if (targetMat == null) return;
+
+            foreach (var renderer in _modelRenderers)
+            {
+                if (renderer != null)
+                {
+                    renderer.material = targetMat;
+                }
             }
         }
     }
