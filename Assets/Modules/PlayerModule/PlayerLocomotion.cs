@@ -58,9 +58,25 @@ namespace Assets.Modules.PlayerModule
         {
             _selectedSpeed = _walkSpeed;
             if (_controller == null) _controller = GetComponent<CharacterController>();
-            if (_camera == null) _camera = GetComponent<Camera>();
+
+            if (_camera == null)
+            {
+                Camera[] allCameras = GetComponentsInChildren<Camera>();
+                foreach (var cam in allCameras)
+                {
+                    if (cam.CompareTag("MainCamera"))
+                    {
+                        _camera = cam;
+                        break;
+                    }
+                }
+            }
+
             if (_playerCamera == null) _playerCamera = GetComponent<PlayerCameraService>();
             _playerCamera.Initialize();
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
         private void Update()

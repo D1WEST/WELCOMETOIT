@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML 
+    xmlns:ui="UnityEngine.UIElements" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" 
+    editor-extension-mode="False">
+
+    <ui:VisualElement name="minimap-root" style="position: absolute; bottom: 20px; right: 20px; width: 250px; height: 250px; background-color: rgba(0, 0, 0, 0); overflow: hidden;">
+        
+        <ui:VisualElement name="minimap-view" style="flex-grow: 1; background-color: rgba(0,0,0,0);" />
+
+        <ui:VisualElement name="labels-container" style="position: absolute; width: 100%; height: 100%; picking-mode: Ignore;" />
+
+    </ui:VisualElement>
+</ui:UXML>
