@@ -48,28 +48,36 @@ namespace Assets.Modules.Interractables.Impl
 
         private async void Start()
         {
-            await UniTask.Delay(100);
+            await UniTask.Delay(200);
 
-            // 1. Сначала спавним монитор по умолчанию
-            SpawnInitialMonitor();
+            if (_activeMonitor == null)
+            {
+                SpawnInitialMonitor();
+            }
 
-            // 2. Затем пробуем восстановить рабочего
             RestoreAssignedWorker();
         }
         private void SpawnInitialMonitor()
         {
+            // Если монитор уже стоит (например, мы его установили руками или он выжил после перезагрузки)
+            if (_activeMonitor != null) return;
+
             if (monitorPrefab != null && monitorMountPoint != null)
             {
-                _activeMonitor = Instantiate(monitorPrefab, monitorMountPoint.position, monitorMountPoint.rotation, monitorMountPoint);
+                // Создаем монитор
+                GameObject obj = Instantiate(monitorPrefab.gameObject, monitorMountPoint.position, monitorMountPoint.rotation, monitorMountPoint);
+                _activeMonitor = obj.GetComponent<MonitorPhysical>();
 
-                // АВТОЗАПОЛНЕНИЕ ID: Передаем свой ID монитору
-                _activeMonitor.Initialize(this.workplaceId);
-
-                hasMonitor = true;
+                if (_activeMonitor != null)
+                {
+                    _activeMonitor.Initialize(this.workplaceId);
+                    _activeMonitor.SetPhysics(false); // Выключаем физику на старте
+                    hasMonitor = true;
+                }
             }
             else
             {
-                Debug.LogWarning($"На столу {workplaceId} не настроен префаб или точка монитора!");
+                Debug.LogError($"[Workplace {workplaceId}] Не назначен префаб монитора или точка крепления!");
             }
         }
 

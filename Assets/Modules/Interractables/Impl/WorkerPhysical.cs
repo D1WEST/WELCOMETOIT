@@ -1,6 +1,7 @@
 ﻿using Assets.Modules.Interractables;
 using Assets.Modules.Interractables.Impl;
 using Assets.Modules.NPC;
+using Assets.Modules.Save;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -14,7 +15,23 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     private float _angerGrowthPerSec;
     private bool _isKicking = false;
 
-    public string InteractionPrompt => (_data != null) ? "Шлепнуть! [E]" : "";
+    public string InteractionPrompt
+    {
+        get
+        {
+            if (_data == null) return "";
+
+            // Если шкала непоседливости выше 50 — приоритет на премию
+            if (_data.currentRestlessness > 50)
+            {
+                return $"Дать премию $200";
+            }
+
+            // В любом другом случае (спит он или просто работает) — опция шлепка
+            return "Пнуть/Шлепнуть";
+        }
+    }
+
     public Transform InteractionPivot => transform;
     public InteractionType InteractionType => InteractionType.Click;
     public float HoldDuration => 0;
@@ -63,6 +80,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
             _data.currentSleepiness -= (_sleepGrowthPerSec * 2f) * gameTimeStep;
             if (_data.currentSleepiness <= 0) _data.status = WorkerStatus.Working;
         }
+
         if (_data.currentAnger >= 100 && !_isKicking)
         {
             await PerformKick();
@@ -79,24 +97,42 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         if (desk != null && desk.hasMonitor)
         {
             Debug.Log($"{_data.name} ПИНАЕТ МОНИТОР!");
-            // Здесь можно запустить анимацию пинка
-            await UniTask.Delay(1000); // Задержка перед ударом
+            await UniTask.Delay(1000);
             desk.KickMonitor();
         }
 
-        await UniTask.Delay(4000); // 5 секунд общей "ярости"
-        _data.currentAnger = 50; // Гнев падает наполовину
+        await UniTask.Delay(4000);
+        _data.currentAnger = 50;
         _isKicking = false;
     }
 
     public void Interact(GameObject interactor)
     {
-        if (_data != null)
+        if (_data == null) return;
+        if (_data.currentRestlessness > 50)
         {
-            _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - 10f);
-            _data.currentAnger = Mathf.Min(100, _data.currentAnger + 30f);
-            _data.status = WorkerStatus.Working;
-            Debug.Log("ШЛЕПОК! Рабочий в ярости проснулся.");
+            if (GameDataManager.Instance.playerMoney >= 200)
+            {
+                GameDataManager.Instance.ChangeMoney(-200);
+                _data.currentRestlessness = 0;
+                _data.status = WorkerStatus.Working;
+                Debug.Log($"Премия дана {_data.name}. Он доволен.");
+            }
+            else
+            {
+                Debug.Log("Недостаточно денег!");
+            }
+            return;
         }
+
+        PerformSlap();
+    }
+    private void PerformSlap()
+    {
+        _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - 20f);
+
+        _data.currentAnger = Mathf.Min(100, _data.currentAnger + 30f);
+
+        _data.status = WorkerStatus.Working;
     }
 }

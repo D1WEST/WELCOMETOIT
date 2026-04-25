@@ -199,26 +199,23 @@ public class PlayerInteraction : MonoBehaviour
 
         if (interactAction.action.WasPressedThisFrame())
         {
-            // ПРИОРИТЕТ 1: Установка монитора
-            if (_carriedMonitor != null && _focusedInteractable is WorkplaceInteractable desk)
+            // СИТУАЦИЯ А: В руках ЕСТЬ монитор
+            if (_carriedMonitor != null)
             {
-                if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
+                if (_focusedInteractable is WorkplaceInteractable desk)
                 {
-                    // Включаем коллайдер обратно перед установкой
-                    if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
-
-                    desk.InstallMonitor(_carriedMonitor);
-                    _carriedMonitor = null;
-                    return;
+                    if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
+                    {
+                        if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
+                        desk.InstallMonitor(_carriedMonitor);
+                        _carriedMonitor = null;
+                        return;
+                    }
                 }
-            }
-
-            if (_carriedMonitor != null && _focusedInteractable is MonitorPhysical)
-            {
-                Debug.Log("Руки заняты!");
                 return;
             }
 
+            // СИТУАЦИЯ Б: Руки пустые - обычное взаимодействие (меню, шлепок, подбор)
             _focusedInteractable.Interact(gameObject);
         }
     }
