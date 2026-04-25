@@ -116,7 +116,7 @@ public class ShiftManager : MonoBehaviour
         {
             // УСПЕХ: считаем бонус
             int activeRooms = rooms.FindAll(r => r.roomManager.isOpened).Count;
-            int bonus = Mathf.RoundToInt((activeRooms * 1000) * (currentDay * 0.05f));
+            int bonus = Mathf.RoundToInt((activeRooms * 2000) * (1 + currentDay * 0.05f));
 
             PaycheckUIController.Instance.ShowResult(true, bonus, player);
         }

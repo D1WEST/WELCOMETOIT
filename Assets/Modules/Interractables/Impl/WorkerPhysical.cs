@@ -14,6 +14,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     private float _restlessGrowthPerSec;
     private float _angerGrowthPerSec;
     private bool _isKicking = false;
+    private int _prem => GameDataManager.Instance.loadedDay * 100;
 
     public string InteractionPrompt
     {
@@ -23,7 +24,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
             if (_isKicking) return "РАЗЪЯРЕН!";
 
             // Если шкала непоседливости выше 50 — приоритет на премию
-            if (_data.currentRestlessness > 50) return $"Дать премию $200";
+            if (_data.currentRestlessness > 50) return $"{_prem} $";
 
             return "Пнуть/Шлепнуть";
         }
@@ -62,9 +63,9 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
         if (_data.status == WorkerStatus.Working)
         {
-            _data.currentSleepiness += _sleepGrowthPerSec * gameTimeStep;
-            _data.currentRestlessness += _restlessGrowthPerSec * gameTimeStep;
-            _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * gameTimeStep;
+            _data.currentSleepiness += _sleepGrowthPerSec * 5 * gameTimeStep;
+            _data.currentRestlessness += _restlessGrowthPerSec * 5 * gameTimeStep;
+            _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * 5 * gameTimeStep;
         }
         else if (_data.status == WorkerStatus.Sleeping)
         {
@@ -138,9 +139,9 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
         if (_data.currentRestlessness > 50)
         {
-            if (GameDataManager.Instance.playerMoney >= 200)
+            if (GameDataManager.Instance.playerMoney >= _prem)
             {
-                GameDataManager.Instance.ChangeMoney(-200);
+                GameDataManager.Instance.ChangeMoney(-_prem);
                 _data.currentRestlessness = 0;
             }
             return;
