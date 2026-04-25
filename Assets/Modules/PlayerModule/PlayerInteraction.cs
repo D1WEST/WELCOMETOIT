@@ -1,9 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEngine.InputSystem;
-using Assets.Modules.Interractables;
+﻿using Assets.Modules.Interractables;
+using Assets.Modules.Interractables.Impl;
+using Assets.Modules.NPC;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -30,6 +32,7 @@ public class PlayerInteraction : MonoBehaviour
     private IInteractable _focusedInteractable; // Тот, на кого смотрим рейкастом
     private float _holdTimer = 0f;
     private bool _isHolding = false;
+    private WorkerPhysical _lastLookedWorker;
 
     private void OnEnable()
     {
@@ -60,48 +63,74 @@ public class PlayerInteraction : MonoBehaviour
 
     private void FindInteractables()
     {
-        // 1. Поиск всех объектов в радиусе
-        Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRadius, interactableLayer);
+        // 1. Сначала пускаем РЕЙКАСТ (это наш точный фокус)
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        IInteractable rayHitInteractable = null;
 
-        IInteractable bestCandidate = null;
-        float minDistance = float.MaxValue;
-
-        foreach (var col in colliders)
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
         {
-            var interactable = col.GetComponentInParent<IInteractable>();
-            if (interactable == null) continue;
-
-            float dist = Vector3.Distance(transform.position, col.transform.position);
-            if (dist < minDistance)
+            // Проверяем, не рабочий ли это
+            if (hit.collider.TryGetComponent<WorkerPhysical>(out var worker))
             {
-                minDistance = dist;
-                bestCandidate = interactable;
+                if (_lastLookedWorker != worker)
+                {
+                    _lastLookedWorker = worker;
+                    WorkerTooltipUI.Instance.Show(_lastLookedWorker);
+                }
+                rayHitInteractable = worker;
+            }
+            else
+            {
+                // Если не рабочий, ищем обычный интерактив
+                rayHitInteractable = hit.collider.GetComponentInParent<IInteractable>();
             }
         }
 
-        // Обновляем ближайший объект (для отображения UI)
-        if (bestCandidate != _nearestInteractable)
+        _focusedInteractable = rayHitInteractable;
+
+        // 2. Если рейкаст никого не нашел, скрываем тултип рабочего
+        if (rayHitInteractable == null && _lastLookedWorker != null)
         {
-            _nearestInteractable = bestCandidate;
-            if (_nearestInteractable != null) ShowUI(_nearestInteractable);
-            else HideUI();
+            WorkerTooltipUI.Instance.Hide();
+            _lastLookedWorker = null;
         }
 
-        // 2. Проверка Рейкастом (для возможности взаимодействия)
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
+        // 3. ЛОГИКА ОТОБРАЖЕНИЯ ПОДСКАЗКИ [E]
+        // Если мы смотрим на объект и у него есть текст (например, "Разбудить")
+        if (_focusedInteractable != null && !string.IsNullOrEmpty(_focusedInteractable.InteractionPrompt))
         {
-            _focusedInteractable = hit.collider.GetComponentInParent<IInteractable>();
+            if (_nearestInteractable != _focusedInteractable)
+            {
+                _nearestInteractable = _focusedInteractable;
+                ShowUI(_nearestInteractable);
+            }
         }
         else
         {
-            _focusedInteractable = null;
+            // Если под прицелом никого с текстом нет, ищем ближайшего через сферу (как раньше)
+            Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRadius, interactableLayer);
+            IInteractable bestCandidate = null;
+            float minDistance = float.MaxValue;
+
+            foreach (var col in colliders)
+            {
+                var interactable = col.GetComponentInParent<IInteractable>();
+                if (interactable == null) continue;
+                float dist = Vector3.Distance(transform.position, col.transform.position);
+                if (dist < minDistance) { minDistance = dist; bestCandidate = interactable; }
+            }
+
+            if (bestCandidate != _nearestInteractable)
+            {
+                _nearestInteractable = bestCandidate;
+                if (_nearestInteractable != null) ShowUI(_nearestInteractable);
+                else HideUI();
+            }
         }
 
-        // Визуальный фидбек: если смотрим на объект, делаем UI ярче, если нет — полупрозрачным
+        // 4. Визуальный фидбек прозрачности
         if (_promptRoot != null && _promptRoot.style.display == DisplayStyle.Flex)
         {
-            // Если мы смотрим на тот же объект, который ближайший
             bool isTargeting = (_focusedInteractable != null && _focusedInteractable == _nearestInteractable);
             _promptRoot.style.opacity = isTargeting ? 1.0f : 0.5f;
             _keyLabel.style.display = isTargeting ? DisplayStyle.Flex : DisplayStyle.None;

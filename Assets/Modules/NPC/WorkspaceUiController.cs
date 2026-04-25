@@ -113,6 +113,12 @@ public class WorkplaceUIController : MonoBehaviour
         if (avatarBox != null && data.avatar != null)
             avatarBox.style.backgroundImage = new StyleBackground(data.avatar);
 
+        if (idLabel != null)
+        {
+            string workId = string.IsNullOrEmpty(data.assignedWorkplaceId) ? "ОТСУТСТВУЕТ" : data.assignedWorkplaceId;
+            idLabel.text = $"ID: {data.templateId} | МЕСТО: {workId}";
+        }
+
         var btn = card.Q<Button>("action-btn");
         if (btn != null)
         {

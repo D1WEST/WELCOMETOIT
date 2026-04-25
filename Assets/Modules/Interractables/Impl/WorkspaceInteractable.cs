@@ -99,6 +99,11 @@ namespace Assets.Modules.Interractables.Impl
             if (prefab != null && npcSpawnPoint != null)
             {
                 _spawnedNpcVisual = Instantiate(prefab, npcSpawnPoint.position, npcSpawnPoint.rotation, transform);
+
+                if (_spawnedNpcVisual.TryGetComponent<WorkerPhysical>(out var physical))
+                {
+                    physical.Init(_currentWorker);
+                }
             }
 
             StartWorkLoop().Forget();
@@ -126,20 +131,53 @@ namespace Assets.Modules.Interractables.Impl
             StopWork();
             _workCts = new CancellationTokenSource();
 
+            // Кэшируем комнату один раз при старте цикла
+            var room = GetComponentInParent<RoomManager>();
+
             while (_currentWorker != null && !_workCts.IsCancellationRequested)
             {
-                if (ShiftManager.Instance == null)
+                // 1. ПРОВЕРКА: Есть ли менеджеры?
+                if (ShiftManager.Instance == null || room == null)
                 {
+                    if (room == null) Debug.LogWarning($"[Workplace] {gameObject.name} не находится внутри объекта с RoomManager!");
                     await UniTask.Delay(500, cancellationToken: _workCts.Token);
                     continue;
                 }
 
-                if (!ShiftManager.Instance.IsShiftActive || _currentWorker.isResting)
+                // 2. ПРОВЕРКА: Активна ли смена, комната и не отдыхает ли рабочий?
+                if (!ShiftManager.Instance.IsShiftActive || !room.isRoomActive || _currentWorker.isResting)
                 {
                     await UniTask.Yield(PlayerLoopTiming.Update, _workCts.Token);
                     continue;
                 }
 
+                // 3. ЛОГИКА СОСТОЯНИЙ (Сон, Гнев, Скука)
+                // Сон
+                if (_currentWorker.currentSleepiness >= 100)
+                {
+                    _currentWorker.status = WorkerStatus.Sleeping;
+                    _currentWorker.currentSleepiness -= 5 * Time.deltaTime;
+                    await UniTask.Yield(PlayerLoopTiming.Update, _workCts.Token);
+                    continue;
+                }
+
+                // Гнев
+                if (_currentWorker.currentAnger >= 100)
+                {
+                    _currentWorker.status = WorkerStatus.Angry;
+                    await UniTask.Delay(2000, cancellationToken: _workCts.Token);
+                    _currentWorker.currentAnger -= 20;
+                    continue;
+                }
+
+                // Если всё в порядке - работаем
+                _currentWorker.status = WorkerStatus.Working;
+
+                // Увеличиваем усталость со временем
+                _currentWorker.currentSleepiness += 1f * Time.deltaTime;
+                _currentWorker.currentRestlessness += 0.8f * Time.deltaTime;
+
+                // ИНТЕРВАЛ РАБОТЫ
                 int intervalMs = Mathf.Max(1000, 5000 - (_currentWorker.patience * 300));
 
                 try
@@ -148,12 +186,16 @@ namespace Assets.Modules.Interractables.Impl
                 }
                 catch (System.OperationCanceledException) { break; }
 
-                if (_currentWorker == null) break;
+                if (_currentWorker == null || _currentWorker.status != WorkerStatus.Working) continue;
 
-                int power = _currentWorker.workPower;
+                // 4. НАЧИСЛЕНИЕ (Деньги и Прогресс)
+                int profit = Mathf.RoundToInt(_currentWorker.workPower * 2.5f);
 
-                GameDataManager.Instance.ChangeMoney(power * 2);
-                ShiftManager.Instance.AddProgress(power, transform.position);
+                if (GameDataManager.Instance != null)
+                    GameDataManager.Instance.ChangeMoney(profit);
+
+                if (ShiftManager.Instance != null)
+                    ShiftManager.Instance.AddProgress(profit, transform.position);
             }
         }
 

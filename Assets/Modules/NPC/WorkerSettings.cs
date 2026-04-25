@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Modules.NPC
 {
-    public enum WorkerStatus { Working, Sleeping, Angry, NoEquipment }
+    public enum WorkerStatus { Working, Sleeping, Angry, Fidgeting, NoEquipment }
 
     [CreateAssetMenu(fileName = "NewWorkerNPC", menuName = "NPCWorker/New NPC")]
     public class WorkerSettings : ScriptableObject
@@ -22,6 +22,11 @@ namespace Assets.Modules.NPC
     [System.Serializable]
     public class WorkerInstance
     {
+        [Header("Dynamic Stats (0-100)")]
+        public float currentSleepiness;   // Сонливость
+        public float currentAnger;        // Раздражительность
+        public float currentRestlessness; // Непоседливость
+
         public string instanceId;
         public string templateId;
         public string name;
@@ -37,6 +42,9 @@ namespace Assets.Modules.NPC
 
         public WorkerInstance(WorkerSettings settings)
         {
+            currentSleepiness = 0;
+            currentAnger = 0;
+            currentRestlessness = 0;
             instanceId = Guid.NewGuid().ToString();
             templateId = settings.templateId;
             name = settings.workerName;
