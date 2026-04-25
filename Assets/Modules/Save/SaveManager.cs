@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace Assets.Modules.Save
@@ -17,12 +18,15 @@ namespace Assets.Modules.Save
 
         public static event Action<int, int, int> OnMoneyChanged;
 
+        public int loadedDay { get; private set; } = 1;
+
         public List<WorkerInstance> myWorkers = new List<WorkerInstance>();
         public List<WorkerInstance> marketWorkers = new List<WorkerInstance>();
 
         [SerializeField] private List<WorkerSettings> allPossibleTemplates; // Заполнить в инспекторе
 
         private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
+        private string _checkpointJson;
 
         private void Awake()
         {
@@ -30,10 +34,39 @@ namespace Assets.Modules.Save
             LoadGame();
         }
 
-        public void SaveGame()
+        public void SaveGame(int currentDay)
         {
-            string json = JsonUtility.ToJson(new SaveWrapper { workers = myWorkers });
+            string json = JsonUtility.ToJson(new SaveWrapper
+            {
+                workers = myWorkers,
+                money = _playerMoney,
+                currentDay = currentDay // Сохраняем день
+            });
             File.WriteAllText(SavePath, json);
+        }
+
+        public void CreateCheckpoint()
+        {
+            // Сохраняем текущее состояние в строку перед началом смены
+            _checkpointJson = JsonUtility.ToJson(new SaveWrapper { workers = myWorkers, money = _playerMoney });
+        }
+
+        public void RestoreCheckpoint()
+        {
+            if (string.IsNullOrEmpty(_checkpointJson)) return;
+
+            var data = JsonUtility.FromJson<SaveWrapper>(_checkpointJson);
+            myWorkers = data.workers;
+            _playerMoney = data.money;
+
+            foreach (var worker in myWorkers)
+            {
+                worker.avatar = allPossibleTemplates.Find(t => t.templateId == worker.templateId).avatar;
+                worker.isAssigned = false;
+            }
+
+            SaveGame(ShiftManager.Instance.currentDay);
+            Debug.Log("[Save] Состояние игры откачено к началу дня.");
         }
 
         public void LoadGame()
@@ -41,11 +74,23 @@ namespace Assets.Modules.Save
             if (File.Exists(SavePath))
             {
                 string json = File.ReadAllText(SavePath);
+                var data = JsonUtility.FromJson<SaveWrapper>(json);
+
                 myWorkers = JsonUtility.FromJson<SaveWrapper>(json).workers;
+                _playerMoney = data.money;
+
+                // ЗАПОМИНАЕМ ДЕНЬ
+                loadedDay = data.currentDay > 0 ? data.currentDay : 1;
+
+                // Если менеджер смены УЖЕ есть (редкий случай), передаем сразу
+                if (ShiftManager.Instance != null)
+                    ShiftManager.Instance.currentDay = loadedDay;
+
                 foreach (var worker in myWorkers)
                 {
                     worker.avatar = allPossibleTemplates.Find(t => t.templateId == worker.templateId).avatar;
                 }
+                Debug.Log($"[Load] Загружены данные: День {loadedDay}, Деньги {_playerMoney}");
             }
         }
 
@@ -92,7 +137,7 @@ namespace Assets.Modules.Save
                 ChangeMoney(-worker.buyPrice);
                 marketWorkers.Remove(worker);
                 myWorkers.Add(worker);
-                SaveGame();
+                SaveGame(ShiftManager.Instance.currentDay);
             }
         }
 
@@ -101,7 +146,7 @@ namespace Assets.Modules.Save
             int oldMoney = _playerMoney;
             _playerMoney += amount;
             OnMoneyChanged?.Invoke(oldMoney, _playerMoney, amount);
-            SaveGame();
+            SaveGame(ShiftManager.Instance.currentDay);
         }
 
         public GameObject GetWorkerPrefab(string templateId)
@@ -119,7 +164,7 @@ namespace Assets.Modules.Save
 
             myWorkers.Remove(worker);
             ChangeMoney(worker.sellPrice);
-            SaveGame();
+            SaveGame(ShiftManager.Instance.currentDay);
         }
         // Единая логика множителей для всех расчетов
         private float GetPositionMultiplier(Position pos)
@@ -192,10 +237,16 @@ namespace Assets.Modules.Save
 
                 worker.sellPrice = CalculateValue(worker, false);
 
-                SaveGame();
+                SaveGame(ShiftManager.Instance.currentDay);
             }
         }
 
-        [System.Serializable] private class SaveWrapper { public List<WorkerInstance> workers; }
+        [System.Serializable]
+        private class SaveWrapper
+        {
+            public List<WorkerInstance> workers;
+            public int money;
+            public int currentDay; // ДОБАВЬ ЭТО СЮДА
+        }
     }
 }

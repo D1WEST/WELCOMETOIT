@@ -47,13 +47,6 @@ namespace Assets.Modules.PlayerModule
         [Header("Animation")]
 
         [SerializeField] private PlayerCameraService _playerCamera;
-
-        [Header("Stamina Settings")]
-        [SerializeField] private float _maxStamina = 100f;
-        [SerializeField] private float _sprintDepletionRate = 16f;
-        [SerializeField] private float _regenRate = 15f;
-        [SerializeField] private float _regenDelay = 0.5f;
-
         private bool _isSprinting = false;
 
         private void Start()

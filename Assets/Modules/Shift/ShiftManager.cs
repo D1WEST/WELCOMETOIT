@@ -30,18 +30,28 @@ public class ShiftManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    private void Start() => SetupNewDay();
+    private void Start()
+    {
+        if (GameDataManager.Instance != null)
+        {
+            currentDay = GameDataManager.Instance.loadedDay;
+        }
+
+        SetupNewDay();
+    }
 
     public void StartShift()
     {
         if (_isShiftActive) return;
 
-        _currentTimeInSeconds = 10 * 3600; // Старт в 10:00
+        // СОЗДАЕМ ЧЕКПОИНТ
+        GameDataManager.Instance.CreateCheckpoint();
+
+        _currentTimeInSeconds = 10 * 3600;
+        timeMultiplier = 120.0f; // Сбрасываем множитель на нормальный   НЕ ЗАБУДЬ ПОМЕНЯТЬ КОГДА ПРИЙДЕТ ВРЕМЯ МЕНЯТЬ МУЛЬТИПЛАЕР
         _isShiftActive = true;
         currentProgress = 0;
-
-        Debug.Log($"Смена дня {currentDay} началась!");
-        OnProgressChanged?.Invoke(currentProgress, targetGoal);
+        SetupNewDay();
     }
 
     private void Update()
@@ -78,25 +88,43 @@ public class ShiftManager : MonoBehaviour
 
     public void AddProgress(float amount, Vector3 worldPos)
     {
-        // Если здесь будет false, прогресс никогда не прибавится
-        if (!_isShiftActive)
-        {
-            Debug.LogWarning("AddProgress вызван, но смена не активна!");
-            return;
-        }
+        if (!_isShiftActive) return;
 
         currentProgress += amount;
-
-        // Проверка: вызывается ли событие?
         OnProgressChanged?.Invoke(currentProgress, targetGoal);
+
+        // ПОБЕДА: Если набрали очки раньше времени
+        if (currentProgress >= targetGoal)
+        {
+            timeMultiplier = 12000f; // ВРЕМЯ ЛЕТИТ (Time Skip)
+        }
     }
 
     private void EndShift()
     {
         _isShiftActive = false;
-        currentDay++;
-        Debug.Log("Смена завершена. Подготовка к следующему дню...");
-        SetupNewDay();
+
+        if (currentProgress < targetGoal - 0.1f)
+        {
+            GameDataManager.Instance.RestoreCheckpoint();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        }
+        else
+        {
+            CalculatePaycheck();
+        }
+    }
+    private void CalculatePaycheck()
+    {
+        int activeRooms = rooms.FindAll(r => r.roomManager.isOpened).Count;
+        float amount = (activeRooms * 1000) * (currentDay * 0.05f);
+        int finalBonus = Mathf.RoundToInt(amount);
+
+        // Находим игрока на сцене, чтобы заблочить его
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        // Показываем чек и передаем ссылку на игрока
+        PaycheckUIController.Instance.ShowPaycheck(finalBonus, player);
     }
 
     private void UpdateClockUI()
