@@ -38,7 +38,7 @@ public class ShiftManager : MonoBehaviour
         {
             currentDay = GameDataManager.Instance.loadedDay;
         }
-        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").ByIndex(1).WithVolume(0.2f).Cycle()).Forget();
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").AsRandomPlaylist().WithVolume(0.06f).Cycle()).Forget();
         SetupNewDay();
     }
 

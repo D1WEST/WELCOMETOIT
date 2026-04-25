@@ -1,4 +1,5 @@
-﻿using Assets.Modules.Interractables;
+﻿using Assets.Modules.Audio;
+using Assets.Modules.Interractables;
 using Assets.Modules.Interractables.Impl;
 using Assets.Modules.NPC;
 using Assets.Modules.Save;
@@ -69,6 +70,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         }
         else if (_data.status == WorkerStatus.Sleeping)
         {
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Emotion_Sleepy").WithVolume(0.2f).RandomSound().AsKeyInstance().At(this.transform));
             _data.currentSleepiness -= (_sleepGrowthPerSec * 4f) * gameTimeStep;
             _data.currentAnger -= (_angerGrowthPerSec * 4f) * gameTimeStep;
         }
@@ -119,6 +121,8 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     private async UniTaskVoid PerformKick()
     {
         _isKicking = true;
+
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Emotion_Angry").WithVolume(0.2f).RandomSound().At(this.transform));
 
         var desk = GetComponentInParent<WorkplaceInteractable>();
         if (desk != null && desk.hasMonitor)

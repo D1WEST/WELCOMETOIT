@@ -16,3 +16,15 @@ MonoBehaviour:
   - key: Music
     clips:
     - {fileID: 8300000, guid: c349c09a11b96fe4db7e41ec513fdf7e, type: 3}
+    - {fileID: 8300000, guid: 6a2fa6b452b43d54581e7d624b1542a6, type: 3}
+    - {fileID: 8300000, guid: df5fe1a53deaed640a49435d379803d5, type: 3}
+  - key: Emotion_Angry
+    clips:
+    - {fileID: 8300000, guid: b78c202f9ebb4084f80f357e0a3a7b91, type: 3}
+    - {fileID: 8300000, guid: 7b15b16789980ac409255d291bafa552, type: 3}
+    - {fileID: 8300000, guid: 4355120c655a0f4419532109435bf839, type: 3}
+    - {fileID: 8300000, guid: 63d5d0192f7efe140b23b96b2580c37a, type: 3}
+  - key: Emotion_Sleepy
+    clips:
+    - {fileID: 8300000, guid: c320b88aa6ad4c8438d1444da38e9161, type: 3}
+    - {fileID: 8300000, guid: 29b8136329364bb419a4dce7e9df2066, type: 3}

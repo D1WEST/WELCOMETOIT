@@ -19,7 +19,7 @@ public class MainMenuController : MonoBehaviour
 
     private void Start()
     {
-        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").ByIndex(0).WithVolume(0.2f).Cycle()).Forget();
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").ByIndex(0).WithVolume(0.06f).Cycle()).Forget();
     }
 
     // Путь к файлу сохранения — должен быть таким же, как в GameDataManager
