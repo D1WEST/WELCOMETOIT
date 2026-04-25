@@ -28,3 +28,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: c320b88aa6ad4c8438d1444da38e9161, type: 3}
     - {fileID: 8300000, guid: 29b8136329364bb419a4dce7e9df2066, type: 3}
+  - key: Move
+    clips:
+    - {fileID: 8300000, guid: 969e6717fdab71a43a6fb5c4f6b0cda6, type: 3}
+    - {fileID: 8300000, guid: faa3ad32577daba4e8c913f0ad8816e8, type: 3}

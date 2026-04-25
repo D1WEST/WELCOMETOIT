@@ -70,7 +70,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         }
         else if (_data.status == WorkerStatus.Sleeping)
         {
-            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Emotion_Sleepy").WithVolume(0.2f).RandomSound().AsKeyInstance().At(this.transform));
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Emotion_Sleepy").WithVolume(0.1f).RandomSound().AsKeyInstance().At(this.transform));
             _data.currentSleepiness -= (_sleepGrowthPerSec * 4f) * gameTimeStep;
             _data.currentAnger -= (_angerGrowthPerSec * 4f) * gameTimeStep;
         }
@@ -164,6 +164,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
     private void PerformSlap()
     {
+        AudioManager.Instance.StopAudio(AudioQuery.ByKey("Emotion_Sleepy").At(this.transform));
         float baseSlapPower = 25f;
         float perkBonus = baseSlapPower * (0.2f * GameDataManager.Instance.playerPerks.slapLevel);
         float finalSlapEffect = baseSlapPower + perkBonus;
