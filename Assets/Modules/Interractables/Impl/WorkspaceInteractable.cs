@@ -11,8 +11,15 @@ namespace Assets.Modules.Interractables.Impl
     public class WorkplaceInteractable : MonoBehaviour, IInteractable
     {
         public static List<WorkplaceInteractable> AllDesks = new List<WorkplaceInteractable>();
+
+        [Header("Equipment")]
+        [SerializeField] private Transform monitorMountPoint;
+        [SerializeField] private MonitorPhysical monitorPrefab;
+        private MonitorPhysical _activeMonitor;
+        public bool hasMonitor { get; private set; }
+
         [Header("Save Settings")]
-        [SerializeField] private string workplaceId;
+        [SerializeField] public string workplaceId;
 
         [Header("Settings")]
         [SerializeField] private string promptEmpty = "Назначить работника";
@@ -42,7 +49,49 @@ namespace Assets.Modules.Interractables.Impl
         private async void Start()
         {
             await UniTask.Delay(100);
+
+            // 1. Сначала спавним монитор по умолчанию
+            SpawnInitialMonitor();
+
+            // 2. Затем пробуем восстановить рабочего
             RestoreAssignedWorker();
+        }
+        private void SpawnInitialMonitor()
+        {
+            if (monitorPrefab != null && monitorMountPoint != null)
+            {
+                _activeMonitor = Instantiate(monitorPrefab, monitorMountPoint.position, monitorMountPoint.rotation, monitorMountPoint);
+
+                // АВТОЗАПОЛНЕНИЕ ID: Передаем свой ID монитору
+                _activeMonitor.Initialize(this.workplaceId);
+
+                hasMonitor = true;
+            }
+            else
+            {
+                Debug.LogWarning($"На столу {workplaceId} не настроен префаб или точка монитора!");
+            }
+        }
+
+        public void KickMonitor()
+        {
+            if (!hasMonitor || _activeMonitor == null) return;
+
+            hasMonitor = false;
+            _activeMonitor.GetKicked();
+
+            GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
+        }
+
+        public void InstallMonitor(MonitorPhysical monitor)
+        {
+            _activeMonitor = monitor;
+            _activeMonitor.transform.SetParent(monitorMountPoint);
+            _activeMonitor.transform.localPosition = Vector3.zero;
+            _activeMonitor.transform.localRotation = Quaternion.identity;
+
+            _activeMonitor.Initialize(this.workplaceId);
+            hasMonitor = true;
         }
 
         private void RestoreAssignedWorker()
@@ -167,6 +216,13 @@ namespace Assets.Modules.Interractables.Impl
                     _currentWorker.status = WorkerStatus.Angry;
                     await UniTask.Delay(2000, cancellationToken: _workCts.Token);
                     _currentWorker.currentAnger -= 20;
+                    continue;
+                }
+
+                if (!room.isOpened || !room.isRoomActive || !hasMonitor)
+                {
+                    if (!hasMonitor && _currentWorker != null) _currentWorker.status = WorkerStatus.NoEquipment;
+                    await UniTask.Yield(PlayerLoopTiming.Update, _workCts.Token);
                     continue;
                 }
 

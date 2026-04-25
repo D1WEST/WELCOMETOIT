@@ -34,6 +34,12 @@ public class WorkplaceUIController : MonoBehaviour
 
     public void Open(WorkplaceInteractable desk, GameObject player)
     {
+        // Если на столе нет монитора - меню просто не откроется
+        if (!desk.hasMonitor)
+        {
+            return;
+        }
+
         _targetDesk = desk;
         _root.style.display = DisplayStyle.Flex;
 

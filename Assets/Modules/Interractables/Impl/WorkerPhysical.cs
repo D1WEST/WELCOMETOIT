@@ -1,6 +1,8 @@
-﻿using UnityEngine;
-using Assets.Modules.Interractables;
+﻿using Assets.Modules.Interractables;
+using Assets.Modules.Interractables.Impl;
 using Assets.Modules.NPC;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public class WorkerPhysical : MonoBehaviour, IInteractable
 {
@@ -10,6 +12,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     private float _sleepGrowthPerSec;
     private float _restlessGrowthPerSec;
     private float _angerGrowthPerSec;
+    private bool _isKicking = false;
 
     public string InteractionPrompt => (_data != null) ? "Шлепнуть! [E]" : "";
     public Transform InteractionPivot => transform;
@@ -38,8 +41,9 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         return 100f / secondsToFill;
     }
 
-    private void Update()
+    private async void Update()
     {
+
         if (_data == null || !ShiftManager.Instance.IsShiftActive || _data.isResting) return;
 
         float gameTimeStep = Time.deltaTime * ShiftManager.Instance.timeMultiplier;
@@ -59,6 +63,30 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
             _data.currentSleepiness -= (_sleepGrowthPerSec * 2f) * gameTimeStep;
             if (_data.currentSleepiness <= 0) _data.status = WorkerStatus.Working;
         }
+        if (_data.currentAnger >= 100 && !_isKicking)
+        {
+            await PerformKick();
+        }
+    }
+
+    private async UniTask PerformKick()
+    {
+        _isKicking = true;
+        _data.status = WorkerStatus.Angry;
+
+        // Находим стол
+        var desk = GetComponentInParent<WorkplaceInteractable>();
+        if (desk != null && desk.hasMonitor)
+        {
+            Debug.Log($"{_data.name} ПИНАЕТ МОНИТОР!");
+            // Здесь можно запустить анимацию пинка
+            await UniTask.Delay(1000); // Задержка перед ударом
+            desk.KickMonitor();
+        }
+
+        await UniTask.Delay(4000); // 5 секунд общей "ярости"
+        _data.currentAnger = 50; // Гнев падает наполовину
+        _isKicking = false;
     }
 
     public void Interact(GameObject interactor)

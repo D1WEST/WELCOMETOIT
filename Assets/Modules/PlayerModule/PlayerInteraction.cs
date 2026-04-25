@@ -9,6 +9,12 @@ using UnityEngine.UIElements;
 
 public class PlayerInteraction : MonoBehaviour
 {
+    public static PlayerInteraction Instance { get; private set; }
+    private MonitorPhysical _carriedMonitor;
+
+    [Header("Equipment Carrying")]
+    [SerializeField] private Transform handSlot; // Пустой объект перед камерой игрока
+
     [Header("Detection Settings")]
     [SerializeField] private float detectionRadius = 5f; // Дистанция появления надписи
     [SerializeField] private float interactionDistance = 3f; // Дистанция рейкаста для клика
@@ -33,6 +39,12 @@ public class PlayerInteraction : MonoBehaviour
     private float _holdTimer = 0f;
     private bool _isHolding = false;
     private WorkerPhysical _lastLookedWorker;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(this);
+    }
 
     private void OnEnable()
     {
@@ -59,7 +71,51 @@ public class PlayerInteraction : MonoBehaviour
         HandleInteractionLogic();
     }
 
+    public void PickUpMonitor(MonitorPhysical monitor)
+    {
+        // ЗАПРЕТ: Если в руках уже есть монитор - ничего не делаем
+        if (_carriedMonitor != null) return;
+
+        _carriedMonitor = monitor;
+
+        // Привязываем к рукам визуально
+        _carriedMonitor.transform.SetParent(handSlot);
+        _carriedMonitor.transform.localPosition = Vector3.zero;
+        _carriedMonitor.transform.localRotation = Quaternion.identity;
+
+        // Выключаем физику и коллайдер, чтобы он не мешал ходить
+        _carriedMonitor.SetPhysics(false);
+        if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = false;
+
+        Debug.Log($"Подобрали монитор {monitor.targetWorkplaceId}");
+    }
+
     private void LateUpdate() => UpdateUIPosition();
+
+    private void PerformInteraction()
+    {
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
+        {
+            // 1. Если несем монитор и смотрим на НУЖНЫЙ стол
+            if (_carriedMonitor != null && hit.collider.TryGetComponent<WorkplaceInteractable>(out var desk))
+            {
+                if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
+                {
+                    desk.InstallMonitor(_carriedMonitor);
+                    _carriedMonitor.gameObject.SetActive(true);
+                    _carriedMonitor = null;
+                    return;
+                }
+            }
+
+            // 2. Обычный подбор монитора или шлепок
+            if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
+            {
+                interactable.Interact(this.gameObject);
+            }
+        }
+    }
 
     private void FindInteractables()
     {
@@ -139,32 +195,31 @@ public class PlayerInteraction : MonoBehaviour
 
     private void HandleInteractionLogic()
     {
-        if (_focusedInteractable == null)
-        {
-            ResetHold();
-            return;
-        }
+        if (_focusedInteractable == null) { ResetHold(); return; }
 
-        // Логика CLICK
-        if (_focusedInteractable.InteractionType == InteractionType.Click)
+        if (interactAction.action.WasPressedThisFrame())
         {
-            if (interactAction.action.WasPressedThisFrame()) // Мгновенный отклик
+            // ПРИОРИТЕТ 1: Установка монитора
+            if (_carriedMonitor != null && _focusedInteractable is WorkplaceInteractable desk)
             {
-                _focusedInteractable.Interact(gameObject);
-            }
-        }
-        // Логика HOLD
-        else if (_isHolding)
-        {
-            _holdTimer += Time.deltaTime;
-            float progress = Mathf.Clamp01(_holdTimer / _focusedInteractable.HoldDuration);
-            _progressFill.style.width = Length.Percent(progress * 100);
+                if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
+                {
+                    // Включаем коллайдер обратно перед установкой
+                    if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
 
-            if (_holdTimer >= _focusedInteractable.HoldDuration)
-            {
-                _focusedInteractable.Interact(gameObject);
-                ResetHold();
+                    desk.InstallMonitor(_carriedMonitor);
+                    _carriedMonitor = null;
+                    return;
+                }
             }
+
+            if (_carriedMonitor != null && _focusedInteractable is MonitorPhysical)
+            {
+                Debug.Log("Руки заняты!");
+                return;
+            }
+
+            _focusedInteractable.Interact(gameObject);
         }
     }
 
@@ -186,6 +241,11 @@ public class PlayerInteraction : MonoBehaviour
     private void ShowUI(IInteractable interactable)
     {
         _promptLabel.text = interactable.InteractionPrompt;
+        if (_carriedMonitor != null && interactable is WorkplaceInteractable deskInt)
+        {
+            if (deskInt.workplaceId == _carriedMonitor.targetWorkplaceId)
+                _promptLabel.text = "Установить монитор [E]";
+        }
         _keyLabel.text = $"[{interactAction.action.GetBindingDisplayString()}]";
         _progressBg.style.display = interactable.InteractionType == InteractionType.Hold ? DisplayStyle.Flex : DisplayStyle.None;
         _promptRoot.style.display = DisplayStyle.Flex;
