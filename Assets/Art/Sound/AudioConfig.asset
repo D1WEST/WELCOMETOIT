@@ -32,3 +32,14 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 969e6717fdab71a43a6fb5c4f6b0cda6, type: 3}
     - {fileID: 8300000, guid: faa3ad32577daba4e8c913f0ad8816e8, type: 3}
+  - key: Generator
+    clips:
+    - {fileID: 8300000, guid: f53abf500d8df8c42bee790a846e5fcd, type: 3}
+    - {fileID: 8300000, guid: efcf17150cdee2648ac4136d1c078384, type: 3}
+    - {fileID: 8300000, guid: 255d00e8eb989d84bb936d4619fabb29, type: 3}
+    - {fileID: 8300000, guid: 5b5bfe80d29849f4589a19c3a3d7d549, type: 3}
+  - key: Keyboard
+    clips:
+    - {fileID: 8300000, guid: 7f8f2eaa403209c4f8ed88dfe4f2b1b3, type: 3}
+    - {fileID: 8300000, guid: 4882b8d37ef07e74081d9c2b600c875e, type: 3}
+    - {fileID: 8300000, guid: 6dc3d341d2b66134ab8694afb041721d, type: 3}

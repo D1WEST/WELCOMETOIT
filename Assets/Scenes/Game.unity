@@ -2259,7 +2259,7 @@ MonoBehaviour:
   _deceleration: 10
   _airControlMultiplier: 0.028
   _headSize: 0.25
-  _bodySize: 1.75
+  _bodySize: 1.25
   _crouchToStandRatio: 0.4
   _crouchSmoothTime: 0.05
   _playerCamera: {fileID: 933944157}
@@ -2282,7 +2282,7 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
+  m_Height: 1.5
   m_Radius: 0.25
   m_SlopeLimit: 45
   m_StepOffset: 0.3
