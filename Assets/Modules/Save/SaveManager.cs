@@ -90,7 +90,6 @@ namespace Assets.Modules.Save
                 {
                     worker.avatar = allPossibleTemplates.Find(t => t.templateId == worker.templateId).avatar;
                 }
-                Debug.Log($"[Load] Загружены данные: День {loadedDay}, Деньги {_playerMoney}");
             }
         }
 

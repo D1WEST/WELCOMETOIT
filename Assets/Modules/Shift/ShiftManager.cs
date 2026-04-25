@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Assets.Modules.Save;
+using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
-using Assets.Modules.Save;
 using UnityEngine;
 
 public class ShiftManager : MonoBehaviour
@@ -82,6 +83,7 @@ public class ShiftManager : MonoBehaviour
 
             if (isUnlocked) targetGoal += room.goalTarget;
         }
+        targetGoal += (1 + (currentDay * 0.05f));
 
         OnProgressChanged?.Invoke(0, targetGoal);
     }
@@ -103,28 +105,42 @@ public class ShiftManager : MonoBehaviour
     private void EndShift()
     {
         _isShiftActive = false;
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
 
         if (currentProgress < targetGoal - 0.1f)
         {
-            GameDataManager.Instance.RestoreCheckpoint();
-            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            // Показываем красный чек "Уволен"
+            PaycheckUIController.Instance.ShowResult(false, 0, player);
         }
         else
         {
-            CalculatePaycheck();
+            // УСПЕХ: считаем бонус
+            int activeRooms = rooms.FindAll(r => r.roomManager.isOpened).Count;
+            int bonus = Mathf.RoundToInt((activeRooms * 1000) * (currentDay * 0.05f));
+
+            PaycheckUIController.Instance.ShowResult(true, bonus, player);
         }
     }
+
+    private async void ShowFailEffect()
+    {
+        await UniTask.Delay(2000);
+
+        GameDataManager.Instance.RestoreCheckpoint();
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+    }
+
     private void CalculatePaycheck()
     {
         int activeRooms = rooms.FindAll(r => r.roomManager.isOpened).Count;
-        float amount = (activeRooms * 1000) * (currentDay * 0.05f);
+        float amount = (activeRooms * 1000) * (1+(currentDay * 0.05f));
         int finalBonus = Mathf.RoundToInt(amount);
 
         // Находим игрока на сцене, чтобы заблочить его
         GameObject player = GameObject.FindGameObjectWithTag("Player");
 
         // Показываем чек и передаем ссылку на игрока
-        PaycheckUIController.Instance.ShowPaycheck(finalBonus, player);
+        PaycheckUIController.Instance.ShowResult(true,finalBonus, player);
     }
 
     private void UpdateClockUI()
