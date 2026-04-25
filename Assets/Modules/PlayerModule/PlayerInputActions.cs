@@ -358,6 +358,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Drop"",
+                    ""type"": ""Button"",
+                    ""id"": ""1a31813a-4f5e-4b0e-baa1-fc06b3328961"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -393,6 +402,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Interaction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""31dd0d29-fcd1-474a-a130-a506d6f86fc2"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Drop"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -411,6 +431,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerInteractionActions_MainAction = m_PlayerInteractionActions.FindAction("MainAction", throwIfNotFound: true);
         m_PlayerInteractionActions_SecondAction = m_PlayerInteractionActions.FindAction("SecondAction", throwIfNotFound: true);
         m_PlayerInteractionActions_Interaction = m_PlayerInteractionActions.FindAction("Interaction", throwIfNotFound: true);
+        m_PlayerInteractionActions_Drop = m_PlayerInteractionActions.FindAction("Drop", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -635,6 +656,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerInteractionActions_MainAction;
     private readonly InputAction m_PlayerInteractionActions_SecondAction;
     private readonly InputAction m_PlayerInteractionActions_Interaction;
+    private readonly InputAction m_PlayerInteractionActions_Drop;
     /// <summary>
     /// Provides access to input actions defined in input action map "PlayerInteractionActions".
     /// </summary>
@@ -658,6 +680,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "PlayerInteractionActions/Interaction".
         /// </summary>
         public InputAction @Interaction => m_Wrapper.m_PlayerInteractionActions_Interaction;
+        /// <summary>
+        /// Provides access to the underlying input action "PlayerInteractionActions/Drop".
+        /// </summary>
+        public InputAction @Drop => m_Wrapper.m_PlayerInteractionActions_Drop;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -693,6 +719,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Interaction.started += instance.OnInteraction;
             @Interaction.performed += instance.OnInteraction;
             @Interaction.canceled += instance.OnInteraction;
+            @Drop.started += instance.OnDrop;
+            @Drop.performed += instance.OnDrop;
+            @Drop.canceled += instance.OnDrop;
         }
 
         /// <summary>
@@ -713,6 +742,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Interaction.started -= instance.OnInteraction;
             @Interaction.performed -= instance.OnInteraction;
             @Interaction.canceled -= instance.OnInteraction;
+            @Drop.started -= instance.OnDrop;
+            @Drop.performed -= instance.OnDrop;
+            @Drop.canceled -= instance.OnDrop;
         }
 
         /// <summary>
@@ -817,5 +849,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnInteraction(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Drop" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDrop(InputAction.CallbackContext context);
     }
 }

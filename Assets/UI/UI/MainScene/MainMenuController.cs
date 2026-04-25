@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement; // Добавлено для загрузки сцен
+using System.IO; // Необходимо для работы с файлами
+using System.Collections.Generic;
 
 public class MainMenuController : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private UIDocument _uiDocument;
     [SerializeField] private InputActionAsset _inputActions;
 
@@ -12,49 +14,106 @@ public class MainMenuController : MonoBehaviour
     private VisualElement _optionsMenu;
     private VisualElement _rebindList;
 
-    void OnEnable()
+    // Путь к файлу сохранения — должен быть таким же, как в GameDataManager
+    private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
+
+    private void OnEnable()
     {
         var root = _uiDocument.rootVisualElement;
 
+        // Кэшируем контейнеры
         _mainMenu = root.Q<VisualElement>("main-menu");
         _optionsMenu = root.Q<VisualElement>("options-menu");
         _rebindList = root.Q<VisualElement>("rebind-list");
 
         // --- Кнопки главного меню ---
-        root.Q<Button>("btn-play").clicked += OnPlayClicked; // Новая кнопка "Играть"
-        root.Q<Button>("btn-options").clicked += OpenOptions;
-        root.Q<Button>("btn-exit").clicked += OnExitClicked; // Выход из игры
+        var btnContinue = root.Q<Button>("btn-continue");
+        var btnNewGame = root.Q<Button>("btn-new-game");
+        var btnOptions = root.Q<Button>("btn-options");
+        var btnExit = root.Q<Button>("btn-exit");
+
+        if (btnContinue != null) btnContinue.clicked += OnContinueClicked;
+        if (btnNewGame != null) btnNewGame.clicked += OnNewGameClicked;
+        if (btnOptions != null) btnOptions.clicked += OpenOptions;
+        if (btnExit != null) btnExit.clicked += OnExitClicked;
 
         // --- Кнопки настроек ---
-        root.Q<Button>("btn-back").clicked += CloseOptions;
-        root.Q<Button>("btn-save").clicked += SaveBindings;
-        root.Q<Button>("btn-reset").clicked += ResetBindings;
+        var btnBack = root.Q<Button>("btn-back");
+        var btnSave = root.Q<Button>("btn-save");
+        var btnReset = root.Q<Button>("btn-reset");
+
+        if (btnBack != null) btnBack.clicked += CloseOptions;
+        if (btnSave != null) btnSave.clicked += SaveBindings;
+        if (btnReset != null) btnReset.clicked += ResetBindings;
+
+        // --- Проверка сохранения при запуске ---
+        CheckSaveFile(btnContinue, root.Q<VisualElement>("wrapper-continue"));
 
         LoadBindings();
     }
 
-    // ==========================================
-    // ЛОГИКА ГЛАВНОГО МЕНЮ
-    // ==========================================
-
-    private void OnPlayClicked()
+    private void CheckSaveFile(Button continueBtn, VisualElement wrapper)
     {
-        Debug.Log("Запуск загрузочного экрана...");
+        if (continueBtn == null) return;
 
-        // Вместо SceneManager.LoadScene(1) используем:
-        if (GlobalSceneLoader.Instance != null)
+        if (File.Exists(SavePath))
         {
-            GlobalSceneLoader.Instance.LoadSceneAsync(1); // Грузим Сцену 1
+            // Сохранение есть: кнопка активна
+            continueBtn.SetEnabled(true);
+            continueBtn.style.opacity = 1.0f;
+            if (wrapper != null) wrapper.pickingMode = PickingMode.Position;
         }
         else
         {
-            Debug.LogError("Объект GlobalSceneLoader не найден на сцене!");
+            // Сохранения нет: выключаем кнопку
+            continueBtn.SetEnabled(false);
+            continueBtn.style.opacity = 0.3f;
+            // Чтобы не срабатывал hover эффект на враппере
+            if (wrapper != null) wrapper.pickingMode = PickingMode.Ignore;
+        }
+    }
+
+    // ==========================================
+    // ЛОГИКА ПЕРЕХОДОВ
+    // ==========================================
+
+    private void OnContinueClicked()
+    {
+        Debug.Log("Загрузка существующего сохранения...");
+        StartGame();
+    }
+
+    private void OnNewGameClicked()
+    {
+        Debug.Log("Начало новой игры. Удаление старых данных...");
+
+        if (File.Exists(SavePath))
+        {
+            File.Delete(SavePath);
+        }
+
+        // Очищаем другие данные, если нужно (например, текущий день в PlayerPrefs)
+        // PlayerPrefs.DeleteKey("CurrentDay");
+
+        StartGame();
+    }
+
+    private void StartGame()
+    {
+        // Используем твой GlobalSceneLoader, если он есть
+        if (GlobalSceneLoader.Instance != null)
+        {
+            GlobalSceneLoader.Instance.LoadSceneAsync(1);
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(1);
         }
     }
 
     private void OnExitClicked()
     {
-        Debug.Log("Выход из игры...");
+        Debug.Log("Выход из приложения...");
         Application.Quit();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -62,23 +121,23 @@ public class MainMenuController : MonoBehaviour
     }
 
     // ==========================================
-    // ЛОГИКА НАСТРОЕК (ВАШ КОД)
+    // ЛОГИКА НАСТРОЕК
     // ==========================================
 
-    void OpenOptions()
+    private void OpenOptions()
     {
         _mainMenu.style.display = DisplayStyle.None;
         _optionsMenu.style.display = DisplayStyle.Flex;
         RefreshRebindUI();
     }
 
-    void CloseOptions()
+    private void CloseOptions()
     {
         _mainMenu.style.display = DisplayStyle.Flex;
         _optionsMenu.style.display = DisplayStyle.None;
     }
 
-    void RefreshRebindUI()
+    private void RefreshRebindUI()
     {
         _rebindList.Clear();
 
@@ -105,7 +164,7 @@ public class MainMenuController : MonoBehaviour
         }
     }
 
-    void CreateRebindRow(InputAction action, int bindingIndex, string displayName)
+    private void CreateRebindRow(InputAction action, int bindingIndex, string displayName)
     {
         VisualElement row = new VisualElement();
         row.AddToClassList("rebind-row");
@@ -123,9 +182,9 @@ public class MainMenuController : MonoBehaviour
         _rebindList.Add(row);
     }
 
-    void StartRebind(InputAction action, int bindingIndex, Button btn)
+    private void StartRebind(InputAction action, int bindingIndex, Button btn)
     {
-        btn.text = "WAITING...";
+        btn.text = "ЖДЕМ КЛАВИШУ...";
         action.Disable();
 
         var rebind = action.PerformInteractiveRebinding(bindingIndex)
@@ -147,21 +206,21 @@ public class MainMenuController : MonoBehaviour
         rebind.Start();
     }
 
-    void SaveBindings()
+    private void SaveBindings()
     {
         PlayerPrefs.SetString("rebinds", _inputActions.SaveBindingOverridesAsJson());
         PlayerPrefs.Save();
-        Debug.Log("Настройки управления сохранены!");
+        Debug.Log("Управление сохранено в PlayerPrefs");
     }
 
-    void LoadBindings()
+    private void LoadBindings()
     {
         string rebinds = PlayerPrefs.GetString("rebinds");
         if (!string.IsNullOrEmpty(rebinds))
             _inputActions.LoadBindingOverridesFromJson(rebinds);
     }
 
-    void ResetBindings()
+    private void ResetBindings()
     {
         _inputActions.RemoveAllBindingOverrides();
         RefreshRebindUI();

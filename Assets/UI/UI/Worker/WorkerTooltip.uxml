@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML 
+    xmlns:ui="UnityEngine.UIElements" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" 
+    editor-extension-mode="False">
+
+    <ui:VisualElement name="worker-tooltip" style="position: absolute; width: 180px; background-color: rgba(30, 30, 30, 0.95); border-radius: 8px; border-width: 2px; border-color: white; padding: 10px; display: none;">
+        
+        <ui:Label name="name-label" text="Рабочий" style="color: white; -unity-font-style: bold; font-size: 16px; margin-bottom: 8px; -unity-text-align: middle-center;"/>
+
+        <ui:VisualElement style="margin-bottom: 6px;">
+            <ui:Label text="Усталость (Сон)" style="color: #59C2FF; font-size: 10px; -unity-font-style: bold; margin-bottom: 2px;"/>
+            <ui:VisualElement style="height: 8px; background-color: rgb(20, 20, 20); border-radius: 4px; overflow: hidden; border-width: 1px; border-color: rgba(255, 255, 255, 0.1);">
+                <ui:VisualElement name="bar-sleep" style="width: 50%; height: 100%; background-color: rgb(33, 150, 243);" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="margin-bottom: 6px;">
+            <ui:Label text="Раздражительность" style="color: #FF5252; font-size: 10px; -unity-font-style: bold; margin-bottom: 2px;"/>
+            <ui:VisualElement style="height: 8px; background-color: rgb(20, 20, 20); border-radius: 4px; overflow: hidden; border-width: 1px; border-color: rgba(255, 255, 255, 0.1);">
+                <ui:VisualElement name="bar-anger" style="width: 20%; height: 100%; background-color: rgb(244, 67, 54);" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement>
+            <ui:Label text="Непоседливость" style="color: #FFD700; font-size: 10px; -unity-font-style: bold; margin-bottom: 2px;"/>
+            <ui:VisualElement style="height: 8px; background-color: rgb(20, 20, 20); border-radius: 4px; overflow: hidden; border-width: 1px; border-color: rgba(255, 255, 255, 0.1);">
+                <ui:VisualElement name="bar-restless" style="width: 80%; height: 100%; background-color: rgb(255, 235, 59);" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace Assets.Modules.Save
@@ -17,12 +18,15 @@ namespace Assets.Modules.Save
 
         public static event Action<int, int, int> OnMoneyChanged;
 
+        public int loadedDay { get; private set; } = 1;
+
         public List<WorkerInstance> myWorkers = new List<WorkerInstance>();
         public List<WorkerInstance> marketWorkers = new List<WorkerInstance>();
 
         [SerializeField] private List<WorkerSettings> allPossibleTemplates; // Заполнить в инспекторе
 
         private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
+        private string _checkpointJson;
 
         private void Awake()
         {
@@ -30,10 +34,46 @@ namespace Assets.Modules.Save
             LoadGame();
         }
 
-        public void SaveGame()
+        public void SaveGame(int currentDay)
         {
-            string json = JsonUtility.ToJson(new SaveWrapper { workers = myWorkers });
+            string json = JsonUtility.ToJson(new SaveWrapper
+            {
+                workers = myWorkers,
+                money = _playerMoney,
+                currentDay = currentDay,
+                perks = playerPerks
+            });
             File.WriteAllText(SavePath, json);
+        }
+
+        public void CreateCheckpoint()
+        {
+            _checkpointJson = JsonUtility.ToJson(new SaveWrapper
+            {
+                workers = myWorkers,
+                money = _playerMoney,
+                currentDay = ShiftManager.Instance != null ? ShiftManager.Instance.currentDay : loadedDay,
+                perks = playerPerks
+            });
+        }
+
+        public void RestoreCheckpoint()
+        {
+            if (string.IsNullOrEmpty(_checkpointJson)) return;
+
+            var data = JsonUtility.FromJson<SaveWrapper>(_checkpointJson);
+            myWorkers = data.workers;
+            _playerMoney = data.money;
+            playerPerks = data.perks;
+
+            foreach (var worker in myWorkers)
+            {
+                var template = allPossibleTemplates.Find(t => t.templateId == worker.templateId);
+                if (template != null) worker.avatar = template.avatar;
+                worker.isAssigned = false;
+            }
+
+            SaveGame(data.currentDay);
         }
 
         public void LoadGame()
@@ -41,10 +81,21 @@ namespace Assets.Modules.Save
             if (File.Exists(SavePath))
             {
                 string json = File.ReadAllText(SavePath);
-                myWorkers = JsonUtility.FromJson<SaveWrapper>(json).workers;
+                var data = JsonUtility.FromJson<SaveWrapper>(json);
+
+                myWorkers = data.workers;
+                _playerMoney = data.money;
+                loadedDay = data.currentDay > 0 ? data.currentDay : 1;
+
+                playerPerks = data.perks ?? new PerkData();
+
+                if (ShiftManager.Instance != null)
+                    ShiftManager.Instance.currentDay = loadedDay;
+
                 foreach (var worker in myWorkers)
                 {
-                    worker.avatar = allPossibleTemplates.Find(t => t.templateId == worker.templateId).avatar;
+                    var template = allPossibleTemplates.Find(t => t.templateId == worker.templateId);
+                    if (template != null) worker.avatar = template.avatar;
                 }
             }
         }
@@ -71,10 +122,10 @@ namespace Assets.Modules.Save
 
                 float basePrice = template.buyPrice > 0 ? template.buyPrice : 50f;
 
-                float skillsValue = (worker.workPower * 25f)  // Скорость - самый дорогой стат
-                                  + (worker.patience * 10f)   // Концентрация - полезно
-                                  - (worker.sleepiness * 8f)  // Сонливость - штраф
-                                  - (worker.angriness * 8f);  // Гнев - штраф
+                float skillsValue = (worker.workPower * 25f)
+                                  + (worker.patience * 10f)
+                                  - (worker.sleepiness * 8f)
+                                  - (worker.angriness * 8f);
 
                 float finalPrice = (basePrice + skillsValue) * positionMultiplier;
 
@@ -92,7 +143,7 @@ namespace Assets.Modules.Save
                 ChangeMoney(-worker.buyPrice);
                 marketWorkers.Remove(worker);
                 myWorkers.Add(worker);
-                SaveGame();
+                SaveGame(ShiftManager.Instance.currentDay);
             }
         }
 
@@ -101,7 +152,7 @@ namespace Assets.Modules.Save
             int oldMoney = _playerMoney;
             _playerMoney += amount;
             OnMoneyChanged?.Invoke(oldMoney, _playerMoney, amount);
-            SaveGame();
+            SaveGame(ShiftManager.Instance.currentDay);
         }
 
         public GameObject GetWorkerPrefab(string templateId)
@@ -119,7 +170,7 @@ namespace Assets.Modules.Save
 
             myWorkers.Remove(worker);
             ChangeMoney(worker.sellPrice);
-            SaveGame();
+            SaveGame(ShiftManager.Instance.currentDay);
         }
         // Единая логика множителей для всех расчетов
         private float GetPositionMultiplier(Position pos)
@@ -192,10 +243,36 @@ namespace Assets.Modules.Save
 
                 worker.sellPrice = CalculateValue(worker, false);
 
-                SaveGame();
+                SaveGame(ShiftManager.Instance.currentDay);
             }
         }
 
-        [System.Serializable] private class SaveWrapper { public List<WorkerInstance> workers; }
+        [System.Serializable]
+        private class SaveWrapper
+        {
+            public List<WorkerInstance> workers;
+            public int money;
+            public int currentDay; // ДОБАВЬ ЭТО СЮДА
+            public PerkData perks;
+        }
+
+        [System.Serializable]
+        public class PerkData
+        {
+            public int slapLevel = 0;      // Хлесткий шлепок
+            public int noseLevel = 0;      // Чуткий нос
+            public int goldMineLevel = 0;  // Золотая жила
+            public int tastyBonusLevel = 0;// Вкусная поручка
+        }
+
+        public PerkData playerPerks = new PerkData();
+
+        private readonly int[] perkPrices = { 1000, 5000, 10000, 25000, 75000 };
+
+        public int GetPerkPrice(int currentLevel)
+        {
+            if (currentLevel >= 5) return -1;
+            return perkPrices[currentLevel];
+        }
     }
 }

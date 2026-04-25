@@ -34,6 +34,12 @@ public class WorkplaceUIController : MonoBehaviour
 
     public void Open(WorkplaceInteractable desk, GameObject player)
     {
+        // Если на столе нет монитора - меню просто не откроется
+        if (!desk.hasMonitor)
+        {
+            return;
+        }
+
         _targetDesk = desk;
         _root.style.display = DisplayStyle.Flex;
 
@@ -59,8 +65,6 @@ public class WorkplaceUIController : MonoBehaviour
         _listContainer.Clear();
         var myWorkers = GameDataManager.Instance.myWorkers;
 
-        Debug.Log($"WorkplaceUI: Найдено в базе {myWorkers.Count} рабочих. Начинаю отрисовку...");
-
         foreach (var worker in myWorkers)
         {
             // 1. Создаем экземпляр шаблона
@@ -77,8 +81,6 @@ public class WorkplaceUIController : MonoBehaviour
 
                 // 4. Добавляем в список
                 _listContainer.Add(card);
-
-                Debug.Log($"Карточка для {worker.name} успешно добавлена в ScrollView");
             }
             else
             {
@@ -91,7 +93,7 @@ public class WorkplaceUIController : MonoBehaviour
     {
         if (data == null) return;
 
-        // Безопасно ищем элементы. Если имя в UXML не совпадет, переменная будет null
+        // 1. Ищем элементы (используем твои имена из UXML)
         var nameLabel = card.Q<Label>("name-label");
         var idLabel = card.Q<Label>("id-label");
         var posLabel = card.Q<Label>("pos-label");
@@ -100,10 +102,9 @@ public class WorkplaceUIController : MonoBehaviour
         var sleepLabel = card.Q<Label>("stat-sleep");
         var angerLabel = card.Q<Label>("stat-anger");
         var avatarBox = card.Q<VisualElement>("avatar");
+        var btn = card.Q<Button>("action-btn");
 
-        // ПРИСВАИВАЕМ ЗНАЧЕНИЯ ТОЛЬКО ЕСЛИ ЭЛЕМЕНТЫ НАЙДЕНЫ
         if (nameLabel != null) nameLabel.text = data.name;
-        else Debug.LogWarning("FillCardData: Не найден элемент 'name-label'");
 
         if (idLabel != null) idLabel.text = $"ID: {data.templateId}";
 
@@ -117,30 +118,33 @@ public class WorkplaceUIController : MonoBehaviour
         if (avatarBox != null && data.avatar != null)
             avatarBox.style.backgroundImage = new StyleBackground(data.avatar);
 
-        var btn = card.Q<Button>("action-btn");
         if (btn != null)
         {
-            // Если рабочий уже назначен на какой-то ДРУГОЙ стол
+            btn.style.backgroundColor = new StyleColor(StyleKeyword.Null);
+
             if (data.isAssigned)
             {
-                var currentDesk = WorkplaceInteractable.FindDeskByWorker(data);
-                // Если он сидит именно за ЭТИМ столом, который мы открыли
-                if (currentDesk == _targetDesk)
+                if (data.assignedWorkplaceId == _targetDesk.workplaceId)
                 {
                     btn.text = "УЖЕ ТУТ";
-                    btn.SetEnabled(false); // Нельзя назначить на то же самое место
+                    btn.SetEnabled(false);
+                    btn.style.opacity = 0.5f;
                 }
                 else
                 {
-                    btn.text = "ПЕРЕВЕСТИ";
-                    btn.style.backgroundColor = new StyleColor(Color.cyan);
+                    btn.text = $"ЗА СТАНЦИЕЙ: {data.assignedWorkplaceId}";
                     btn.SetEnabled(true);
+                    btn.style.backgroundColor = new StyleColor(new Color(0f, 0.6f, 0.8f, 0.8f));
+                    btn.style.fontSize = 10;
                 }
             }
             else
             {
                 btn.text = "НАЗНАЧИТЬ";
                 btn.SetEnabled(true);
+                btn.style.opacity = 1.0f;
+                btn.style.fontSize = 12;
+                btn.style.backgroundColor = new StyleColor(new Color(0.2f, 0.5f, 0.2f, 0.9f));
             }
 
             btn.clicked += () => {

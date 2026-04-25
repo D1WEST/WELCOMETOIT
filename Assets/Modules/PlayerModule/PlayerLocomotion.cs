@@ -47,13 +47,6 @@ namespace Assets.Modules.PlayerModule
         [Header("Animation")]
 
         [SerializeField] private PlayerCameraService _playerCamera;
-
-        [Header("Stamina Settings")]
-        [SerializeField] private float _maxStamina = 100f;
-        [SerializeField] private float _sprintDepletionRate = 16f;
-        [SerializeField] private float _regenRate = 15f;
-        [SerializeField] private float _regenDelay = 0.5f;
-
         private bool _isSprinting = false;
 
         private void Start()
@@ -65,9 +58,25 @@ namespace Assets.Modules.PlayerModule
         {
             _selectedSpeed = _walkSpeed;
             if (_controller == null) _controller = GetComponent<CharacterController>();
-            if (_camera == null) _camera = GetComponent<Camera>();
+
+            if (_camera == null)
+            {
+                Camera[] allCameras = GetComponentsInChildren<Camera>();
+                foreach (var cam in allCameras)
+                {
+                    if (cam.CompareTag("MainCamera"))
+                    {
+                        _camera = cam;
+                        break;
+                    }
+                }
+            }
+
             if (_playerCamera == null) _playerCamera = GetComponent<PlayerCameraService>();
             _playerCamera.Initialize();
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
         private void Update()

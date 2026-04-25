@@ -29,15 +29,15 @@ namespace Assets.Modules.Room
         private void RefreshUI()
         {
             if (_roomListContainer == null) return;
-
             _roomListContainer.Clear();
 
             foreach (var room in rooms)
             {
                 if (room == null) continue;
 
-                var (current, target, error) = room.GetProductivity();
+                if (!room.isOpened) continue;
 
+                var (current, target, error) = room.GetProductivity();
                 _roomListContainer.Add(CreateRoomRow(room.roomName, current, target, error));
             }
         }

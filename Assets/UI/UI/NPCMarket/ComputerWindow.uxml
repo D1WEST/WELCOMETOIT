@@ -15,14 +15,6 @@
             </ui:VisualElement>
             
             <ui:Button name="btn-refresh" text="Refresh Market" class="refresh-btn"/>
-            
-            <ui:VisualElement class="table-header">
-                <ui:Label text="Name" class="col-name" style="margin-left: 60px;"/>
-                <ui:Label text="Type" class="col-type"/>
-                <ui:Label text="Level" class="col-level"/>
-                <ui:Label text="Speed" class="col-speed"/>
-                <ui:Label text="Time Left" class="col-time"/>
-            </ui:VisualElement>
 
             <ui:ScrollView name="worker-list" style="flex-grow: 1; margin-top: 10px;" show-horizontal-scroller="Never" />
             
