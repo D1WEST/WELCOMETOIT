@@ -26,9 +26,6 @@ namespace Assets.Modules.Tutorial
             // 1. ГЛОБАЛЬНАЯ ПРОВЕРКА: Если Босс заткнут — вообще ничего не считаем
             if (!GameDataManager.Instance.bossHintsEnabled) return;
 
-            // Работает только на первом дне
-            if (GameDataManager.Instance.loadedDay != 1) return;
-
             _timer += Time.deltaTime;
             if (_timer < _checkCooldown) return;
 
