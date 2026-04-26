@@ -20,5 +20,5 @@
         </ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:Label text="* Выберите сотрудника для текущего стола. Занятые сотрудники будут переведены автоматически." style="color: gray; font-size: 11px; margin-top: 10px;" />
+    <ui:Label text="* Выберите сотрудника для текущего стола. Занятые сотрудники будут переведены автоматически." class="footer-hint-text" />
 </ui:UXML>

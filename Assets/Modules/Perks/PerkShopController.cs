@@ -34,6 +34,17 @@ namespace Assets.Modules.Perks
                     if (!GameDataManager.Instance.bossHintsEnabled) BossMessageUI.Instance.ForceHide();
                 };
             }
+
+            var overlay = _root.Q<VisualElement>("overlay");
+            if (overlay != null)
+            {
+                overlay.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                // Если оверлея нет, прячем всё содержимое через первый контейнер
+                _root.style.display = DisplayStyle.None;
+            }
         }
 
         private void UpdateMuteButton()

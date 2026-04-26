@@ -91,5 +91,17 @@
     white-space: normal; /* Разрешить перенос строк */
 }
 
+.footer-hint-text {
+    color: rgba(255, 255, 255, 0.35); /* Тускло-белый */
+    font-size: 13px;
+    -unity-font-style: italic;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.1);
+    -unity-text-align: middle-left;
+    white-space: normal; /* Разрешить перенос строк */
+}
+
 /* Мы больше не используем DisplayStyle.None в коде, 
    поэтому сегменты всегда будут в ряд. */

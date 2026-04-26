@@ -52,3 +52,15 @@
     font-size: 24px;
     -unity-font-style: bold;
 }
+
+    .footer-hint-text {
+    color: rgba(255, 255, 255, 0.35); /* Тускло-белый */
+    font-size: 13px;
+    -unity-font-style: italic;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.1);
+    -unity-text-align: middle-left;
+    white-space: normal; /* Разрешить перенос строк */
+}
