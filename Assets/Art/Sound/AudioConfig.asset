@@ -17,7 +17,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: c349c09a11b96fe4db7e41ec513fdf7e, type: 3}
     - {fileID: 8300000, guid: 6a2fa6b452b43d54581e7d624b1542a6, type: 3}
-    - {fileID: 8300000, guid: df5fe1a53deaed640a49435d379803d5, type: 3}
+    - {fileID: 8300000, guid: 29976376ec397844f9856e91957c4709, type: 3}
   - key: Emotion_Angry
     clips:
     - {fileID: 8300000, guid: b78c202f9ebb4084f80f357e0a3a7b91, type: 3}
@@ -60,3 +60,11 @@ MonoBehaviour:
   - key: Slap
     clips:
     - {fileID: 8300000, guid: 905985206277e7d49bf038253ff55e5c, type: 3}
+  - key: AdminPC
+    clips:
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+    - {fileID: 8300000, guid: 060520b7c3e1c374e8f40d25e9ce65c6, type: 3}
+    - {fileID: 8300000, guid: 060520b7c3e1c374e8f40d25e9ce65c6, type: 3}
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}

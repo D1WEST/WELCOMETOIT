@@ -20,6 +20,6 @@ MonoBehaviour:
   workPower: 6
   sleepiness: 6
   angriness: 6
-  avatar: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  avatar: {fileID: 21300000, guid: 60380c7278e65b349a5127a45eebab8b, type: 3}
   buyPrice: 11
   sellPrice: 12
