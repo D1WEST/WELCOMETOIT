@@ -723,7 +723,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbc6724017ef2d847961e304cab2e0a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.AIFox.AnimalInvasionManager
-  animalPrefab: {fileID: 2024521186306948779, guid: 55c05b3a11c2f4444a8fae9cba8dbdb9, type: 3}
+  animalPrefab: {fileID: 2024521186306948779, guid: c03fae21c05a4c143804d53a256623c6, type: 3}
   allRooms:
   - {fileID: 1862574999}
   - {fileID: 210238263}
@@ -2734,7 +2734,7 @@ Transform:
   m_GameObject: {fileID: 1005802665}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0.5}
+  m_LocalPosition: {x: 0.5, y: 0.05, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4867,6 +4867,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1acbc33bd5bc4344c92a56b875697f2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Save.GameDataManager
+  currentInvasionEnergy: 0
   _playerMoney: 5000
   myWorkers: []
   marketWorkers: []

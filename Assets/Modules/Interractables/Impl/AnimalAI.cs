@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Assets.Modules.Interractables;
 using Assets.Modules.Interractables.Impl;
+using Assets.Modules.Audio;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 
@@ -9,8 +10,19 @@ public class AnimalAI : MonoBehaviour, IInteractable
 {
     [Header("Movement")]
     public float speed = 9f;
-    public float panicDistance = 8f;      // Боятся игрока из далека
-    public float wallDetectionDist = 3f;  // Раннее обнаружение стен
+    public float panicDistance = 8f;
+    public float rotationSpeed = 10f;
+    public float wallDetectionDist = 3f;
+
+    public float detectionRadius = 15f; // В каком радиусе лиса "видит" мониторы
+    private Vector3 _wanderDir;
+    private float _wanderTimer;
+
+    [Header("Visuals")]
+    private Animator _animator;
+    [SerializeField] private float burstScaleMultiplier = 2.5f; // Во сколько раз раздуется перед взрывом
+    [SerializeField] private float burstDuration = 0.15f;      // Время раздувания
+    private Vector3 _smoothMoveDir;
 
     private Rigidbody _rb;
     private Transform _player;
@@ -21,12 +33,11 @@ public class AnimalAI : MonoBehaviour, IInteractable
     private GameObject _target;
     private bool _isBurst = false;
 
-    public string InteractionPrompt => "Лопнуть вредителя";
+    public string InteractionPrompt => _isBurst ? "" : "Лопнуть вредителя";
     public Transform InteractionPivot
     {
         get
         {
-            // Если объект уничтожается, возвращаем null, чтобы PlayerInteraction не упал
             if (this == null || _isBurst) return null;
             return transform;
         }
@@ -37,7 +48,9 @@ public class AnimalAI : MonoBehaviour, IInteractable
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
+        _animator = GetComponentInChildren<Animator>();
         _player = GameObject.FindGameObjectWithTag("Player")?.transform;
+
         _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
 
@@ -53,11 +66,17 @@ public class AnimalAI : MonoBehaviour, IInteractable
     {
         try
         {
-            while (!token.IsCancellationRequested)
+            while (!token.IsCancellationRequested && !_isBurst)
             {
                 UpdateTarget();
-                HandleMovement();
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+
+                await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
+
+                if (!_isBurst)
+                {
+                    HandleMovement();
+                    UpdateAnimations();
+                }
             }
         }
         catch (System.OperationCanceledException) { }
@@ -65,76 +84,130 @@ public class AnimalAI : MonoBehaviour, IInteractable
 
     private void UpdateTarget()
     {
-        // Постоянно ищем цель, даже если уже что-то тащим (жадность)
+        if (_isBurst) return;
+
         float minDist = float.MaxValue;
         GameObject bestTarget = null;
 
-        // 1. Ищем мониторы на столах
+        // 1. Ищем мониторы в радиусе
+        // Сначала столы
         foreach (var desk in WorkplaceInteractable.AllDesks)
         {
-            if (!desk.hasMonitor) continue;
+            if (desk == null || !desk.hasMonitor) continue;
+
             float d = Vector3.Distance(transform.position, desk.transform.position);
-            if (d < minDist) { minDist = d; bestTarget = desk.gameObject; }
+            if (d < detectionRadius && d < minDist)
+            {
+                minDist = d;
+                bestTarget = desk.gameObject;
+            }
         }
 
-        // 2. Ищем других лис с мониторами (чтобы отнять)
+        // 2. Ищем других лис с мониторами в радиусе
         var allFoxes = FindObjectsOfType<AnimalAI>();
         foreach (var fox in allFoxes)
         {
-            if (fox == this || !fox.HasMonitor()) continue;
+            if (fox == null || fox == this || !fox.HasMonitor() || fox._isBurst) continue;
+
             float d = Vector3.Distance(transform.position, fox.transform.position);
-            if (d < minDist) { minDist = d; bestTarget = fox.gameObject; }
+            if (d < detectionRadius && d < minDist)
+            {
+                minDist = d;
+                bestTarget = fox.gameObject;
+            }
         }
 
         _target = bestTarget;
+
+        // 3. ЛОГИКА БЛУЖДАНИЯ (если целей нет)
+        if (_target == null)
+        {
+            _wanderTimer -= Time.fixedDeltaTime;
+            if (_wanderTimer <= 0)
+            {
+                // Выбираем новое случайное направление раз в 2-4 секунды
+                float angle = Random.Range(0, 360f);
+                _wanderDir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+                _wanderTimer = Random.Range(2f, 4f);
+            }
+        }
+    }
+
+    private void UpdateAnimations()
+    {
+        if (_animator == null || _isBurst)
+        {
+            Debug.Log("нет аниматора");
+            return;
+        }
+
+        // Считаем только горизонтальную скорость
+        float horizontalSpeed = new Vector3(_rb.linearVelocity.x, 0, _rb.linearVelocity.z).magnitude;
+
+        // Если скорость > 0.2, включаем анимацию бега
+        _animator.SetBool("IsRunning", horizontalSpeed > 0.1f);
     }
 
     private void HandleMovement()
     {
-        Vector3 moveDir = Vector3.zero;
+        if (_isBurst) return;
+
+        Vector3 targetDir = Vector3.zero;
         float distToPlayer = _player ? Vector3.Distance(transform.position, _player.position) : 100f;
 
-        // --- 1. СТРАХ ПЕРЕД ИГРОКОМ (Самый высокий приоритет) ---
+        // Приоритет 1: Убегаем от игрока
         if (distToPlayer < panicDistance)
         {
-            moveDir = (transform.position - _player.position).normalized;
+            targetDir = (transform.position - _player.position).normalized;
         }
-        // --- 2. СТРАХ ПЕРЕД СТЕНАМИ (Whiskers system) ---
-        moveDir += CalculateWallAvoidance() * 3f;
+        // Приоритет 2: Обход стен (усы)
+        Vector3 avoidance = CalculateAvoidance();
 
-        // --- 3. ЖАЖДА НАЖИВЫ ---
-        if (moveDir == Vector3.zero && _target != null)
+        // Приоритет 3: Преследование цели или Блуждание
+        if (targetDir == Vector3.zero && avoidance == Vector3.zero)
         {
-            moveDir = (_target.transform.position - transform.position).normalized;
-
-            if (Vector3.Distance(transform.position, _target.transform.position) < 1.5f)
-                TrySteal();
+            if (_target != null)
+            {
+                targetDir = (_target.transform.position - transform.position).normalized;
+                if (Vector3.Distance(transform.position, _target.transform.position) < 1.5f)
+                    TrySteal();
+            }
+            else
+            {
+                // Если никого не грабим и игрока нет - просто бежим по своим делам
+                targetDir = _wanderDir;
+            }
         }
 
-        // ПРИМЕНЕНИЕ ФИЗИКИ
-        if (moveDir != Vector3.zero)
+        // Смешиваем основной вектор и обход стен
+        Vector3 finalDir = (targetDir + avoidance * 2f).normalized;
+        finalDir.y = 0;
+
+        // Плавное сглаживание поворота (убирает дрожание)
+        if (finalDir != Vector3.zero)
         {
-            moveDir.y = 0;
-            Vector3 targetVelocity = moveDir.normalized * speed;
+            _smoothMoveDir = Vector3.Slerp(_smoothMoveDir, finalDir, Time.fixedDeltaTime * rotationSpeed);
+
+            Quaternion lookRot = Quaternion.LookRotation(_smoothMoveDir);
+            _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, lookRot, Time.fixedDeltaTime * rotationSpeed));
+
+            Vector3 targetVelocity = _smoothMoveDir * speed;
             _rb.linearVelocity = new Vector3(targetVelocity.x, _rb.linearVelocity.y, targetVelocity.z);
-
-            if (targetVelocity != Vector3.zero)
-                _rb.rotation = Quaternion.Slerp(_rb.rotation, Quaternion.LookRotation(moveDir.normalized), Time.deltaTime * 8f);
         }
     }
 
-    private Vector3 CalculateWallAvoidance()
+    private Vector3 CalculateAvoidance()
     {
         Vector3 avoidance = Vector3.zero;
-        // Лучи: вперед, влево-вперед, вправо-вперед
         Vector3[] directions = { transform.forward, transform.forward + transform.right, transform.forward - transform.right };
 
         foreach (var dir in directions)
         {
-            if (Physics.Raycast(transform.position, dir.normalized, out RaycastHit hit, wallDetectionDist))
+            if (Physics.Raycast(transform.position + Vector3.up * 0.2f, dir.normalized, out RaycastHit hit, wallDetectionDist))
             {
-                // Если стена — толкаем в противоположную от неё сторону
-                avoidance += hit.normal;
+                // Не боимся игрока и цели, боимся только стен
+                if (!hit.collider.CompareTag("Player") && hit.collider.gameObject != _target)
+                    avoidance += hit.normal;
             }
         }
         return avoidance.normalized;
@@ -142,7 +215,7 @@ public class AnimalAI : MonoBehaviour, IInteractable
 
     private void TrySteal()
     {
-        if (_target == null) return;
+        if (_target == null || _isBurst) return;
 
         if (_target.TryGetComponent<WorkplaceInteractable>(out var desk))
         {
@@ -166,18 +239,16 @@ public class AnimalAI : MonoBehaviour, IInteractable
 
     private void AttachMonitor(MonitorPhysical mon)
     {
-        if (mon == null) return;
-        ReleaseMonitor(); // Сбрасываем старый, если был
+        if (mon == null || _isBurst) return;
+        ReleaseMonitor();
 
         _capturedMonitor = mon;
         _leash = gameObject.AddComponent<SpringJoint>();
         _leash.connectedBody = mon.GetComponent<Rigidbody>();
         _leash.autoConfigureConnectedAnchor = false;
         _leash.anchor = new Vector3(0, 0, -0.6f);
-        _leash.spring = 250f; // Жесткая пружина
+        _leash.spring = 250f;
         _leash.damper = 15f;
-        _leash.minDistance = 0.3f;
-        _leash.maxDistance = 1f;
     }
 
     public void ReleaseMonitor()
@@ -190,19 +261,38 @@ public class AnimalAI : MonoBehaviour, IInteractable
 
     public void Interact(GameObject interactor)
     {
-        if (_isBurst || this == null) return;
+        if (_isBurst) return;
+        PerformBurstSequence().Forget();
+    }
+
+    private async UniTaskVoid PerformBurstSequence()
+    {
         _isBurst = true;
 
+        // 1. Звук взрыва/лопанья
+        //AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Pop").RandomSound().At(this.transform)).Forget();
+
+        // 2. Отключаем всё лишнее
         _cts?.Cancel();
-        _cts?.Dispose();
-        _cts = null;
-
         ReleaseMonitor();
-
         if (TryGetComponent<Collider>(out var col)) col.enabled = false;
+        _rb.isKinematic = true;
 
-        gameObject.SetActive(false);
+        // 3. ЭФФЕКТ РАЗДУВАНИЯ (как шарик)
+        Vector3 initialScale = transform.localScale;
+        Vector3 targetScale = initialScale * burstScaleMultiplier;
+        float elapsed = 0;
 
+        while (elapsed < burstDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / burstDuration;
+            // Используем кривую, чтобы раздувание было резким в конце
+            transform.localScale = Vector3.Lerp(initialScale, targetScale, t * t);
+            await UniTask.Yield();
+        }
+
+        // 4. Удаление
         Destroy(gameObject);
     }
 

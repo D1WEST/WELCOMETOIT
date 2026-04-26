@@ -31,6 +31,10 @@ namespace Assets.Modules.AIFox
             // Чтобы набрать 100 очков за 27000 сек, нужно 100 / 27000 в секунду.
             float shiftDurationRealSec = (10f * 3600f) / ShiftManager.Instance.timeMultiplier;
             _baseGrowthRate = energyThreshold / (shiftDurationRealSec * 1.5f);
+            if (GameDataManager.Instance != null)
+            {
+                currentInvasionEnergy = GameDataManager.Instance.currentInvasionEnergy;
+            }
         }
 
         private void Update()
@@ -48,9 +52,12 @@ namespace Assets.Modules.AIFox
 
             currentInvasionEnergy += _baseGrowthRate * efficiencyMultiplier * randomJitter * Time.deltaTime * dayMultiplier * noseModifier;
 
-            if (currentInvasionEnergy >= energyThreshold)
+            GameDataManager.Instance.currentInvasionEnergy = currentInvasionEnergy;
+
+            if(currentInvasionEnergy >= energyThreshold)
             {
                 currentInvasionEnergy = 0f;
+                GameDataManager.Instance.currentInvasionEnergy = 0f; // Сбрасываем и в сейве
                 TriggerInvasion();
             }
         }
