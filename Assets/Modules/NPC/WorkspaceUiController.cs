@@ -16,6 +16,18 @@ public class WorkplaceUIController : MonoBehaviour
     private WorkplaceInteractable _targetDesk;
     private PlayerInput _cachedPlayerInput;
 
+    private void UpdateHintVisibility()
+    {
+        var hintContainer = _root.Q<VisualElement>("footer-hint-container");
+        if (hintContainer != null)
+        {
+            // Показываем только если Босс НЕ заткнут
+            hintContainer.style.display = GameDataManager.Instance.bossHintsEnabled
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+        }
+    }
+
     private void OnEnable()
     {
         _root = uiDocument.rootVisualElement;
@@ -57,6 +69,7 @@ public class WorkplaceUIController : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        UpdateHintVisibility();
         RefreshUI();
     }
 

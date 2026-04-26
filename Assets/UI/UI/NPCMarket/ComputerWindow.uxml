@@ -21,7 +21,8 @@
             <ui:Button name="btn-close" text="Close" style="margin-top: 15px; background-color: rgb(100, 100, 100); color: white; height: 40px; border-radius: 5px;"/>
         </ui:VisualElement>
     </ui:VisualElement>
-
-    <ui:Label text="* Здесь вы можете нанять новых сотрудников. Стажеры работают медленно, но стоят дешево." class="footer-hint-text" />
+    <ui:VisualElement name="footer-hint-container" class="boss-style-box" style="margin-top: 15px;">
+        <ui:Label text="* Здесь вы можете нанять новых сотрудников. Стажеры работают медленно, но стоят дешево." class="hint-text-small" />
+    </ui:VisualElement>
 
 </ui:UXML>

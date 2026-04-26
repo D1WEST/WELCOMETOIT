@@ -20,6 +20,17 @@ public class ComputerUIController : MonoBehaviour
     private bool _isMarketTab = true;
     private PlayerInputActions _inputActions;
 
+    private void UpdateHintVisibility()
+    {
+        var hintContainer = _root.Q<VisualElement>("footer-hint-container");
+        if (hintContainer != null)
+        {
+            // Показываем только если Босс НЕ заткнут
+            hintContainer.style.display = GameDataManager.Instance.bossHintsEnabled
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+        }
+    }
 
     private void OnEnable()
     {
@@ -66,6 +77,7 @@ public class ComputerUIController : MonoBehaviour
         // --- ЗВУК ЗАХОДА (Индекс 4) ---
         AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(4).RandomSound()).Forget();
 
+        UpdateHintVisibility();
         RefreshUI();
     }
 

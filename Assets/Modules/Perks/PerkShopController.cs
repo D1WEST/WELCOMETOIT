@@ -46,6 +46,18 @@ namespace Assets.Modules.Perks
                 _root.style.display = DisplayStyle.None;
             }
         }
+        private void UpdateHintVisibility()
+        {
+            var hintContainer = _root.Q<VisualElement>("footer-hint-container");
+            if (hintContainer != null)
+            {
+                // Показываем только если Босс НЕ заткнут
+                hintContainer.style.display = GameDataManager.Instance.bossHintsEnabled
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
+            }
+        }
+
 
         private void UpdateMuteButton()
         {
@@ -70,6 +82,7 @@ namespace Assets.Modules.Perks
             // ЗВУК ОТКРЫТИЯ (Клик, Индекс 6)
             PlayClickSound();
 
+            UpdateHintVisibility();
             UpdateMuteButton();
             RefreshUI();
         }

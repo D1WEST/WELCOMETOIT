@@ -19,7 +19,9 @@
                 <ui:Button name="btn-close" text="ЗАКРЫТЬ МЕНЮ" style="width: 250px; height: 45px; background-color: rgb(180, 50, 50); color: white; -unity-font-style: bold; border-radius: 5px;" />
             </ui:VisualElement>
 
-            <ui:Label text="* Улучшения начальника навсегда повышают вашу эффективность и действуют все дни." class="footer-hint-text" />
+            <ui:VisualElement name="footer-hint-container" class="boss-style-box" style="margin-top: 15px;">
+                <ui:Label text="* Улучшения начальника навсегда повышают вашу эффективность." class="hint-text-small" />
+            </ui:VisualElement>
 
         </ui:VisualElement>
     </ui:VisualElement>
