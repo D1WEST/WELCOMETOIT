@@ -138,8 +138,9 @@ public class AnimalAI : MonoBehaviour, IInteractable
     {
         if (_animator == null || _isBurst) return;
 
-        float horizontalSpeed = new Vector3(_rb.linearVelocity.x, 0, _rb.linearVelocity.z).magnitude;
-        bool isMoving = horizontalSpeed > 0.2f;
+        // Считаем горизонтальную скорость
+        float horizontalSpeed = new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.z).magnitude;
+        bool isMoving = horizontalSpeed > 0.5f; // Чуть увеличим порог
 
         _animator.SetBool("IsRunning", isMoving);
 
@@ -148,13 +149,14 @@ public class AnimalAI : MonoBehaviour, IInteractable
         {
             _isWalkingSoundPlaying = true;
             AudioManager.Instance.PlayAudio(
-                AudioQuery.ByKey("Foxes").ByIndex(1).WithVolume(0.2f).AsInstance().Cycle().At(this.transform)
+                AudioQuery.ByKey("Foxes").ByIndex(1).RandomSound().WithVolume(0.3f).Cycle().At(this.transform)
             ).Forget();
         }
         else if (!isMoving && _isWalkingSoundPlaying)
         {
             _isWalkingSoundPlaying = false;
-            AudioManager.Instance.StopAudio(AudioQuery.ByKey("Foxes").AsInstance().At(this.transform));
+            // Глушим звук именно на этом объекте
+            AudioManager.Instance.StopAudio(AudioQuery.ByKey("Foxes").At(this.transform));
         }
     }
 
@@ -279,24 +281,23 @@ public class AnimalAI : MonoBehaviour, IInteractable
     {
         _isBurst = true;
 
-        // --- ЗВУК ЛОПАНИЯ (Индекс 2) ---
+        // 1. ОСТАНАВЛИВАЕМ ШАГИ
+        AudioManager.Instance.StopAudio(AudioQuery.ByKey("Foxes").At(this.transform));
+
+        // 2. ЗВУК ЛОПАНИЯ (Индекс 2)
+        // ВАЖНО: Играем БЕЗ .At(), чтобы звук проигрался из центрального менеджера (2D).
+        // Это гарантирует, что звук НЕ УМРЕТ вместе с лисой.
         AudioManager.Instance.PlayAudio(
-            AudioQuery.ByKey("Foxes").ByIndex(2).AsInstance().At(this.transform)
+            AudioQuery.ByKey("Foxes").ByIndex(2).RandomSound().WithVolume(1f)
         ).Forget();
 
-        // Останавливаем шаги перед смертью
-        //AudioManager.Instance.StopAudio(AudioQuery.ByKey("Foxes").At(this.transform));
-
-        // 1. Звук взрыва/лопанья
-        //AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Pop").RandomSound().At(this.transform)).Forget();
-
-        // 2. Отключаем всё лишнее
+        // 3. Отключаем всё лишнее
         _cts?.Cancel();
         ReleaseMonitor();
         if (TryGetComponent<Collider>(out var col)) col.enabled = false;
         _rb.isKinematic = true;
 
-        // 3. ЭФФЕКТ РАЗДУВАНИЯ (как шарик)
+        // 4. ЭФФЕКТ РАЗДУВАНИЯ
         Vector3 initialScale = transform.localScale;
         Vector3 targetScale = initialScale * burstScaleMultiplier;
         float elapsed = 0;
@@ -305,12 +306,11 @@ public class AnimalAI : MonoBehaviour, IInteractable
         {
             elapsed += Time.deltaTime;
             float t = elapsed / burstDuration;
-            // Используем кривую, чтобы раздувание было резким в конце
             transform.localScale = Vector3.Lerp(initialScale, targetScale, t * t);
             await UniTask.Yield();
         }
 
-        // 4. Удаление
+        // 5. Удаление
         Destroy(gameObject);
     }
 
