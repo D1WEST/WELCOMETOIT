@@ -74,6 +74,13 @@ public class ShiftManager : MonoBehaviour
     {
         if (_isShiftActive) return;
 
+        AudioManager.Instance.PlayAudio(
+            AudioQuery.ByKey("StartGame")
+                .ByIndex(0)
+                .RandomSound()
+                .WithVolume(1f)
+        ).Forget();
+
         // СОЗДАЕМ ЧЕКПОИНТ
         GameDataManager.Instance.CreateCheckpoint();
 

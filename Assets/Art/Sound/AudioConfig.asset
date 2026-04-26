@@ -68,3 +68,12 @@ MonoBehaviour:
     - {fileID: 8300000, guid: c9835aa7a75c3e54fb603e31781ceb06, type: 3}
     - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
     - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+  - key: StartGame
+    clips:
+    - {fileID: 8300000, guid: 4b95bb12da2c7124ab6851615b4b11fe, type: 3}
+  - key: PCDrop
+    clips:
+    - {fileID: 8300000, guid: f6c4c5bd1d9d2b542a922dafe15427eb, type: 3}
+    - {fileID: 8300000, guid: 665aa599854971e478be80f916dad714, type: 3}
+    - {fileID: 8300000, guid: 0e363f0633890524792a3de1213803af, type: 3}
+    - {fileID: 8300000, guid: f28c80c69878ad5418bc3ffa2b64f280, type: 3}
