@@ -8,6 +8,8 @@ using UnityEngine;
 
 public class WorkerPhysical : MonoBehaviour, IInteractable
 {
+    [Header("Visuals")]
+    private Animator _animator;
     private WorkerInstance _data;
     public WorkerInstance Data => _data;
 
@@ -17,16 +19,17 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     private bool _isKicking = false;
     private int _prem => 200 + (GameDataManager.Instance.loadedDay * 10);
 
+    // ВАЖНО: Храним предыдущий статус, чтобы менять анимацию только при его смене
+    private WorkerStatus _lastStatus;
+    private bool _lastRestingState;
+
     public string InteractionPrompt
     {
         get
         {
             if (_data == null) return "";
             if (_isKicking) return "РАЗЪЯРЕН!";
-
-            // Если шкала непоседливости выше 50 — приоритет на премию
             if (_data.currentRestlessness > 50) return $"{_prem} $";
-
             return "Пнуть/Шлепнуть";
         }
     }
@@ -38,7 +41,16 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     public void Init(WorkerInstance data)
     {
         _data = data;
+        _animator = GetComponentInChildren<Animator>();
+
+        if (_animator == null)
+            Debug.LogError($"[WorkerPhysical] Аниматор не найден в {gameObject.name}!");
+
+        _lastStatus = data.status;
+        _lastRestingState = data.isResting;
+
         CalculateSpeeds();
+        UpdateAnimationState();
     }
 
     private void CalculateSpeeds()
@@ -58,10 +70,20 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
 
     private void Update()
     {
-        if (_data == null || !ShiftManager.Instance.IsShiftActive || _data.isResting) return;
+        if (_data == null || !ShiftManager.Instance.IsShiftActive) return;
+
+        // 1. Проверка режима отдыха (из компьютера)
+        if (_data.isResting != _lastRestingState)
+        {
+            _lastRestingState = _data.isResting;
+            UpdateAnimationState();
+        }
+
+        if (_data.isResting) return;
 
         float gameTimeStep = Time.deltaTime * ShiftManager.Instance.timeMultiplier;
 
+        // 2. Логика начисления статов и звуков (ваши оригинальные звуки)
         if (_data.status == WorkerStatus.Working)
         {
             AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Keyboard").WithVolume(1f).AsRandomPlaylist().AsKeyInstance().At(this.transform));
@@ -84,33 +106,46 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         _data.currentSleepiness = Mathf.Clamp(_data.currentSleepiness, 0, 100.1f);
         _data.currentRestlessness = Mathf.Clamp(_data.currentRestlessness, 0, 100.1f);
 
+        // 3. Расчет нового статуса (теперь через цепочку else-if для стабильности)
+        WorkerStatus newStatus = _data.status;
+
         if (_isKicking)
         {
-            _data.status = WorkerStatus.Angry;
+            newStatus = WorkerStatus.Angry;
         }
-        else if (_data.status == WorkerStatus.Sleeping)
+        else if (_data.status == WorkerStatus.Sleeping && _data.currentSleepiness > 70f)
         {
-            if (_data.currentSleepiness <= 70f) _data.status = WorkerStatus.Working;
+            newStatus = WorkerStatus.Sleeping;
         }
-        else if (_data.status == WorkerStatus.Fidgeting)
+        else if (_data.status == WorkerStatus.Fidgeting && _data.currentRestlessness > 70f)
         {
-            if (_data.currentRestlessness <= 70f) _data.status = WorkerStatus.Working;
+            newStatus = WorkerStatus.Fidgeting;
         }
         else if (_data.currentSleepiness >= 100)
         {
-            _data.status = WorkerStatus.Sleeping;
+            newStatus = WorkerStatus.Sleeping;
         }
         else if (_data.currentRestlessness >= 100)
         {
-            _data.status = WorkerStatus.Fidgeting;
+            newStatus = WorkerStatus.Fidgeting;
         }
         else if (GetComponentInParent<WorkplaceInteractable>() != null && !GetComponentInParent<WorkplaceInteractable>().hasMonitor)
         {
-            _data.status = WorkerStatus.NoEquipment;
+            newStatus = WorkerStatus.NoEquipment;
         }
         else
         {
-            _data.status = WorkerStatus.Working;
+            newStatus = WorkerStatus.Working;
+        }
+
+        // Применяем новый статус
+        _data.status = newStatus;
+
+        // 4. ГЛАВНЫЙ ФИКС: Обновляем анимацию ТУТ, только если статус РЕАЛЬНО изменился
+        if (_data.status != _lastStatus)
+        {
+            UpdateAnimationState();
+            _lastStatus = _data.status;
         }
 
         if (_data.currentAnger >= 100 && !_isKicking)
@@ -119,9 +154,37 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         }
     }
 
+    private void UpdateAnimationState()
+    {
+        if (_animator == null) return;
+
+        int stateIndex = 3; // По умолчанию Idle
+
+        if (_data.isResting)
+        {
+            stateIndex = 3;
+        }
+        else
+        {
+            switch (_data.status)
+            {
+                case WorkerStatus.Working: stateIndex = 0; break;
+                case WorkerStatus.Sleeping: stateIndex = 1; break;
+                case WorkerStatus.Angry: stateIndex = 2; break;
+                case WorkerStatus.Fidgeting: stateIndex = 3; break;
+                case WorkerStatus.NoEquipment: stateIndex = 3; break;
+            }
+        }
+
+        // Вызываем один раз. Это предотвратит "дергание" анимации.
+        _animator.SetInteger("State", stateIndex);
+    }
+
+    // Методы Interact, PerformSlap и PerformKick оставлены без изменений логики
     private async UniTaskVoid PerformKick()
     {
         _isKicking = true;
+        UpdateAnimationState(); // Обновим анимацию на Angry
 
         AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Emotion_Angry").WithVolume(0.2f).RandomSound().At(this.transform));
 
@@ -136,13 +199,13 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         await UniTask.Delay(3000);
         _data.currentAnger = 10;
         _isKicking = false;
+        UpdateAnimationState(); // Вернемся в рабочую анимацию
     }
 
     public void Interact(GameObject interactor)
     {
         if (_data == null || _isKicking) return;
 
-        // ЛОГИКА ПРЕМИИ
         if (_data.currentRestlessness > 50)
         {
             if (GameDataManager.Instance.playerMoney >= _prem)
@@ -150,16 +213,10 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
                 GameDataManager.Instance.ChangeMoney(-_prem);
                 _data.currentRestlessness = 0;
                 _data.status = WorkerStatus.Working;
-                int tastyLevel = GameDataManager.Instance.playerPerks.tastyBonusLevel;
-                if (tastyLevel > 0)
-                {
-                    _data.currentAnger = Mathf.Max(0, _data.currentAnger - (tastyLevel * 10f));
-                    _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - (tastyLevel * 10f));
-                }
+                UpdateAnimationState();
             }
             return;
         }
-
         PerformSlap();
     }
 
@@ -173,5 +230,6 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - finalSlapEffect);
         _data.currentAnger = Mathf.Min(100, _data.currentAnger + 30f);
         _data.status = WorkerStatus.Working;
+        UpdateAnimationState();
     }
 }

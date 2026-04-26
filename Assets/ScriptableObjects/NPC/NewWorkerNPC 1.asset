@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: NewWorkerNPC 1
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
   templateId: 001
-  workerName: Bob
-  npcPrefab: {fileID: 6345741170225518943, guid: aa6dd2b006052d44ea8f3a5350f68889, type: 3}
+  workerName: liz
+  npcPrefab: {fileID: 9285571226729687, guid: 1e373b811b276d4429cf7d8be0d22419, type: 3}
   position: 2
   patience: 2
   workPower: 2
