@@ -86,4 +86,21 @@ public class TutorialManager : MonoBehaviour
             }
         }
     }
+    public void OnComputerOpened()
+    {
+        if (!GameDataManager.Instance.bossHintsEnabled) return;
+        BossMessageUI.Instance.ShowHint("Опять в магазине торчишь? Бери самых дешевых, нам не нужны таланты, нам нужны цифры!").Forget();
+    }
+
+    public void OnWorkplaceOpened()
+    {
+        if (!GameDataManager.Instance.bossHintsEnabled) return;
+        BossMessageUI.Instance.ShowHint("Рассаживай их быстрее! Стулья не должны пустовать, это потерянная прибыль!").Forget();
+    }
+
+    public void OnPerkShopOpened()
+    {
+        if (!GameDataManager.Instance.bossHintsEnabled) return;
+        BossMessageUI.Instance.ShowHint("Хочешь стать лучше? Это будет стоить тебе целое состояние. Выбирай быстрее!").Forget();
+    }
 }

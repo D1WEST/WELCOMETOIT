@@ -24,6 +24,15 @@ namespace Assets.Modules.Perks
             if (_container != null) _container.style.display = DisplayStyle.None;
         }
 
+        public void ForceHide()
+        {
+            _isSpeaking = false;
+            if (_container != null) _container.style.display = DisplayStyle.None;
+            // Останавливаем звук бубнежа
+            AudioManager.Instance.StopAudio(AudioQuery.ByKey("Boss").ByIndex(4));
+            BossPhysical.Instance.SetState(0);
+        }
+
         public async UniTask ShowHint(string message)
         {
             if (_container == null || _isSpeaking) return; // Не перебиваем, если уже говорит

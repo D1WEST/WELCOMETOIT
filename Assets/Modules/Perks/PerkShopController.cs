@@ -19,18 +19,31 @@ namespace Assets.Modules.Perks
         {
             _root = uiDocument.rootVisualElement;
             _list = _root.Q<VisualElement>("perks-list");
-
             _root.Q<VisualElement>("overlay").style.display = DisplayStyle.None;
 
-            var closeBtn = _root.Q<Button>("btn-close");
-            if (closeBtn != null)
+            _root.Q<Button>("btn-close").clicked += Close;
+
+            // ЛОГИКА ЗАТЫКАНИЯ
+            var muteBtn = _root.Q<Button>("btn-mute-boss");
+            if (muteBtn != null)
             {
-                closeBtn.clicked += () => {
-                    // ЗВУК КЛИКА (Индекс 6)
-                    PlayClickSound();
-                    Close();
+                muteBtn.clicked += () => {
+                    GameDataManager.Instance.bossHintsEnabled = !GameDataManager.Instance.bossHintsEnabled;
+                    UpdateMuteButton();
+                    // Если заткнули — Босс мгновенно замолкает, если говорил
+                    if (!GameDataManager.Instance.bossHintsEnabled) BossMessageUI.Instance.ForceHide();
                 };
             }
+        }
+
+        private void UpdateMuteButton()
+        {
+            var muteBtn = _root.Q<Button>("btn-mute-boss");
+            if (muteBtn == null) return;
+
+            bool isEnabled = GameDataManager.Instance.bossHintsEnabled;
+            muteBtn.text = isEnabled ? "ЗАТКНУТЬ БОССА" : "ВКЛЮЧИТЬ БОССА";
+            muteBtn.style.backgroundColor = isEnabled ? new Color(0.3f, 0.3f, 0.3f) : new Color(0.2f, 0.5f, 0.2f);
         }
 
         public void Open(GameObject player)
@@ -46,6 +59,7 @@ namespace Assets.Modules.Perks
             // ЗВУК ОТКРЫТИЯ (Клик, Индекс 6)
             PlayClickSound();
 
+            UpdateMuteButton();
             RefreshUI();
         }
 

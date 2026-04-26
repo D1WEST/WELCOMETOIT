@@ -12,6 +12,7 @@ namespace Assets.Modules.Save
 {
     public class GameDataManager : MonoBehaviour
     {
+        public bool bossHintsEnabled = true;
         public float currentInvasionEnergy = 0f;
         [SerializeField] private int _playerMoney = 1000;
         public int playerMoney => _playerMoney;
@@ -43,7 +44,8 @@ namespace Assets.Modules.Save
                 money = _playerMoney,
                 currentDay = currentDay,
                 perks = playerPerks,
-                invasionEnergy = currentInvasionEnergy
+                invasionEnergy = currentInvasionEnergy,
+                bossHintsEnabled = this.bossHintsEnabled
             });
             File.WriteAllText(SavePath, json);
         }
@@ -56,7 +58,8 @@ namespace Assets.Modules.Save
                 money = _playerMoney,
                 currentDay = ShiftManager.Instance != null ? ShiftManager.Instance.currentDay : loadedDay,
                 perks = playerPerks,
-                invasionEnergy = currentInvasionEnergy
+                invasionEnergy = currentInvasionEnergy,
+                bossHintsEnabled = this.bossHintsEnabled
             });
         }
 
@@ -69,6 +72,7 @@ namespace Assets.Modules.Save
             _playerMoney = data.money;
             playerPerks = data.perks;
             currentInvasionEnergy = data.invasionEnergy;
+            bossHintsEnabled = data.bossHintsEnabled;
 
             foreach (var worker in myWorkers)
             {
@@ -93,6 +97,7 @@ namespace Assets.Modules.Save
 
                 playerPerks = data.perks ?? new PerkData();
                 currentInvasionEnergy = data.invasionEnergy;
+                bossHintsEnabled = data.bossHintsEnabled;
 
                 if (ShiftManager.Instance != null)
                     ShiftManager.Instance.currentDay = loadedDay;
@@ -260,6 +265,7 @@ namespace Assets.Modules.Save
             public int currentDay; // ДОБАВЬ ЭТО СЮДА
             public PerkData perks;
             public float invasionEnergy;
+            public bool bossHintsEnabled;
         }
 
         [System.Serializable]
