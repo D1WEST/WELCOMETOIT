@@ -33,6 +33,28 @@ public class ShiftManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        // АВТО-ПОИСК БЛОКЕРОВ ПРИ ЗАПУСКЕ
+        InitializeRoomBlockers();
+    }
+
+    private void InitializeRoomBlockers()
+    {
+        foreach (var room in rooms)
+        {
+            if (room.roomManager == null) continue;
+
+            // Ищем всех детей в комнате
+            Transform[] allChildren = room.roomManager.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in allChildren)
+            {
+                // Если у ребенка тег Blocker — добавляем в список этой комнаты
+                if (child.CompareTag("Blocker"))
+                {
+                    room.doorBlockers.Add(child.gameObject);
+                }
+            }
+        }
     }
 
     private void Start()
@@ -99,8 +121,13 @@ public class ShiftManager : MonoBehaviour
         {
             bool isUnlocked = currentDay >= room.unlockDay;
 
-            if (room.blackBlocker != null)
-                room.blackBlocker.SetActive(!isUnlocked);
+            foreach (var blocker in room.doorBlockers)
+            {
+                if (blocker != null)
+                {
+                    blocker.SetActive(!isUnlocked);
+                }
+            }
 
             room.roomManager.isOpened = isUnlocked;
 
@@ -179,4 +206,6 @@ public class RoomState
     public GameObject blackBlocker;
     public int unlockDay;
     public int goalTarget;
+
+    [HideInInspector] public List<GameObject> doorBlockers = new List<GameObject>();
 }
