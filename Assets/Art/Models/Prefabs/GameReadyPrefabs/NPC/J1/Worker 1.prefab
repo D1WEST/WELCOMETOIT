@@ -129,7 +129,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18339fbeac3215346be456937bb42ebd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorkerPhysical
-  animator: {fileID: 0}
 --- !u!82 &-2791103397325404745
 AudioSource:
   m_ObjectHideFlags: 0
@@ -316,6 +315,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 22bd2055fba7091419eea28b9cae1157, type: 2}
     - target: {fileID: 1893160134582203634, guid: aa7220f227218024a8ea5013112611b7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 22bd2055fba7091419eea28b9cae1157, type: 2}
+    - target: {fileID: 2217595217649882982, guid: aa7220f227218024a8ea5013112611b7, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 22bd2055fba7091419eea28b9cae1157, type: 2}

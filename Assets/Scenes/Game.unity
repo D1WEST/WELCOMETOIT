@@ -36563,6 +36563,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e60739e358b21b9479951d924312fdbe, type: 2}
   - {fileID: 11400000, guid: 0041cc514f914cb4583a3b06e750ec38, type: 2}
   - {fileID: 11400000, guid: 81319915a57aaa34ca469dbcaef14680, type: 2}
+  - {fileID: 11400000, guid: 7ad159d67d363dd49bc279ccab69977b, type: 2}
+  - {fileID: 11400000, guid: f0775c985d5f5b0489ae262e865d691a, type: 2}
+  - {fileID: 11400000, guid: 1e20b3f1b34139b438fe2aa315333667, type: 2}
   playerPerks:
     slapLevel: 0
     noseLevel: 0
