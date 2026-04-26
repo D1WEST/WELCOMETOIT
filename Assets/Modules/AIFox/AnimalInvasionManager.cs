@@ -76,7 +76,7 @@ namespace Assets.Modules.AIFox
             _isInvasionActive = true;
 
             RoomManager targetRoom = openedRooms[Random.Range(0, openedRooms.Count)];
-            int count = Random.Range(5, 9);
+            int count = Random.Range(5, 7);
 
             for (int i = 0; i < count; i++)
             {
