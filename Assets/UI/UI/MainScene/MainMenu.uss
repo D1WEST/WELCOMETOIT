@@ -3,7 +3,7 @@
     flex-grow: 1;
     background-color: transparent; /* —делал прозрачным, чтобы было видно видео на фоне */
     justify-content: center;
-    padding-left: 15%; /* —двигаем главное меню чуть вправо от кра€ */
+    padding-left: 5%; /* —двигаем главное меню чуть вправо от кра€ */
 }
 
 /* ========================================== */
@@ -11,7 +11,13 @@
 /* ========================================== */
 
 .menu-container {
-    width: 600px;
+    width: 500px;
+    padding: 50px;
+    background-color: rgba(15, 15, 15, 0.65);
+    border-radius: 25px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 /* «ј√ќЋќ¬ќ  */
@@ -20,27 +26,32 @@
 }
 
 .header-title {
-    font-size: 60px;
-    color: rgb(255, 255, 255);
+    font-size: 80px;
+    color: white;
     -unity-font-style: italic;
     -unity-font-weight: bold;
-    letter-spacing: -2px;
-    text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7);
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.5);
     margin: 0; padding: 0;
+    
 }
 
 .header-line {
-    height: 2px;
-    background-color: rgba(255, 255, 255, 0.6);
-    margin-top: 5px; margin-bottom: 5px;
-    width: 400px;
+    height: 3px;
+    background-color: white;
+    width: 350px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .header-subtitle {
-    font-size: 20px;
+    font-size: 30px;
     color: rgba(255, 255, 255, 0.7);
     -unity-font-style: italic;
     margin: 0; padding: 0; padding-left: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 /*  Ќќѕ » */
@@ -51,7 +62,8 @@
 .button-wrapper {
     flex-direction: row;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    transition-duration: 0.2s;
 }
 
 .pointer-icon {
@@ -63,12 +75,14 @@
 }
 
 .menu-button {
-    font-size: 28px;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 34px;
+    color: rgba(255, 255, 255, 0.8);
     background-color: transparent;
-    border-width: 1px;
-    border-color: transparent;
-    padding: 5px 15px; margin: 0;
+    border-width: 0;
+    padding: 5px 10px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.9);
     transition-duration: 0.2s;
 }
 
