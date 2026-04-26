@@ -77,3 +77,12 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 665aa599854971e478be80f916dad714, type: 3}
     - {fileID: 8300000, guid: 0e363f0633890524792a3de1213803af, type: 3}
     - {fileID: 8300000, guid: f28c80c69878ad5418bc3ffa2b64f280, type: 3}
+  - key: Boss
+    clips:
+    - {fileID: 8300000, guid: 938b3bac12497844e932f0c0f727cfd5, type: 3}
+    - {fileID: 8300000, guid: aa0a8fbfc75e5f049b9118e4d76a493d, type: 3}
+    - {fileID: 8300000, guid: d8ecb8b35fa503843a95a815fc80ed47, type: 3}
+    - {fileID: 8300000, guid: 61a18ed3926cb0a44a6ea8ce6d4d584e, type: 3}
+    - {fileID: 8300000, guid: 5ad16593a9b21c340b476dc1d2b2517a, type: 3}
+    - {fileID: 8300000, guid: c9835aa7a75c3e54fb603e31781ceb06, type: 3}
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}

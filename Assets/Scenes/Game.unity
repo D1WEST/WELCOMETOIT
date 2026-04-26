@@ -150,6 +150,7 @@ Transform:
   m_Children:
   - {fileID: 1986539710}
   - {fileID: 387974320}
+  - {fileID: 930853247}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &55828604
@@ -1665,6 +1666,7 @@ GameObject:
   - component: {fileID: 813962936}
   - component: {fileID: 813962938}
   - component: {fileID: 813962939}
+  - component: {fileID: 813962940}
   m_Layer: 0
   m_Name: GameplayUIDocument
   m_TagString: Untagged
@@ -1739,6 +1741,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d56c8cd175d6ead48b6cc8e1968bdee5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Money.MoneyHUDController
+--- !u!114 &813962940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813962934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6636ac61531f2e4689d5b4e5d63657c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Perks.BossMessageUI
 --- !u!1 &834323114
 GameObject:
   m_ObjectHideFlags: 0
@@ -2378,6 +2392,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e07a8783f65a45b45abac25c4c6ddbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.WorkplaceInteractable
+--- !u!1 &930853246
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 930853247}
+  - component: {fileID: 930853248}
+  m_Layer: 0
+  m_Name: TutorialSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &930853247
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 930853246}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 22804175}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &930853248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 930853246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b54f0b43591069943b42176bb6e39016, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
 --- !u!1 &933944155
 GameObject:
   m_ObjectHideFlags: 0
@@ -5451,6 +5509,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1862574998}
     m_Modifications:
+    - target: {fileID: -3417742062722417239, guid: 1f6de8a929345a1478cfd0efdee05da5, type: 3}
+      propertyPath: shopController
+      value: 
+      objectReference: {fileID: 495391066}
     - target: {fileID: 2771938828326218986, guid: 1f6de8a929345a1478cfd0efdee05da5, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.486

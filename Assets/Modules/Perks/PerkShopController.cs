@@ -1,5 +1,7 @@
 ﻿using Assets.Modules.PlayerModule;
 using Assets.Modules.Save;
+using Assets.Modules.Audio; // Добавь этот неймспейс
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
@@ -16,15 +18,19 @@ namespace Assets.Modules.Perks
         private void Awake()
         {
             _root = uiDocument.rootVisualElement;
-            // Ищем контейнер списка
             _list = _root.Q<VisualElement>("perks-list");
 
-            // Скрываем весь оверлей
             _root.Q<VisualElement>("overlay").style.display = DisplayStyle.None;
 
-            // Кнопка закрытия
             var closeBtn = _root.Q<Button>("btn-close");
-            if (closeBtn != null) closeBtn.clicked += Close;
+            if (closeBtn != null)
+            {
+                closeBtn.clicked += () => {
+                    // ЗВУК КЛИКА (Индекс 6)
+                    PlayClickSound();
+                    Close();
+                };
+            }
         }
 
         public void Open(GameObject player)
@@ -36,6 +42,9 @@ namespace Assets.Modules.Perks
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+
+            // ЗВУК ОТКРЫТИЯ (Клик, Индекс 6)
+            PlayClickSound();
 
             RefreshUI();
         }
@@ -49,6 +58,14 @@ namespace Assets.Modules.Perks
             Cursor.visible = false;
 
             GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
+        }
+
+        private void PlayClickSound()
+        {
+            // Используем индекс 6 для любых кликов по UI Босса
+            AudioManager.Instance.PlayAudio(
+                AudioQuery.ByKey("Boss").ByIndex(6).RandomSound()
+            ).Forget();
         }
 
         public void RefreshUI()
@@ -73,7 +90,6 @@ namespace Assets.Modules.Perks
             row.style.borderBottomWidth = 1;
             row.style.borderBottomColor = new Color(1, 1, 1, 0.1f);
 
-            // Левая часть (Тексты)
             var leftGroup = new VisualElement();
             var nameLabel = new Label($"{name} ({level}/5)");
             nameLabel.style.color = Color.white;
@@ -87,7 +103,6 @@ namespace Assets.Modules.Perks
             leftGroup.Add(nameLabel);
             leftGroup.Add(descLabel);
 
-            // Правая часть (Кнопка)
             var btn = new Button();
             int price = GameDataManager.Instance.GetPerkPrice(level);
 
@@ -101,15 +116,25 @@ namespace Assets.Modules.Perks
             {
                 btn.text = $"UP ${price}";
                 btn.style.backgroundColor = (GameDataManager.Instance.playerMoney >= price)
-                    ? new Color(0.25f, 0.6f, 0.25f) // Зеленый если хватает
-                    : new Color(0.4f, 0.2f, 0.2f);   // Тускло-красный если нет
+                    ? new Color(0.25f, 0.6f, 0.25f)
+                    : new Color(0.4f, 0.2f, 0.2f);
 
                 btn.clicked += () => {
                     if (GameDataManager.Instance.playerMoney >= price)
                     {
+                        // ЗВУК ПОКУПКИ (Индекс 5)
+                        AudioManager.Instance.PlayAudio(
+                            AudioQuery.ByKey("Boss").ByIndex(5).RandomSound()
+                        ).Forget();
+
                         GameDataManager.Instance.ChangeMoney(-price);
                         onUpgrade();
                         RefreshUI();
+                    }
+                    else
+                    {
+                        // Если денег нет, можно тоже проиграть звук ошибки или обычный клик
+                        PlayClickSound();
                     }
                 };
             }

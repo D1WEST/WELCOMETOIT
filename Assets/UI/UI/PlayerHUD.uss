@@ -63,5 +63,33 @@
     border-color: rgba(0, 0, 0, 0.5);
 }
 
+.boss-message-box {
+    position: absolute;
+    bottom: 120px;
+    align-self: center;
+    background-color: rgba(20, 20, 20, 0.95);
+    border-width: 2px;
+    border-color: white;
+    border-radius: 10px;
+    padding: 15px 25px;
+    min-width: 450px;
+    max-width: 800px;
+    display: none; /* Скрыто по умолчанию */
+}
+
+.boss-label-header {
+    color: #FFD700; /* Золотой цвет для имени */
+    font-size: 14px;
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.boss-text {
+    color: white;
+    font-size: 22px;
+    -unity-font-style: bold;
+    white-space: normal; /* Разрешить перенос строк */
+}
+
 /* Мы больше не используем DisplayStyle.None в коде, 
    поэтому сегменты всегда будут в ряд. */
