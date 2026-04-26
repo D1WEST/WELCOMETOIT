@@ -206,6 +206,7 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     {
         if (_data == null || _isKicking) return;
 
+        // ЛОГИКА ПРЕМИИ
         if (_data.currentRestlessness > 50)
         {
             if (GameDataManager.Instance.playerMoney >= _prem)
@@ -213,16 +214,34 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
                 GameDataManager.Instance.ChangeMoney(-_prem);
                 _data.currentRestlessness = 0;
                 _data.status = WorkerStatus.Working;
+
+                // --- НОВЫЙ ЗВУК ПРЕМИИ (timescope, индекс 2) ---
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("timescope").ByIndex(2).RandomSound()
+                ).Forget();
+
+                int tastyLevel = GameDataManager.Instance.playerPerks.tastyBonusLevel;
+                if (tastyLevel > 0)
+                {
+                    _data.currentAnger = Mathf.Max(0, _data.currentAnger - (tastyLevel * 10f));
+                    _data.currentSleepiness = Mathf.Max(0, _data.currentSleepiness - (tastyLevel * 10f));
+                }
                 UpdateAnimationState();
             }
             return;
         }
+
         PerformSlap();
     }
 
     private void PerformSlap()
     {
+        AudioManager.Instance.PlayAudio(
+            AudioQuery.ByKey("Slap").RandomSound()
+        ).Forget();
+
         AudioManager.Instance.StopAudio(AudioQuery.ByKey("Emotion_Sleepy").At(this.transform));
+
         float baseSlapPower = 25f;
         float perkBonus = baseSlapPower * (0.2f * GameDataManager.Instance.playerPerks.slapLevel);
         float finalSlapEffect = baseSlapPower + perkBonus;
