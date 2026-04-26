@@ -52,3 +52,8 @@ MonoBehaviour:
     - {fileID: 8300000, guid: df5fe1a53deaed640a49435d379803d5, type: 3}
     - {fileID: 8300000, guid: cb9510075830b9b4b8dcd2c90bd9ad62, type: 3}
     - {fileID: 8300000, guid: 41e74914c6bdc3a47ba7dc8815a51eee, type: 3}
+  - key: timescope
+    clips:
+    - {fileID: 8300000, guid: c36d7b5f35317b7468ea87568e5587ee, type: 3}
+    - {fileID: 8300000, guid: 2fca054ea31bbee4a9d26aee0b50df44, type: 3}
+    - {fileID: 8300000, guid: 060520b7c3e1c374e8f40d25e9ce65c6, type: 3}

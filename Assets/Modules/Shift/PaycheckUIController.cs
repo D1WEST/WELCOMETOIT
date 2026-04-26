@@ -1,5 +1,6 @@
 ﻿using Assets.Modules.PlayerModule;
 using Assets.Modules.Save;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
@@ -51,8 +52,11 @@ public class PaycheckUIController : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        if (isWin) SetupWinView(amount);
-        else SetupLoseView();
+        if (isWin)
+        {
+            SetupWinView(amount);
+        }
+        else {SetupLoseView();}
     }
 
     private void SetupWinView(int amount)
@@ -101,6 +105,9 @@ public class PaycheckUIController : MonoBehaviour
     {
         if (_isWinState)
         {
+            AudioManager.Instance.PlayAudio(
+                AudioQuery.ByKey("timescope").ByIndex(2).RandomSound()
+            ).Forget();
             GameDataManager.Instance.ChangeMoney(_pendingMoney);
             ShiftManager.Instance.currentDay++;
             GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
