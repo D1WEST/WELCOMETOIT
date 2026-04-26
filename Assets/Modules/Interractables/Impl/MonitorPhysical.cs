@@ -1,69 +1,136 @@
-﻿using Assets.Modules.Interractables;
-using Assets.Modules.Interractables.Impl;
+﻿using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
+using Assets.Modules.Audio; // Не забудь неймспейс
+using Cysharp.Threading.Tasks;
 
-[RequireComponent(typeof(Rigidbody))]
-public class MonitorPhysical : MonoBehaviour, IInteractable
+namespace Assets.Modules.Interractables.Impl
 {
-    [ReadOnly] public string targetWorkplaceId; // Помечаем как ReadOnly (если есть такой атрибут) или просто прячем
-    public WorkplaceInteractable sourceDesk;
-
-    private Rigidbody _rb;
-    private bool _isCarried = false;
-
-    // Свойства интерфейса
-    public string InteractionPrompt => _isCarried ? "" : $"Поднять монитор ({targetWorkplaceId}) [E]";
-    public Transform InteractionPivot => transform;
-    public InteractionType InteractionType => InteractionType.Click;
-    public float HoldDuration => 0;
-
-    private void Awake()
+    [RequireComponent(typeof(Rigidbody))]
+    public class MonitorPhysical : MonoBehaviour, IInteractable
     {
-        _rb = GetComponent<Rigidbody>();
-        SetPhysics(false);
-    }
+        [ReadOnly] public string targetWorkplaceId;
+        public WorkplaceInteractable sourceDesk;
 
-    public void Initialize(string id, WorkplaceInteractable desk)
-    {
-        targetWorkplaceId = id;
-        sourceDesk = desk;
-        SetPhysics(false);
-    }
+        [Header("Visuals")]
+        [SerializeField] private Material materialOn;
+        [SerializeField] private Material materialOff;
+        private List<MeshRenderer> _allRenderers = new List<MeshRenderer>();
 
-    public void Interact(GameObject interactor)
-    {
-        // Если в руках уже что-то есть - игнорируем
-        if (PlayerInteraction.Instance.IsCarryingItem) return;
+        private Rigidbody _rb;
+        private bool _isCarried = false;
 
-        if (sourceDesk != null)
+        public string InteractionPrompt => _isCarried ? "" : $"Поднять монитор ({targetWorkplaceId}) [E]";
+        public Transform InteractionPivot => transform;
+        public InteractionType InteractionType => InteractionType.Click;
+        public float HoldDuration => 0;
+
+        private void Awake()
         {
-            sourceDesk.OnMonitorManualPickUp();
-            sourceDesk = null;
-        }
-        PlayerInteraction.Instance.PickUpMonitor(this);
-    }
+            _rb = GetComponent<Rigidbody>();
+            _allRenderers.AddRange(GetComponentsInChildren<MeshRenderer>());
 
-    public void SetPhysics(bool state)
-    {
-        if (_rb == null) _rb = GetComponent<Rigidbody>();
-        _rb.isKinematic = !state;
-        _rb.useGravity = state;
-        if (state)
+            SetPhysics(false);
+            SetVisualState(false);
+        }
+
+        public void Initialize(string id, WorkplaceInteractable desk)
         {
-            if (TryGetComponent<Collider>(out var col)) col.enabled = true;
+            targetWorkplaceId = id;
+            sourceDesk = desk;
+            SetPhysics(false);
+            SetVisualState(true);
+
+            // --- ЗВУК: УСТАНОВКА ПК (Индекс 1) ---
+            // Проигрываем, только если игра уже запущена (чтобы не шуметь при загрузке сцены)
+            if (Time.timeSinceLevelLoad > 1f)
+            {
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("PCDrop").ByIndex(1).WithVolume(0.5f).RandomSound().At(this.transform)
+                ).Forget();
+            }
         }
-    }
 
-    public void GetKicked()
-    {
-        transform.SetParent(null);
-        SetPhysics(true);
+        public void Interact(GameObject interactor)
+        {
+            if (PlayerInteraction.Instance.IsCarryingItem) return;
 
-        Vector3 kickDir = (transform.forward + Vector3.up + Random.insideUnitSphere * 0.5f).normalized;
-        float kickPower = 12f;
+            // Звук отрывания играет ТОЛЬКО если монитор реально стоял на столе
+            if (sourceDesk != null)
+            {
+                // --- ЗВУК: ОТРЫВАНИЕ ПК (Индекс 0) ---
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("PCDrop").ByIndex(0).WithVolume(0.5f).RandomSound().At(this.transform)
+                ).Forget();
 
-        _rb.AddForce(kickDir * kickPower, ForceMode.Impulse);
-        _rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
+                sourceDesk.OnMonitorManualPickUp();
+                sourceDesk = null; // ОБНУЛЯЕМ ССЫЛКУ ТУТ
+            }
+
+            SetVisualState(false);
+            PlayerInteraction.Instance.PickUpMonitor(this);
+        }
+
+        public void SetPhysics(bool state)
+        {
+            if (_rb == null) _rb = GetComponent<Rigidbody>();
+            _rb.isKinematic = !state;
+            _rb.useGravity = state;
+            if (state)
+            {
+                if (TryGetComponent<Collider>(out var col)) col.enabled = true;
+            }
+        }
+
+        public void GetKicked()
+        {
+            // Звук отрывания при пинке играет только если он еще на столе
+            if (sourceDesk != null)
+            {
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("PCDrop").ByIndex(0).WithVolume(0.5f).RandomSound().At(this.transform)
+                ).Forget();
+
+                sourceDesk = null; // КРИТИЧЕСКИЙ ФИКС: монитор больше не принадлежит столу
+            }
+
+            transform.SetParent(null);
+            SetPhysics(true);
+            SetVisualState(false);
+
+            Vector3 kickDir = (transform.forward + Vector3.up + Random.insideUnitSphere * 0.5f).normalized;
+            float kickPower = 12f;
+
+            _rb.AddForce(kickDir * kickPower, ForceMode.Impulse);
+            _rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
+        }
+
+        // --- ЛОГИКА ПАДЕНИЯ НА ПОЛ ---
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (!_rb.isKinematic && collision.relativeVelocity.magnitude > 3f)
+            {
+                // Выбираем рандомно между индексом 2 и 3 (твои звуки падения)
+                int fallIndex = Random.Range(2, 4);
+
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("PCDrop")
+                    .ByIndex(fallIndex)
+                    .RandomSound()
+                    .At(this.transform)
+                    .WithVolume(0.3f)
+                ).Forget();
+            }
+        }
+
+        public void SetVisualState(bool isOn)
+        {
+            Material targetMat = isOn ? materialOn : materialOff;
+            if (targetMat == null) return;
+            foreach (var rend in _allRenderers)
+            {
+                if (rend != null) rend.material = targetMat;
+            }
+        }
     }
 }

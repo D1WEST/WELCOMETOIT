@@ -1,8 +1,10 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEngine.InputSystem;
-using System.IO; // Необходимо для работы с файлами
+﻿using Assets.Modules.Audio;
 using System.Collections.Generic;
+using System.IO;
+using Cysharp.Threading.Tasks; // Необходимо для работы с файлами
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class MainMenuController : MonoBehaviour
 {
@@ -13,6 +15,12 @@ public class MainMenuController : MonoBehaviour
     private VisualElement _mainMenu;
     private VisualElement _optionsMenu;
     private VisualElement _rebindList;
+
+
+    private void Start()
+    {
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").ByIndex(0).WithVolume(0.06f).Cycle()).Forget();
+    }
 
     // Путь к файлу сохранения — должен быть таким же, как в GameDataManager
     private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");

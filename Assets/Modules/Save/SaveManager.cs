@@ -12,6 +12,8 @@ namespace Assets.Modules.Save
 {
     public class GameDataManager : MonoBehaviour
     {
+        public bool bossHintsEnabled = true;
+        public float currentInvasionEnergy = 0f;
         [SerializeField] private int _playerMoney = 1000;
         public int playerMoney => _playerMoney;
         public static GameDataManager Instance { get; private set; }
@@ -41,7 +43,9 @@ namespace Assets.Modules.Save
                 workers = myWorkers,
                 money = _playerMoney,
                 currentDay = currentDay,
-                perks = playerPerks
+                perks = playerPerks,
+                invasionEnergy = currentInvasionEnergy,
+                bossHintsEnabled = this.bossHintsEnabled
             });
             File.WriteAllText(SavePath, json);
         }
@@ -53,7 +57,9 @@ namespace Assets.Modules.Save
                 workers = myWorkers,
                 money = _playerMoney,
                 currentDay = ShiftManager.Instance != null ? ShiftManager.Instance.currentDay : loadedDay,
-                perks = playerPerks
+                perks = playerPerks,
+                invasionEnergy = currentInvasionEnergy,
+                bossHintsEnabled = this.bossHintsEnabled
             });
         }
 
@@ -65,6 +71,8 @@ namespace Assets.Modules.Save
             myWorkers = data.workers;
             _playerMoney = data.money;
             playerPerks = data.perks;
+            currentInvasionEnergy = data.invasionEnergy;
+            bossHintsEnabled = data.bossHintsEnabled;
 
             foreach (var worker in myWorkers)
             {
@@ -88,6 +96,8 @@ namespace Assets.Modules.Save
                 loadedDay = data.currentDay > 0 ? data.currentDay : 1;
 
                 playerPerks = data.perks ?? new PerkData();
+                currentInvasionEnergy = data.invasionEnergy;
+                bossHintsEnabled = data.bossHintsEnabled;
 
                 if (ShiftManager.Instance != null)
                     ShiftManager.Instance.currentDay = loadedDay;
@@ -254,6 +264,8 @@ namespace Assets.Modules.Save
             public int money;
             public int currentDay; // ДОБАВЬ ЭТО СЮДА
             public PerkData perks;
+            public float invasionEnergy;
+            public bool bossHintsEnabled;
         }
 
         [System.Serializable]

@@ -1,5 +1,6 @@
 namespace Assets.Modules.PlayerModule
 {
+    using Assets.Modules.Audio;
     using Cysharp.Threading.Tasks;
     using System;
     using System.Threading;
@@ -49,6 +50,9 @@ namespace Assets.Modules.PlayerModule
         [SerializeField] private PlayerCameraService _playerCamera;
         private bool _isSprinting = false;
 
+        public enum MovementAudioState { Idle, Walking, Running }
+        public MovementAudioState _currentAudioState = MovementAudioState.Idle;
+
         private void Start()
         {
             BuildCharacter();
@@ -83,6 +87,50 @@ namespace Assets.Modules.PlayerModule
         {
             _playerCamera.Look(_playerCamera.SelectOperatingVector(LookVectorDelta, MovementVector));
             Move(_playerCamera._lookType);
+
+            HandleMovementAudio();
+        }
+
+        private void HandleMovementAudio()
+        {
+            bool hasMovementInput = MovementVector.sqrMagnitude > 0.01f;
+            bool isPhysicallyMoving = _currentHorizontalVelocity.magnitude > 0.1f;
+
+            // Считаем, что игрок движется, только если он на земле
+            bool isMoving = _controller.isGrounded && (hasMovementInput || isPhysicallyMoving);
+
+            MovementAudioState newState = MovementAudioState.Idle;
+            if (isMoving)
+            {
+                newState = (_isSprinting && hasMovementInput) ? MovementAudioState.Running : MovementAudioState.Walking;
+            }
+
+            if (newState == _currentAudioState) return;
+
+            // СТОПИМ ВСЁ ПЕРЕД СМЕНОЙ
+            // Важно: стопим всю группу "Move", чтобы не было наслоений
+            AudioManager.Instance.StopAudio(AudioQuery.ByKey("Move").At(this.transform));
+
+            _currentAudioState = newState;
+
+            switch (_currentAudioState)
+            {
+                case MovementAudioState.Walking:
+                    AudioManager.Instance.PlayAudio(
+                        AudioQuery.ByKey("Move").ByIndex(0).WithVolume(0.6f).AsKeyInstance().At(this.transform).Cycle()
+                    ).Forget();
+                    break;
+
+                case MovementAudioState.Running:
+                    AudioManager.Instance.PlayAudio(
+                        AudioQuery.ByKey("Move").ByIndex(1).WithVolume(0.7f).AsKeyInstance().At(this.transform).Cycle()
+                    ).Forget();
+                    break;
+
+                case MovementAudioState.Idle:
+                    // Звук уже остановлен выше через StopAudio
+                    break;
+            }
         }
 
         /// <summary>
@@ -129,6 +177,7 @@ namespace Assets.Modules.PlayerModule
             {
                 _isSprinting = true;
                 _selectedSpeed = _runSpeed;
+
             }
             else if (obj.canceled)
             {
@@ -170,6 +219,7 @@ namespace Assets.Modules.PlayerModule
 
             _velocity.y += _gravity * Time.deltaTime;
             Vector3 finalVelocity = _currentHorizontalVelocity + new Vector3(0, _velocity.y, 0);
+
             _controller.Move(finalVelocity * Time.deltaTime);
         }
 

@@ -327,12 +327,31 @@ public class PlayerInteraction : MonoBehaviour
 
     private void ShowUI(IInteractable interactable)
     {
-        _promptLabel.text = interactable.InteractionPrompt;
-        if (_carriedMonitor != null && interactable is WorkplaceInteractable deskInt)
+        string finalPrompt = interactable.InteractionPrompt;
+
+        if (_carriedMonitor != null)
         {
-            if (deskInt.workplaceId == _carriedMonitor.targetWorkplaceId)
-                _promptLabel.text = "Установить монитор [E]";
+            if (interactable is WorkplaceInteractable desk)
+            {
+                if (desk.workplaceId == _carriedMonitor.targetWorkplaceId)
+                {
+                    finalPrompt = "Установить монитор [E]";
+                }
+                else
+                {
+                    finalPrompt = $"Это не тот стол! Отнесите к {_carriedMonitor.targetWorkplaceId}";
+                }
+            }
+            else if (interactable is AnimalAI || interactable is WorkerPhysical)
+            {
+                finalPrompt = "Руки заняты!";
+            }
         }
+
+        // Применяем текст к UI
+        _promptLabel.text = finalPrompt;
+
+        // Остальная логика (кнопки, прогресс)
         _keyLabel.text = $"[{interactAction.action.GetBindingDisplayString()}]";
         _progressBg.style.display = interactable.InteractionType == InteractionType.Hold ? DisplayStyle.Flex : DisplayStyle.None;
         _promptRoot.style.display = DisplayStyle.Flex;

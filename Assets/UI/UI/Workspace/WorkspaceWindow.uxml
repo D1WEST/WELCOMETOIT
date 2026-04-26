@@ -19,4 +19,7 @@
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="footer-hint-container" class="boss-style-box" style="margin-top: 15px;">
+        <ui:Label text="* Выберите сотрудника для текущего стола. Занятые сотрудники будут переведены автоматически." class="hint-text-small" />
+        </ui:VisualElement>
 </ui:UXML>

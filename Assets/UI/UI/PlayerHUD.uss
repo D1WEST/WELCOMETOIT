@@ -44,5 +44,79 @@
     transition-duration: 0.1s;
 }
 
+.crosshair {
+    position: absolute;
+    /* Центрирование */
+    top: 50%;
+    left: 50%;
+    /* Размер точки */
+    width: 6px;
+    height: 6px;
+    /* Цвет и форма */
+    background-color: white;
+    border-radius: 25px; /* Делает квадрат кругом */
+    /* Смещение на собственную половину для идеального центра */
+    translate: -50% -50%;
+    
+    /* Необязательно: тонкая обводка, чтобы точку было видно на светлом фоне */
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+.boss-message-box {
+    position: absolute;
+    bottom: 120px;
+    align-self: center;
+    background-color: rgba(20, 20, 20, 0.95);
+    border-width: 2px;
+    border-color: white;
+    border-radius: 10px;
+    padding: 15px 25px;
+    min-width: 450px;
+    max-width: 800px;
+    display: none; /* Скрыто по умолчанию */
+}
+
+.boss-label-header {
+    color: #FFD700; /* Золотой цвет для имени */
+    font-size: 14px;
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.boss-text {
+    color: white;
+    font-size: 22px;
+    -unity-font-style: bold;
+    white-space: normal; /* Разрешить перенос строк */
+}
+
+.footer-hint-text {
+    color: rgba(255, 255, 255, 0.35); /* Тускло-белый */
+    font-size: 13px;
+    -unity-font-style: italic;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.1);
+    -unity-text-align: middle-left;
+    white-space: normal; /* Разрешить перенос строк */
+}
+
+.boss-style-box {
+    background-color: rgba(20, 20, 20, 0.95);
+    border-width: 2px;
+    border-color: white;
+    border-radius: 10px;
+    padding: 10px 15px;
+}
+
+.hint-text-small {
+    color: white;
+    font-size: 13px;
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
 /* Мы больше не используем DisplayStyle.None в коде, 
    поэтому сегменты всегда будут в ряд. */

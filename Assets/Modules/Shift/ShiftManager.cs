@@ -1,4 +1,5 @@
-﻿using Assets.Modules.Save;
+﻿using Assets.Modules.Audio;
+using Assets.Modules.Save;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
@@ -25,10 +26,35 @@ public class ShiftManager : MonoBehaviour
     public event Action<string> OnTimeChanged;
     public bool IsShiftActive => _isShiftActive;
 
+    // Переменная для отслеживания смены часа
+    private int _lastHourSounded = 10;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        // АВТО-ПОИСК БЛОКЕРОВ ПРИ ЗАПУСКЕ
+        InitializeRoomBlockers();
+    }
+
+    private void InitializeRoomBlockers()
+    {
+        foreach (var room in rooms)
+        {
+            if (room.roomManager == null) continue;
+
+            // Ищем всех детей в комнате
+            Transform[] allChildren = room.roomManager.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in allChildren)
+            {
+                // Если у ребенка тег Blocker — добавляем в список этой комнаты
+                if (child.CompareTag("Blocker"))
+                {
+                    room.doorBlockers.Add(child.gameObject);
+                }
+            }
+        }
     }
 
     private void Start()
@@ -38,6 +64,9 @@ public class ShiftManager : MonoBehaviour
             currentDay = GameDataManager.Instance.loadedDay;
         }
 
+        // Ваша музыка (оставляем без изменений)
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").AsRandomPlaylist().WithVolume(0.06f).Cycle()).Forget();
+
         SetupNewDay();
     }
 
@@ -45,11 +74,20 @@ public class ShiftManager : MonoBehaviour
     {
         if (_isShiftActive) return;
 
+        AudioManager.Instance.PlayAudio(
+            AudioQuery.ByKey("StartGame")
+                .ByIndex(0)
+                .RandomSound()
+                .WithVolume(1f)
+        ).Forget();
+
         // СОЗДАЕМ ЧЕКПОИНТ
         GameDataManager.Instance.CreateCheckpoint();
 
-        _currentTimeInSeconds = 10 * 3600;
-        timeMultiplier = 120.0f; // Сбрасываем множитель на нормальный   НЕ ЗАБУДЬ ПОМЕНЯТЬ КОГДА ПРИЙДЕТ ВРЕМЯ МЕНЯТЬ МУЛЬТИПЛАЕР
+        _currentTimeInSeconds = 10 * 3600; // Старт в 10:00
+        _lastHourSounded = 10; // Сброс счетчика часов
+
+        timeMultiplier = 120.0f;
         _isShiftActive = true;
         currentProgress = 0;
         SetupNewDay();
@@ -62,11 +100,27 @@ public class ShiftManager : MonoBehaviour
         _currentTimeInSeconds += Time.deltaTime * timeMultiplier;
         UpdateClockUI();
 
+        // --- ЛОГИКА ЗВУКА КАЖДОГО ЧАСА (Индекс 0) ---
+        int currentHour = TimeSpan.FromSeconds(_currentTimeInSeconds).Hours;
+        if (currentHour > _lastHourSounded)
+        {
+            _lastHourSounded = currentHour;
+
+            // Играем звук часа только если время не летит в режиме Time Skip
+            if (timeMultiplier < 1000f)
+            {
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("timescope").ByIndex(0).RandomSound()
+                ).Forget();
+            }
+        }
+
         if (_currentTimeInSeconds >= 20 * 3600) // Финиш в 20:00
         {
             EndShift();
         }
     }
+
     private void SetupNewDay()
     {
         targetGoal = 0;
@@ -74,8 +128,13 @@ public class ShiftManager : MonoBehaviour
         {
             bool isUnlocked = currentDay >= room.unlockDay;
 
-            if (room.blackBlocker != null)
-                room.blackBlocker.SetActive(!isUnlocked);
+            foreach (var blocker in room.doorBlockers)
+            {
+                if (blocker != null)
+                {
+                    blocker.SetActive(!isUnlocked);
+                }
+            }
 
             room.roomManager.isOpened = isUnlocked;
 
@@ -108,6 +167,11 @@ public class ShiftManager : MonoBehaviour
         _isShiftActive = false;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
 
+        // --- ЗВУК КОНЦА СМЕНЫ (Индекс 1) ---
+        AudioManager.Instance.PlayAudio(
+            AudioQuery.ByKey("timescope").ByIndex(1).RandomSound()
+        ).Forget();
+
         if (currentProgress < targetGoal - 0.1f)
         {
             PaycheckUIController.Instance.ShowResult(false, 0, player);
@@ -116,9 +180,11 @@ public class ShiftManager : MonoBehaviour
         {
             int activeRoomsCount = rooms.FindAll(r => r.roomManager.isOpened).Count;
 
-            float bonusCalc = (activeRoomsCount * 1000f) * (currentDay * 0.05f);
+            // Расчет бонуса
+            float bonusCalc = (activeRoomsCount * 1000f) * (1 + currentDay * 0.05f);
             int finalBonus = Mathf.Max(100, Mathf.RoundToInt(bonusCalc));
 
+            // Вызов UI результата (Там внутри должен быть звук индекса 2)
             PaycheckUIController.Instance.ShowResult(true, finalBonus, player);
         }
     }
@@ -129,19 +195,6 @@ public class ShiftManager : MonoBehaviour
 
         GameDataManager.Instance.RestoreCheckpoint();
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
-    }
-
-    private void CalculatePaycheck()
-    {
-        int activeRooms = rooms.FindAll(r => r.roomManager.isOpened).Count;
-        float amount = (activeRooms * 1000) * (1+(currentDay * 0.05f));
-        int finalBonus = Mathf.RoundToInt(amount);
-
-        // Находим игрока на сцене, чтобы заблочить его
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-
-        // Показываем чек и передаем ссылку на игрока
-        PaycheckUIController.Instance.ShowResult(true,finalBonus, player);
     }
 
     private void UpdateClockUI()
@@ -159,5 +212,7 @@ public class RoomState
     public RoomManager roomManager;
     public GameObject blackBlocker;
     public int unlockDay;
-    public int goalTarget; // Сколько очков прогресса должна давать эта комната
+    public int goalTarget;
+
+    [HideInInspector] public List<GameObject> doorBlockers = new List<GameObject>();
 }

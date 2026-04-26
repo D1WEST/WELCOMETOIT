@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
   templateId: 000
   workerName: Max
-  npcPrefab: {fileID: 9285571226729687, guid: 2d3e19ae5928d074dbec190f17819f59, type: 3}
+  npcPrefab: {fileID: 9285571226729687, guid: 94c38955fd12a424d9f6c5a3a03d3eaf, type: 3}
   position: 1
   patience: 2
   workPower: 2
   sleepiness: 2
   angriness: 2
-  avatar: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  avatar: {fileID: 21300000, guid: 85e45b944b8adf5449329ab4c65f72d6, type: 3}
   buyPrice: 5
   sellPrice: 10

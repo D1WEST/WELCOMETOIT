@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
   templateId: 002
   workerName: Sarah
-  npcPrefab: {fileID: 4135268344513719, guid: 7305c8b4d8e154e4d9070be3e5021599, type: 3}
+  npcPrefab: {fileID: 9285571226729687, guid: 55df3c2be90cdb749aca0a423226bef9, type: 3}
   position: 1
   patience: 6
   workPower: 6
   sleepiness: 6
   angriness: 6
-  avatar: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  avatar: {fileID: 21300000, guid: 60380c7278e65b349a5127a45eebab8b, type: 3}
   buyPrice: 11
   sellPrice: 12

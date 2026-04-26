@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 773e55f56a235d14fa1993e3bc8536cf, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Audio.AudioConfig
+  relations:
+  - key: Music
+    clips:
+    - {fileID: 8300000, guid: c349c09a11b96fe4db7e41ec513fdf7e, type: 3}
+    - {fileID: 8300000, guid: 6a2fa6b452b43d54581e7d624b1542a6, type: 3}
+    - {fileID: 8300000, guid: 29976376ec397844f9856e91957c4709, type: 3}
+  - key: Emotion_Angry
+    clips:
+    - {fileID: 8300000, guid: b78c202f9ebb4084f80f357e0a3a7b91, type: 3}
+    - {fileID: 8300000, guid: 7b15b16789980ac409255d291bafa552, type: 3}
+    - {fileID: 8300000, guid: 4355120c655a0f4419532109435bf839, type: 3}
+    - {fileID: 8300000, guid: 63d5d0192f7efe140b23b96b2580c37a, type: 3}
+  - key: Emotion_Sleepy
+    clips:
+    - {fileID: 8300000, guid: c320b88aa6ad4c8438d1444da38e9161, type: 3}
+    - {fileID: 8300000, guid: 29b8136329364bb419a4dce7e9df2066, type: 3}
+  - key: Move
+    clips:
+    - {fileID: 8300000, guid: 969e6717fdab71a43a6fb5c4f6b0cda6, type: 3}
+    - {fileID: 8300000, guid: faa3ad32577daba4e8c913f0ad8816e8, type: 3}
+  - key: Generator
+    clips:
+    - {fileID: 8300000, guid: f53abf500d8df8c42bee790a846e5fcd, type: 3}
+    - {fileID: 8300000, guid: efcf17150cdee2648ac4136d1c078384, type: 3}
+    - {fileID: 8300000, guid: 255d00e8eb989d84bb936d4619fabb29, type: 3}
+    - {fileID: 8300000, guid: 5b5bfe80d29849f4589a19c3a3d7d549, type: 3}
+  - key: Keyboard
+    clips:
+    - {fileID: 8300000, guid: 7f8f2eaa403209c4f8ed88dfe4f2b1b3, type: 3}
+    - {fileID: 8300000, guid: 4882b8d37ef07e74081d9c2b600c875e, type: 3}
+    - {fileID: 8300000, guid: 6dc3d341d2b66134ab8694afb041721d, type: 3}
+  - key: AirCon
+    clips:
+    - {fileID: 8300000, guid: 26aede55755c33a45b9bf9bde22e4f0d, type: 3}
+    - {fileID: 8300000, guid: fd18a0cc1a8005d4e96cb8adf1922677, type: 3}
+  - key: Foxes
+    clips:
+    - {fileID: 8300000, guid: df5fe1a53deaed640a49435d379803d5, type: 3}
+    - {fileID: 8300000, guid: cb9510075830b9b4b8dcd2c90bd9ad62, type: 3}
+    - {fileID: 8300000, guid: 41e74914c6bdc3a47ba7dc8815a51eee, type: 3}
+  - key: timescope
+    clips:
+    - {fileID: 8300000, guid: c36d7b5f35317b7468ea87568e5587ee, type: 3}
+    - {fileID: 8300000, guid: 2fca054ea31bbee4a9d26aee0b50df44, type: 3}
+    - {fileID: 8300000, guid: 060520b7c3e1c374e8f40d25e9ce65c6, type: 3}
+  - key: Slap
+    clips:
+    - {fileID: 8300000, guid: 905985206277e7d49bf038253ff55e5c, type: 3}
+  - key: AdminPC
+    clips:
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+    - {fileID: 8300000, guid: 0830513b7e571394f9bf3d73c6ae0e5a, type: 3}
+    - {fileID: 8300000, guid: 060520b7c3e1c374e8f40d25e9ce65c6, type: 3}
+    - {fileID: 8300000, guid: c9835aa7a75c3e54fb603e31781ceb06, type: 3}
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+  - key: StartGame
+    clips:
+    - {fileID: 8300000, guid: 4b95bb12da2c7124ab6851615b4b11fe, type: 3}
+  - key: PCDrop
+    clips:
+    - {fileID: 8300000, guid: f6c4c5bd1d9d2b542a922dafe15427eb, type: 3}
+    - {fileID: 8300000, guid: 665aa599854971e478be80f916dad714, type: 3}
+    - {fileID: 8300000, guid: 0e363f0633890524792a3de1213803af, type: 3}
+    - {fileID: 8300000, guid: f28c80c69878ad5418bc3ffa2b64f280, type: 3}
+  - key: Boss
+    clips:
+    - {fileID: 8300000, guid: 938b3bac12497844e932f0c0f727cfd5, type: 3}
+    - {fileID: 8300000, guid: aa0a8fbfc75e5f049b9118e4d76a493d, type: 3}
+    - {fileID: 8300000, guid: d8ecb8b35fa503843a95a815fc80ed47, type: 3}
+    - {fileID: 8300000, guid: 61a18ed3926cb0a44a6ea8ce6d4d584e, type: 3}
+    - {fileID: 8300000, guid: 5ad16593a9b21c340b476dc1d2b2517a, type: 3}
+    - {fileID: 8300000, guid: c9835aa7a75c3e54fb603e31781ceb06, type: 3}
+    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}

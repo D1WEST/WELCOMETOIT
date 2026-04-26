@@ -1,10 +1,12 @@
 ﻿using Assets.Modules.NPC;
 using Assets.Modules.PlayerModule;
 using Assets.Modules.Save;
+using Assets.Modules.Audio;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
 using Position = Assets.Modules.NPC.Position;
+using Cysharp.Threading.Tasks;
 
 public class ComputerUIController : MonoBehaviour
 {
@@ -18,6 +20,17 @@ public class ComputerUIController : MonoBehaviour
     private bool _isMarketTab = true;
     private PlayerInputActions _inputActions;
 
+    private void UpdateHintVisibility()
+    {
+        var hintContainer = _root.Q<VisualElement>("footer-hint-container");
+        if (hintContainer != null)
+        {
+            // Показываем только если Босс НЕ заткнут
+            hintContainer.style.display = GameDataManager.Instance.bossHintsEnabled
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+        }
+    }
 
     private void OnEnable()
     {
@@ -26,9 +39,25 @@ public class ComputerUIController : MonoBehaviour
 
         _listContainer = _root.Q<ScrollView>("worker-list");
 
-        _root.Q<Button>("tab-market").clicked += () => { _isMarketTab = true; RefreshUI(); };
-        _root.Q<Button>("tab-my-workers").clicked += () => { _isMarketTab = false; RefreshUI(); };
-        _root.Q<Button>("btn-refresh").clicked += () => { GameDataManager.Instance.RefreshMarket(); RefreshUI(); };
+        // --- ЗВУКИ ВКЛАДОК И ОБНОВЛЕНИЯ ---
+        _root.Q<Button>("tab-market").clicked += () => {
+            _isMarketTab = true;
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(0).RandomSound()).Forget();
+            RefreshUI();
+        };
+
+        _root.Q<Button>("tab-my-workers").clicked += () => {
+            _isMarketTab = false;
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(0).RandomSound()).Forget();
+            RefreshUI();
+        };
+
+        _root.Q<Button>("btn-refresh").clicked += () => {
+            GameDataManager.Instance.RefreshMarket();
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(1).RandomSound()).Forget();
+            RefreshUI();
+        };
+
         _root.Q<Button>("btn-close").clicked += CloseMenu;
     }
 
@@ -45,6 +74,10 @@ public class ComputerUIController : MonoBehaviour
             _cachedPlayerInput.enabled = false;
         }
 
+        // --- ЗВУК ЗАХОДА (Индекс 4) ---
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(4).RandomSound()).Forget();
+
+        UpdateHintVisibility();
         RefreshUI();
     }
 
@@ -60,6 +93,9 @@ public class ComputerUIController : MonoBehaviour
             _cachedPlayerInput.enabled = true;
             _cachedPlayerInput = null;
         }
+
+        // --- ЗВУК ВЫХОДА (Индекс 5) ---
+        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(5).RandomSound()).Forget();
     }
 
     private void RefreshUI()
@@ -70,7 +106,6 @@ public class ComputerUIController : MonoBehaviour
         foreach (var worker in list)
         {
             var cardInstance = cardTemplate.Instantiate();
-            // Добавляем стиль, чтобы карточка не сжималась
             var card = cardInstance.Q<VisualElement>(className: "worker-card");
             FillCardData(card, worker);
             _listContainer.Add(card);
@@ -79,7 +114,6 @@ public class ComputerUIController : MonoBehaviour
 
     private void FillCardData(VisualElement card, WorkerInstance data)
     {
-        // Заполняем все поля из модели
         card.Q<Label>("name-label").text = data.name;
         card.Q<Label>("id-label").text = $"ID: {data.templateId}";
         card.Q<Label>("pos-label").text = data.currentPosition.ToString();
@@ -98,11 +132,16 @@ public class ComputerUIController : MonoBehaviour
         if (_isMarketTab)
         {
             btn.text = $"Buy ${data.buyPrice}";
-            btn.clicked += () => { GameDataManager.Instance.HireWorker(data); RefreshUI(); };
+            btn.clicked += () => {
+                GameDataManager.Instance.HireWorker(data);
+                // --- ЗВУК ПОКУПКИ (Индекс 2) ---
+                AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(2).RandomSound()).Forget();
+                RefreshUI();
+            };
         }
         else
         {
-            ShowManageMenu(card, data); // Сразу вызываем отрисовку кнопок управления
+            ShowManageMenu(card, data);
         }
     }
 
@@ -111,11 +150,14 @@ public class ComputerUIController : MonoBehaviour
         var container = card.Q<VisualElement>("action-container");
         container.Clear();
 
-        // Кнопка отдыха
         var restBtn = CreateMenuButton(data.isResting ? "Wake" : "Rest", "#2196F3");
-        restBtn.clicked += () => { data.isResting = !data.isResting; RefreshUI(); };
+        restBtn.clicked += () => {
+            data.isResting = !data.isResting;
+            // Клик по кнопке внутри управления (можно использовать звук вкладки или отдельный)
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(0).RandomSound()).Forget();
+            RefreshUI();
+        };
 
-        // Кнопка Улучшения с ценой
         int upCost = GameDataManager.Instance.GetUpgradeCost(data);
         string upText = data.currentPosition == Position.Eng_LEGEND ? "MAX" : $"Up ${upCost}";
 
@@ -124,17 +166,22 @@ public class ComputerUIController : MonoBehaviour
         {
             upBtn.clicked += () => {
                 GameDataManager.Instance.PromoteWorker(data);
+                // Покупка апгрейда — тоже звук покупки (Индекс 2)
+                AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(2).RandomSound()).Forget();
                 RefreshUI();
             };
 
-            // Если денег мало — делаем кнопку полупрозрачной (визуальный фидбек)
             if (GameDataManager.Instance.playerMoney < upCost)
                 upBtn.style.opacity = 0.5f;
         }
 
-        // Кнопка Продажи
         var sellBtn = CreateMenuButton($"Sell ${data.sellPrice}", "#F44336");
-        sellBtn.clicked += () => { GameDataManager.Instance.SellWorker(data); RefreshUI(); };
+        sellBtn.clicked += () => {
+            GameDataManager.Instance.SellWorker(data);
+            // --- ЗВУК ПРОДАЖИ (Индекс 3) ---
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(3).RandomSound()).Forget();
+            RefreshUI();
+        };
 
         container.Add(restBtn);
         container.Add(upBtn);
@@ -144,8 +191,6 @@ public class ComputerUIController : MonoBehaviour
     private Button CreateMenuButton(string text, string hexColor)
     {
         var btn = new Button { text = text };
-
-        // Прямая установка цвета фона
         if (ColorUtility.TryParseHtmlString(hexColor, out var color))
         {
             btn.style.backgroundColor = color;
