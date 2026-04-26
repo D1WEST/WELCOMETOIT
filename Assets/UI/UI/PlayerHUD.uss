@@ -44,5 +44,24 @@
     transition-duration: 0.1s;
 }
 
+.crosshair {
+    position: absolute;
+    /* Центрирование */
+    top: 50%;
+    left: 50%;
+    /* Размер точки */
+    width: 6px;
+    height: 6px;
+    /* Цвет и форма */
+    background-color: white;
+    border-radius: 25px; /* Делает квадрат кругом */
+    /* Смещение на собственную половину для идеального центра */
+    translate: -50% -50%;
+    
+    /* Необязательно: тонкая обводка, чтобы точку было видно на светлом фоне */
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
 /* Мы больше не используем DisplayStyle.None в коде, 
    поэтому сегменты всегда будут в ряд. */

@@ -32,6 +32,7 @@ public class AnimalAI : MonoBehaviour, IInteractable
 
     private GameObject _target;
     private bool _isBurst = false;
+    private bool _isWalkingSoundPlaying = false;
 
     public string InteractionPrompt => _isBurst ? "" : "Лопнуть вредителя";
     public Transform InteractionPivot
@@ -135,17 +136,26 @@ public class AnimalAI : MonoBehaviour, IInteractable
 
     private void UpdateAnimations()
     {
-        if (_animator == null || _isBurst)
-        {
-            Debug.Log("нет аниматора");
-            return;
-        }
+        if (_animator == null || _isBurst) return;
 
-        // Считаем только горизонтальную скорость
         float horizontalSpeed = new Vector3(_rb.linearVelocity.x, 0, _rb.linearVelocity.z).magnitude;
+        bool isMoving = horizontalSpeed > 0.2f;
 
-        // Если скорость > 0.2, включаем анимацию бега
-        _animator.SetBool("IsRunning", horizontalSpeed > 0.1f);
+        _animator.SetBool("IsRunning", isMoving);
+
+        // --- ЗВУК ШАГОВ (Индекс 1) ---
+        if (isMoving && !_isWalkingSoundPlaying)
+        {
+            _isWalkingSoundPlaying = true;
+            AudioManager.Instance.PlayAudio(
+                AudioQuery.ByKey("Foxes").ByIndex(1).WithVolume(0.2f).AsInstance().Cycle().At(this.transform)
+            ).Forget();
+        }
+        else if (!isMoving && _isWalkingSoundPlaying)
+        {
+            _isWalkingSoundPlaying = false;
+            AudioManager.Instance.StopAudio(AudioQuery.ByKey("Foxes").AsInstance().At(this.transform));
+        }
     }
 
     private void HandleMovement()
@@ -268,6 +278,14 @@ public class AnimalAI : MonoBehaviour, IInteractable
     private async UniTaskVoid PerformBurstSequence()
     {
         _isBurst = true;
+
+        // --- ЗВУК ЛОПАНИЯ (Индекс 2) ---
+        AudioManager.Instance.PlayAudio(
+            AudioQuery.ByKey("Foxes").ByIndex(2).AsInstance().At(this.transform)
+        ).Forget();
+
+        // Останавливаем шаги перед смертью
+        //AudioManager.Instance.StopAudio(AudioQuery.ByKey("Foxes").At(this.transform));
 
         // 1. Звук взрыва/лопанья
         //AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Pop").RandomSound().At(this.transform)).Forget();

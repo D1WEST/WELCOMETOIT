@@ -47,3 +47,8 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 26aede55755c33a45b9bf9bde22e4f0d, type: 3}
     - {fileID: 8300000, guid: fd18a0cc1a8005d4e96cb8adf1922677, type: 3}
+  - key: Foxes
+    clips:
+    - {fileID: 8300000, guid: df5fe1a53deaed640a49435d379803d5, type: 3}
+    - {fileID: 8300000, guid: cb9510075830b9b4b8dcd2c90bd9ad62, type: 3}
+    - {fileID: 8300000, guid: 41e74914c6bdc3a47ba7dc8815a51eee, type: 3}

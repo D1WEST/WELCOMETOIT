@@ -1,5 +1,6 @@
 ﻿using Assets.Modules.Interractables.Impl;
 using Assets.Modules.Save;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,8 @@ namespace Assets.Modules.AIFox
         [Header("Invasion Logic")]
         [SerializeField] private float currentInvasionEnergy = 0f;
         [SerializeField] private float energyThreshold = 100f; // Порог срабатывания
+
+        private bool _isInvasionMusicPlaying = false;
 
         // Базовая скорость накопления (настраивается так, чтобы при множителе 1.0 
         // шкала заполнялась за 1.5 смены)
@@ -41,6 +44,11 @@ namespace Assets.Modules.AIFox
         {
             if (!ShiftManager.Instance.IsShiftActive) return;
 
+            if (_isInvasionMusicPlaying)
+            {
+                CheckInvasionEnd();
+            }
+
             float totalEfficiency = CalculateGlobalEfficiency();
 
             float efficiencyMultiplier = Mathf.Lerp(1f, 2f, totalEfficiency / 0.9f);
@@ -54,10 +62,10 @@ namespace Assets.Modules.AIFox
 
             GameDataManager.Instance.currentInvasionEnergy = currentInvasionEnergy;
 
-            if(currentInvasionEnergy >= energyThreshold)
+            if (currentInvasionEnergy >= energyThreshold)
             {
                 currentInvasionEnergy = 0f;
-                GameDataManager.Instance.currentInvasionEnergy = 0f; // Сбрасываем и в сейве
+                GameDataManager.Instance.currentInvasionEnergy = 0f;
                 TriggerInvasion();
             }
         }
@@ -89,20 +97,45 @@ namespace Assets.Modules.AIFox
             if (openedRooms.Count == 0) return;
 
             RoomManager targetRoom = openedRooms[Random.Range(0, openedRooms.Count)];
-
-            // Спавним больше лис для хаоса
             int count = Random.Range(5, 9);
 
             for (int i = 0; i < count; i++)
             {
                 Vector3 spawnOffset = new Vector3(Random.Range(-1f, 1f), 0.5f, Random.Range(-1f, 1f));
                 Vector3 spawnPos = targetRoom.transform.position + spawnOffset;
-
                 GameObject animal = Instantiate(animalPrefab, spawnPos, Quaternion.identity);
-                if (animal.TryGetComponent<AnimalAI>(out var ai))
-                {
-                    ai.Init();
-                }
+                if (animal.TryGetComponent<AnimalAI>(out var ai)) ai.Init();
+            }
+
+            if (!_isInvasionMusicPlaying)
+            {
+                _isInvasionMusicPlaying = true;
+
+                // ГЛАВНЫЙ ФИКС: Убрали .AsInstance(). Теперь Foxes (0) заменит текущую Music через Crossfade
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("Foxes")
+                        .ByIndex(0)
+                        .WithVolume(1f)
+                        .Cycle()
+                ).Forget();
+            }
+        }
+
+        private void CheckInvasionEnd()
+        {
+            var activeFoxes = Object.FindObjectsByType<AnimalAI>(FindObjectsSortMode.None);
+
+            if (activeFoxes.Length == 0)
+            {
+                _isInvasionMusicPlaying = false;
+
+                // Просто запускаем обычную музыку. Менеджер сам сделает Crossfade и выключит лис.
+                AudioManager.Instance.PlayAudio(
+                    AudioQuery.ByKey("Music")
+                        .AsRandomPlaylist()
+                        .WithVolume(0.15f)
+                        .Cycle()
+                ).Forget();
             }
         }
 
