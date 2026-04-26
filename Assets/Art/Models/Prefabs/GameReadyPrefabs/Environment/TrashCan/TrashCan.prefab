@@ -8,17 +8,33 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -9180469744023838859, guid: d928579a75e61904a954416363c10168, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 08a05b199f07b1c4e89533d0119591bc, type: 2}
+    - target: {fileID: -8679921383154817045, guid: d928579a75e61904a954416363c10168, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d928579a75e61904a954416363c10168, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d928579a75e61904a954416363c10168, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.75
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d928579a75e61904a954416363c10168, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.014449
+      value: -1.175
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d928579a75e61904a954416363c10168, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.171
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d928579a75e61904a954416363c10168, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.90790516
+      value: 1.155
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d928579a75e61904a954416363c10168, type: 3}
       propertyPath: m_LocalRotation.w
@@ -48,10 +64,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -6665568400562309154, guid: d928579a75e61904a954416363c10168, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 08a05b199f07b1c4e89533d0119591bc, type: 2}
     - target: {fileID: 919132149155446097, guid: d928579a75e61904a954416363c10168, type: 3}
       propertyPath: m_Name
       value: TrashCan
       objectReference: {fileID: 0}
+    - target: {fileID: 8280704227580990285, guid: d928579a75e61904a954416363c10168, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 08a05b199f07b1c4e89533d0119591bc, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.12967645
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -26,15 +26,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -48,12 +48,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4176619265862036644, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: -4176619265862036644, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: -4176619265862036644, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: -4176619265862036644, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.337
+      objectReference: {fileID: 0}
+    - target: {fileID: -4176619265862036644, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.127
+      objectReference: {fileID: 0}
+    - target: {fileID: -4176619265862036644, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.117
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
       propertyPath: m_Name
       value: Chair_02
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: -3441677316808118742, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8814d22dd82733346b0b49e5d8ba8d9d, type: 3}
