@@ -35,15 +35,25 @@ namespace Assets.Modules.Perks
 
         public async UniTask ShowHint(string message)
         {
-            if (_container == null || _isSpeaking) return; // Не перебиваем, если уже говорит
+            if (_container == null || _isSpeaking) return;
             _isSpeaking = true;
 
             _container.style.display = DisplayStyle.Flex;
             _messageLabel.text = "";
 
-            BossPhysical.Instance.SetState(2); // Talking
-            var soundQuery = AudioQuery.ByKey("Boss").ByIndex(4).Cycle().At(BossPhysical.Instance.transform);
-            AudioManager.Instance.PlayAudio(soundQuery).Forget();
+            BossPhysical.Instance.SetState(2); // Анимация Talking
+
+            // --- ГЛАВНЫЙ ФИКС ЗВУКА ---
+            // Используем .RandomSound(), чтобы AudioManager понял, что это НЕ музыка.
+            // Используем .Cycle(), чтобы звук повторялся, пока мы печатаем.
+            var talkQuery = AudioQuery.ByKey("Boss")
+                .ByIndex(4)
+                .RandomSound() // Это пометит звук как SFX, и он не тронет BGM
+                .Cycle()
+                .At(BossPhysical.Instance.transform)
+                .WithVolume(0.5f);
+
+            AudioManager.Instance.PlayAudio(talkQuery).Forget();
 
             foreach (char c in message)
             {
@@ -51,10 +61,11 @@ namespace Assets.Modules.Perks
                 await UniTask.Delay(40);
             }
 
-            AudioManager.Instance.StopAudio(soundQuery);
-            BossPhysical.Instance.SetState(0); // Idle
+            // ОСТАНОВКА
+            AudioManager.Instance.StopAudio(talkQuery);
+            BossPhysical.Instance.SetState(0);
 
-            await UniTask.Delay(3500); // Даем время дочитать
+            await UniTask.Delay(3000);
             _container.style.display = DisplayStyle.None;
             _isSpeaking = false;
         }
