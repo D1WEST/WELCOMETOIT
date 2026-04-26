@@ -63,8 +63,8 @@ MonoBehaviour:
   - key: AdminPC
     clips:
     - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
-    - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
+    - {fileID: 8300000, guid: 0830513b7e571394f9bf3d73c6ae0e5a, type: 3}
     - {fileID: 8300000, guid: 060520b7c3e1c374e8f40d25e9ce65c6, type: 3}
-    - {fileID: 8300000, guid: 060520b7c3e1c374e8f40d25e9ce65c6, type: 3}
+    - {fileID: 8300000, guid: c9835aa7a75c3e54fb603e31781ceb06, type: 3}
     - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}
     - {fileID: 8300000, guid: 2f4d39a9ac90108409dfcbf2f779d217, type: 3}

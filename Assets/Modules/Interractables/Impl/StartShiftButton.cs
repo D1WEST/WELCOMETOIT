@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace Assets.Modules.Interractables.Impl
 {
@@ -12,6 +13,9 @@ namespace Assets.Modules.Interractables.Impl
 
         public void Interact(GameObject interactor)
         {
+            AudioManager.Instance.PlayAudio(
+                AudioQuery.ByKey("StartShift").RandomSound()
+            ).Forget();
             if (!ShiftManager.Instance.IsShiftActive)
             {
                 ShiftManager.Instance.StartShift();
