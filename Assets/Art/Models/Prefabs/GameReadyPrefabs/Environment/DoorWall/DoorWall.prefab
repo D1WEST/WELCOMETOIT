@@ -58,5 +58,64 @@ PrefabInstance:
     - {fileID: -1807970279642858887, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
     - {fileID: 5769484663829117588, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6639724087891337023, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1317248892550143443}
+    - targetCorrespondingSourceObject: {fileID: -8247744568557690385, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3527202284402391942}
   m_SourcePrefab: {fileID: 100100000, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
+--- !u!1 &2037280415216412 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -8247744568557690385, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
+  m_PrefabInstance: {fileID: 976468469040206579}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &3527202284402391942
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2037280415216412}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -8670151273213183110, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
+--- !u!1 &5883976033888947660 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6639724087891337023, guid: a47d5cf8cae1eb347a2d847791ed1b75, type: 3}
+  m_PrefabInstance: {fileID: 976468469040206579}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &1317248892550143443
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5883976033888947660}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.25000006, y: 2.4375, z: 1.6250004}
+  m_Center: {x: 0, y: 1.21875, z: -0.0625}
