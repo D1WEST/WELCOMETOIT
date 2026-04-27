@@ -128,9 +128,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a242bd8d153db64a93258f9424792c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.Interractables.Impl.AnimalAI
-  speed: 8.5
+  speed: 6
   panicDistance: 5
-  rotationSpeed: 10
+  rotationSpeed: 7
   wallDetectionDist: 3
   detectionRadius: 15
   burstScaleMultiplier: 2.5
@@ -335,6 +335,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 4b42b18a52ac7194d909dd153c4e1d35, type: 2}
+    - target: {fileID: 5866666021909216657, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 0599ac4e668907649807c6af0b1565df, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

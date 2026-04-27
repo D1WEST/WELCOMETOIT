@@ -84,6 +84,23 @@ namespace Assets.Modules.Save
             SaveGame(data.currentDay);
         }
 
+        public void ApplyMorningRest()
+        {
+            foreach (var worker in myWorkers)
+            {
+                // Уменьшаем все негативные показатели на 50%
+                worker.currentSleepiness *= 0.5f;
+                worker.currentAnger *= 0.5f;
+                worker.currentRestlessness *= 0.5f;
+
+                // Сбрасываем статус на Working, если они были сонные или злые
+                worker.status = WorkerStatus.Working;
+            }
+
+            // Сохраняем обновленные статы, чтобы в чекпоинт ушли "свежие" люди
+            SaveGame(ShiftManager.Instance != null ? ShiftManager.Instance.currentDay : loadedDay);
+        }
+
         public void LoadGame()
         {
             if (File.Exists(SavePath))

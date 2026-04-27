@@ -13912,19 +13912,19 @@ MonoBehaviour:
     roomManager: {fileID: 643548018}
     blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
     unlockDay: 0
-    goalTarget: 2000
+    goalTarget: 2500
     doorBlockers: []
   - name: R2
     roomManager: {fileID: 469493259}
     blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
     unlockDay: 3
-    goalTarget: 2000
+    goalTarget: 2500
     doorBlockers: []
   - name: R3
     roomManager: {fileID: 2135439633}
     blackBlocker: {fileID: 3949981138394254402, guid: 2b1f34eabe919754dac70e2e6f255fff, type: 3}
     unlockDay: 6
-    goalTarget: 4000
+    goalTarget: 2500
     doorBlockers: []
   - name: R4
     roomManager: {fileID: 1390813088}
