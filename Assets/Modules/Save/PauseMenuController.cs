@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿using Assets.Modules.PlayerModule;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
+using PlayerInput = Assets.Modules.PlayerModule.PlayerInput;
 
 namespace Assets.Modules.Save
 {
@@ -47,15 +49,30 @@ namespace Assets.Modules.Save
             _isPaused = !_isPaused;
             _root.style.display = _isPaused ? DisplayStyle.Flex : DisplayStyle.None;
 
-            // Блокировка игрока и курсора
-            if (_playerInput == null) _playerInput = FindFirstObjectByType<PlayerInput>();
+            if (_playerInput == null) _playerInput = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInput>();
 
-            if (_playerInput != null) _playerInput.enabled = !_isPaused;
+            if (_playerInput != null)
+            {
+                // 1. Выключаем ввод
+                _playerInput.enabled = !_isPaused;
 
+                // 2. ВАЖНО: Выключаем скрипт передвижения (чтобы не было инерции ног)
+                if (_playerInput.TryGetComponent<PlayerLocomotion>(out var locomotion))
+                {
+                    locomotion.enabled = !_isPaused;
+                }
+
+                // 3. ГЛАВНЫЙ ФИКС: Останавливаем инерцию камеры
+                if (_playerInput.TryGetComponent<PlayerCameraService>(out var cameraService))
+                {
+                    cameraService.StopCameraInertia();
+                }
+            }
+
+            // Разблокировка курсора
             Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = _isPaused;
 
-            // Опционально: останавливаем время в игре
             Time.timeScale = _isPaused ? 0f : 1f;
         }
 

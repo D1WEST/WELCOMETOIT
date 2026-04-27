@@ -307,10 +307,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4707928467985853185, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4b42b18a52ac7194d909dd153c4e1d35, type: 2}
+    - target: {fileID: -1920169069233879404, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4b42b18a52ac7194d909dd153c4e1d35, type: 2}
+    - target: {fileID: -1063819960576022300, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4b42b18a52ac7194d909dd153c4e1d35, type: 2}
+    - target: {fileID: -438661965285413493, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4b42b18a52ac7194d909dd153c4e1d35, type: 2}
     - target: {fileID: 919132149155446097, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
       propertyPath: m_Name
       value: Mini-Foxik_ForCutscene
       objectReference: {fileID: 0}
+    - target: {fileID: 988540477142407209, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4b42b18a52ac7194d909dd153c4e1d35, type: 2}
+    - target: {fileID: 3604561307516760630, guid: f6e17b8d71e0cc84fbc533e0ac5b987e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4b42b18a52ac7194d909dd153c4e1d35, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
