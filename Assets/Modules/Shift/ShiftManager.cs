@@ -144,7 +144,7 @@ public class ShiftManager : MonoBehaviour
                 targetGoal += room.goalTarget;
         }
 
-        float dayMultiplier = 1f + (currentDay * 0.15f);
+        float dayMultiplier = 1f + (currentDay * 0.20f);
         targetGoal = Mathf.RoundToInt(targetGoal * dayMultiplier);
 
         OnProgressChanged?.Invoke(0, targetGoal);

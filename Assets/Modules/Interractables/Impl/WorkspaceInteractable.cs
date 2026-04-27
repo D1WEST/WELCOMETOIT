@@ -125,33 +125,58 @@ namespace Assets.Modules.Interractables.Impl
 
         public void AssignWorker(WorkerInstance worker)
         {
-            // 1. Очистка старого рабочего
-            if (_currentWorker != null)
+            // 1. Если мы назначаем реального человека (не null)
+            if (worker != null)
             {
-                _currentWorker.isAssigned = false;
-                _currentWorker.assignedWorkplaceId = null; // Очищаем ID стола у рабочего
+                // Ищем по всем столам: если этот работник где-то сидит — выгоняем его оттуда
+                // Используем instanceId для уникальной идентификации
+                foreach (var desk in AllDesks)
+                {
+                    if (desk != this && desk.Worker != null && desk.Worker.instanceId == worker.instanceId)
+                    {
+                        desk.ClearDeskInternal(); // Очищаем старый стол
+                    }
+                }
             }
 
-            if (_spawnedNpcVisual != null) Destroy(_spawnedNpcVisual);
+            // 2. Очищаем ТЕКУЩИЙ стол перед тем как посадить нового
+            ClearDeskInternal();
 
+            // 3. Назначаем нового рабочего
             _currentWorker = worker;
 
-            // 2. Назначение нового
             if (_currentWorker != null)
             {
                 _currentWorker.isAssigned = true;
-                _currentWorker.assignedWorkplaceId = this.workplaceId; // ПРИВЯЗЫВАЕМ ID СТОЛА
+                _currentWorker.assignedWorkplaceId = this.workplaceId;
 
                 ApplyWorkerVisuals(_currentWorker);
+            }
 
-                // Сохраняем игру, так как данные рабочего изменились
+            // Сохраняем один раз в конце всей операции
+            if (GameDataManager.Instance != null)
                 GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
-            }
-            else
+        }
+
+        // Вспомогательный метод для ПОЛНОЙ очистки стола (логика + визуал)
+        private void ClearDeskInternal()
+        {
+            if (_currentWorker != null)
             {
-                StopWork();
-                GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
+                _currentWorker.isAssigned = false;
+                _currentWorker.assignedWorkplaceId = null;
             }
+
+            _currentWorker = null;
+
+            // Убиваем 3D модель
+            if (_spawnedNpcVisual != null)
+            {
+                Destroy(_spawnedNpcVisual);
+                _spawnedNpcVisual = null;
+            }
+
+            StopWork();
         }
 
         // Вынес визуальную часть в отдельный метод, чтобы вызывать его и при загрузке

@@ -62,7 +62,7 @@ namespace Assets.Modules.Interractables.Impl
 
         private void CalculateNewRandomSpeed()
         {
-            float randomHoursToTrip = Random.Range(4f, 8f);
+            float randomHoursToTrip = Random.Range(3f, 9f);
             float secondsToTrip = randomHoursToTrip * 3600f;
             _loadSpeed = 100f / secondsToTrip;
         }
