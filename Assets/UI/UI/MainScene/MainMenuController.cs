@@ -87,13 +87,11 @@ public class MainMenuController : MonoBehaviour
 
     private void OnContinueClicked()
     {
-        Debug.Log("Загрузка существующего сохранения...");
         StartGame();
     }
 
     private void OnNewGameClicked()
     {
-        Debug.Log("Начало новой игры. Удаление старых данных...");
 
         if (File.Exists(SavePath))
         {
@@ -121,7 +119,6 @@ public class MainMenuController : MonoBehaviour
 
     private void OnExitClicked()
     {
-        Debug.Log("Выход из приложения...");
         Application.Quit();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -218,7 +215,6 @@ public class MainMenuController : MonoBehaviour
     {
         PlayerPrefs.SetString("rebinds", _inputActions.SaveBindingOverridesAsJson());
         PlayerPrefs.Save();
-        Debug.Log("Управление сохранено в PlayerPrefs");
     }
 
     private void LoadBindings()

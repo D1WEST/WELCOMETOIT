@@ -111,6 +111,18 @@ namespace Assets.Modules.PlayerModule
             }
         }
 
+        public void StopCameraInertia()
+        {
+            // Обнуляем векторы сглаживания для FPP
+            _currentMouseDelta = Vector2.zero;
+            _currentMouseDeltaVelocity = Vector2.zero;
+
+            // Обнуляем скорость поворота для TTP
+            _turnSmoothVelocity = 0f;
+
+            // Обнуляем скорость движения самой камеры (SmoothDamp для следования)
+            _cameraVelocity = Vector3.zero;
+        }
         public void Zoom(float scrollValue)
         {
             if (_lookType != LookType.TTP) return;

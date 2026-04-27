@@ -113,7 +113,6 @@ namespace Assets.Modules.AIFox
 
         private async UniTaskVoid StopInvasionAndReturnMusic()
         {
-            Debug.Log("Инвазия окончена, возвращаем музыку.");
 
             // Даем затухнуть звукам взрывов последних лис
             await UniTask.Delay(500);

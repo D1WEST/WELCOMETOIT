@@ -80,7 +80,7 @@ MonoBehaviour:
   - key: Boss
     clips:
     - {fileID: 8300000, guid: 938b3bac12497844e932f0c0f727cfd5, type: 3}
-    - {fileID: 8300000, guid: aa0a8fbfc75e5f049b9118e4d76a493d, type: 3}
+    - {fileID: 8300000, guid: 61a18ed3926cb0a44a6ea8ce6d4d584e, type: 3}
     - {fileID: 8300000, guid: d8ecb8b35fa503843a95a815fc80ed47, type: 3}
     - {fileID: 8300000, guid: 61a18ed3926cb0a44a6ea8ce6d4d584e, type: 3}
     - {fileID: 8300000, guid: 5ad16593a9b21c340b476dc1d2b2517a, type: 3}

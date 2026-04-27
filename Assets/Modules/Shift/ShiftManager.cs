@@ -74,6 +74,8 @@ public class ShiftManager : MonoBehaviour
     {
         if (_isShiftActive) return;
 
+        GameDataManager.Instance.ApplyMorningRest();
+
         AudioManager.Instance.PlayAudio(
             AudioQuery.ByKey("StartGame")
                 .ByIndex(0)
@@ -142,7 +144,7 @@ public class ShiftManager : MonoBehaviour
                 targetGoal += room.goalTarget;
         }
 
-        float dayMultiplier = 1f + (currentDay * 0.05f);
+        float dayMultiplier = 1f + (currentDay * 0.20f);
         targetGoal = Mathf.RoundToInt(targetGoal * dayMultiplier);
 
         OnProgressChanged?.Invoke(0, targetGoal);

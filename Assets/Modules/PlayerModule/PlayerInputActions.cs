@@ -367,6 +367,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ExitToggle"",
+                    ""type"": ""Button"",
+                    ""id"": ""a7bf8f62-c727-4f64-9833-10fae1d068c9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -413,6 +422,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Drop"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4de9c361-9084-4508-89a8-9417187a98d3"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ExitToggle"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -432,6 +452,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerInteractionActions_SecondAction = m_PlayerInteractionActions.FindAction("SecondAction", throwIfNotFound: true);
         m_PlayerInteractionActions_Interaction = m_PlayerInteractionActions.FindAction("Interaction", throwIfNotFound: true);
         m_PlayerInteractionActions_Drop = m_PlayerInteractionActions.FindAction("Drop", throwIfNotFound: true);
+        m_PlayerInteractionActions_ExitToggle = m_PlayerInteractionActions.FindAction("ExitToggle", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -657,6 +678,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerInteractionActions_SecondAction;
     private readonly InputAction m_PlayerInteractionActions_Interaction;
     private readonly InputAction m_PlayerInteractionActions_Drop;
+    private readonly InputAction m_PlayerInteractionActions_ExitToggle;
     /// <summary>
     /// Provides access to input actions defined in input action map "PlayerInteractionActions".
     /// </summary>
@@ -684,6 +706,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "PlayerInteractionActions/Drop".
         /// </summary>
         public InputAction @Drop => m_Wrapper.m_PlayerInteractionActions_Drop;
+        /// <summary>
+        /// Provides access to the underlying input action "PlayerInteractionActions/ExitToggle".
+        /// </summary>
+        public InputAction @ExitToggle => m_Wrapper.m_PlayerInteractionActions_ExitToggle;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -722,6 +748,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Drop.started += instance.OnDrop;
             @Drop.performed += instance.OnDrop;
             @Drop.canceled += instance.OnDrop;
+            @ExitToggle.started += instance.OnExitToggle;
+            @ExitToggle.performed += instance.OnExitToggle;
+            @ExitToggle.canceled += instance.OnExitToggle;
         }
 
         /// <summary>
@@ -745,6 +774,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Drop.started -= instance.OnDrop;
             @Drop.performed -= instance.OnDrop;
             @Drop.canceled -= instance.OnDrop;
+            @ExitToggle.started -= instance.OnExitToggle;
+            @ExitToggle.performed -= instance.OnExitToggle;
+            @ExitToggle.canceled -= instance.OnExitToggle;
         }
 
         /// <summary>
@@ -856,5 +888,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnDrop(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ExitToggle" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnExitToggle(InputAction.CallbackContext context);
     }
 }

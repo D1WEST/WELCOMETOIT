@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98b0b40dfd517da448d44accb7895904, type: 3}
+  m_Name: NewWorkerNPC 4
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
+  templateId: 004
+  workerName: Fyodor
+  npcPrefab: {fileID: 3193027651145746044, guid: d77d70a203825534c8b303f84e8cfcd4, type: 3}
+  position: 1
+  patience: 6
+  workPower: 6
+  sleepiness: 6
+  angriness: 6
+  avatar: {fileID: 21300000, guid: 000a6b5f69c58524ea057ff55affcd3f, type: 3}
+  buyPrice: 11
+  sellPrice: 12

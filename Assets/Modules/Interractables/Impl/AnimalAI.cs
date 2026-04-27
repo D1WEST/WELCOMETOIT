@@ -9,9 +9,9 @@ using System.Threading;
 public class AnimalAI : MonoBehaviour, IInteractable
 {
     [Header("Movement")]
-    public float speed = 9f;
+    public float speed = 6f;
     public float panicDistance = 8f;
-    public float rotationSpeed = 10f;
+    public float rotationSpeed = 7f;
     public float wallDetectionDist = 3f;
 
     public float detectionRadius = 15f; // В каком радиусе лиса "видит" мониторы

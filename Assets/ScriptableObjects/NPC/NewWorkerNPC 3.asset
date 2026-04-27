@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98b0b40dfd517da448d44accb7895904, type: 3}
+  m_Name: NewWorkerNPC 3
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Modules.NPC.WorkerSettings
+  templateId: 003
+  workerName: Mike
+  npcPrefab: {fileID: 8938826573634275730, guid: 5ef6bc70d7c2fbb4e978c95ba7ceaa5d, type: 3}
+  position: 1
+  patience: 6
+  workPower: 6
+  sleepiness: 6
+  angriness: 6
+  avatar: {fileID: 21300000, guid: 85e45b944b8adf5449329ab4c65f72d6, type: 3}
+  buyPrice: 11
+  sellPrice: 12

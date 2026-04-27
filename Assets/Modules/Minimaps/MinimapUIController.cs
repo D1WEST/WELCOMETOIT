@@ -52,8 +52,6 @@ namespace Assets.Modules.Minimaps
 
                 _labelsContainer.Add(label);
                 _roomLabels.Add(room, label);
-
-                Debug.Log($"[Minimap] Создан лейбл для комнаты: {room.roomName}");
             }
         }
 
