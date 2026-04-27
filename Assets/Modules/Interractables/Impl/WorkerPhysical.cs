@@ -191,7 +191,6 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         var desk = GetComponentInParent<WorkplaceInteractable>();
         if (desk != null && desk.hasMonitor)
         {
-            Debug.Log($"{_data.name} ПИНАЕТ МОНИТОР!");
             await UniTask.Delay(800);
             desk.KickMonitor();
         }

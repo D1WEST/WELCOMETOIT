@@ -75,7 +75,6 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (_carriedMonitor == null) return;
 
-        Debug.Log("Предмет выброшен");
 
         _carriedMonitor.transform.SetParent(null);
         _carriedMonitor.SetPhysics(true);
@@ -115,7 +114,6 @@ public class PlayerInteraction : MonoBehaviour
         _carriedMonitor.SetPhysics(false);
         if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = false;
 
-        Debug.Log($"Подобрали монитор {monitor.targetWorkplaceId}");
     }
 
     private void LateUpdate() => UpdateUIPosition();
