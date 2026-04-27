@@ -48,10 +48,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5947142872264514794, guid: 5684127b8682b8242a16c3c1fec95c72, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4572160a461f0ef41bbf71a49b92d114, type: 2}
     - target: {fileID: 919132149155446097, guid: 5684127b8682b8242a16c3c1fec95c72, type: 3}
       propertyPath: m_Name
       value: Clock
       objectReference: {fileID: 0}
+    - target: {fileID: 2542673317416197252, guid: 5684127b8682b8242a16c3c1fec95c72, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4572160a461f0ef41bbf71a49b92d114, type: 2}
+    - target: {fileID: 4483987500909821814, guid: 5684127b8682b8242a16c3c1fec95c72, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4572160a461f0ef41bbf71a49b92d114, type: 2}
+    - target: {fileID: 4909769362160940150, guid: 5684127b8682b8242a16c3c1fec95c72, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4572160a461f0ef41bbf71a49b92d114, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 1498248656186478200, guid: 5684127b8682b8242a16c3c1fec95c72, type: 3}
