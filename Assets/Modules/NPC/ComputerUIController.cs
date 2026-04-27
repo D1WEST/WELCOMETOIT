@@ -78,6 +78,7 @@ public class ComputerUIController : MonoBehaviour
         AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(4).RandomSound()).Forget();
 
         UpdateHintVisibility();
+        GameDataManager.Instance.RefreshMarket();
         RefreshUI();
     }
 

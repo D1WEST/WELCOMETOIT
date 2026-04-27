@@ -17,6 +17,9 @@ namespace Assets.Modules.Save
         private bool _isPaused = false;
         private PlayerInput _playerInput;
 
+        CursorLockMode _lastLockMode = CursorLockMode.None;
+        private bool _lastCursorVisible = false;
+
         private void Awake()
         {
             _root = uiDocument.rootVisualElement;
@@ -51,6 +54,12 @@ namespace Assets.Modules.Save
 
             if (_playerInput == null) _playerInput = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInput>();
 
+            if (_isPaused)
+            {
+                _lastLockMode = Cursor.lockState;
+                _lastCursorVisible = Cursor.visible;
+            }
+
             if (_playerInput != null)
             {
                 // 1. Выключаем ввод
@@ -70,8 +79,8 @@ namespace Assets.Modules.Save
             }
 
             // Разблокировка курсора
-            Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = _isPaused;
+            Cursor.lockState = _isPaused ? CursorLockMode.None : _lastLockMode;
+            Cursor.visible = _isPaused ? true : _lastCursorVisible;
 
             Time.timeScale = _isPaused ? 0f : 1f;
         }

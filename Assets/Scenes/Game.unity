@@ -25252,7 +25252,7 @@ MonoBehaviour:
   interactionDistance: 3
   interactableLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 4294967295
   playerCamera: {fileID: 2062521596}
   interactAction: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   dropAction: {fileID: 461340270572339381, guid: 27a1423ede6f14d4cb0f0f1b07d11f47, type: 3}
