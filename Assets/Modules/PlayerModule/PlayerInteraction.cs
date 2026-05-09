@@ -87,6 +87,8 @@ public class PlayerInteraction : MonoBehaviour
             rb.AddForce(playerCamera.transform.forward * 3f + Vector3.up * 2f, ForceMode.Impulse);
         }
 
+        ToggleTargetDeskHighlight(_carriedMonitor.targetWorkplaceId, false);
+
         _carriedMonitor = null;
     }
 
@@ -114,6 +116,8 @@ public class PlayerInteraction : MonoBehaviour
         // Выключаем физику и коллайдер, чтобы он не мешал ходить
         _carriedMonitor.SetPhysics(false);
         if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = false;
+
+        ToggleTargetDeskHighlight(monitor.targetWorkplaceId, true);
 
     }
 
@@ -284,6 +288,7 @@ public class PlayerInteraction : MonoBehaviour
                 {
                     if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
                     {
+                        desk.SetQuestHighlight(false);
                         if (_carriedMonitor.TryGetComponent<Collider>(out var col)) col.enabled = true;
                         desk.InstallMonitor(_carriedMonitor);
                         _carriedMonitor = null;
@@ -324,6 +329,16 @@ public class PlayerInteraction : MonoBehaviour
             {
                 ResetHold();
             }
+        }
+    }
+
+    private void ToggleTargetDeskHighlight(string id, bool state)
+    {
+        // Используем наш статический список всех столов
+        var target = WorkplaceInteractable.AllDesks.Find(d => d.workplaceId == id);
+        if (target != null)
+        {
+            target.SetQuestHighlight(state);
         }
     }
 

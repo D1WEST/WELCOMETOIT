@@ -45,18 +45,45 @@ namespace Assets.Modules.Interractables.Impl
         private RoomManager _roomManager;
 
         private Outline _outline;
+        private bool _isQuestTarget = false;
+
 
         private void Awake() => AllDesks.Add(this);
 
 
         public void OnHoverEnter()
         {
+            if (_isQuestTarget) return; // Если мы цель, не меняем настройки
             if (_outline != null) _outline.enabled = true;
         }
 
         public void OnHoverExit()
         {
+            if (_isQuestTarget) return; // Если мы цель, не выключаем!
             if (_outline != null) _outline.enabled = false;
+        }
+
+        public void SetQuestHighlight(bool state)
+        {
+            if (_outline == null) return;
+
+            _isQuestTarget = state;
+
+            if (state)
+            {
+                _outline.enabled = true;
+                _outline.OutlineMode = Outline.Mode.OutlineAll; // ВИДНО СКВОЗЬ СТЕНЫ
+                _outline.OutlineColor = Color.red;
+                _outline.OutlineWidth = 5f; // Жирная линия, чтобы было видно издалека
+            }
+            else
+            {
+                // Сбрасываем в обычный режим
+                _outline.OutlineMode = Outline.Mode.OutlineVisible;
+                _outline.OutlineColor = Color.white;
+                _outline.OutlineWidth = 5f;
+                _outline.enabled = false;
+            }
         }
 
         private async void Start()
@@ -81,6 +108,27 @@ namespace Assets.Modules.Interractables.Impl
         {
             hasMonitor = false;
             _activeMonitor = null;
+        }
+
+        public void SetTargetHighlight(bool state)
+        {
+            if (_outline == null) _outline = GetComponent<Outline>();
+            if (_outline == null) return;
+
+            if (state)
+            {
+                _outline.enabled = true;
+                _outline.OutlineMode = Outline.Mode.OutlineAll;
+                _outline.OutlineColor = Color.red;
+                _outline.OutlineWidth = 5f;
+            }
+            else
+            {
+                _outline.OutlineMode = Outline.Mode.OutlineVisible;
+                _outline.OutlineColor = Color.yellow;
+                _outline.OutlineWidth = 3f;
+                _outline.enabled = false;
+            }
         }
 
         private void SpawnInitialMonitor()

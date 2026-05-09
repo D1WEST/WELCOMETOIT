@@ -239,8 +239,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 1
-  outlineColor: {r: 0.6901961, g: 1, b: 0.5613208, a: 1}
-  outlineWidth: 8
+  outlineColor: {r: 1, g: 0, b: 0.48748076, a: 1}
+  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
