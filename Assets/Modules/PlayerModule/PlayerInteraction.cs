@@ -42,6 +42,7 @@ public class PlayerInteraction : MonoBehaviour
     private float _holdTimer = 0f;
     private bool _isHolding = false;
     private WorkerPhysical _lastLookedWorker;
+    private IInteractable _lastHighlighted;
 
     private void Awake()
     {
@@ -153,18 +154,18 @@ public class PlayerInteraction : MonoBehaviour
         {
             if (hit.collider.TryGetComponent<AnimalAI>(out var fox))
             {
-                // ПРОВЕРКА: Если лиса уже "мертва" (в процессе удаления), игнорируем её
                 if (fox != null)
                 {
+                    rayHitInteractable = fox; // Устанавливаем, чтобы зафиксировать для подсветки
                     _focusedInteractable = fox;
                     _nearestInteractable = fox;
                     ShowUI(fox);
 
                     if (_lastLookedWorker != null) { WorkerTooltipUI.Instance.Hide(); _lastLookedWorker = null; }
-                    return;
+
+                    // Раньше тут был return, мы его убираем, чтобы код дошел до блока подсветки ниже
                 }
             }
-            // Приоритет 1: Рабочий (WorkerPhysical)
             else if (hit.collider.TryGetComponent<WorkerPhysical>(out var worker))
             {
                 if (_lastLookedWorker != worker)
@@ -174,13 +175,11 @@ public class PlayerInteraction : MonoBehaviour
                 }
                 rayHitInteractable = worker;
             }
-            // Приоритет 2: Монитор (MonitorPhysical)
             else if (hit.collider.TryGetComponent<MonitorPhysical>(out var mon))
             {
                 rayHitInteractable = mon;
                 if (_lastLookedWorker != null) { WorkerTooltipUI.Instance.Hide(); _lastLookedWorker = null; }
             }
-            // Приоритет 3: Стол или что-то еще (IInteractable на родителе)
             else
             {
                 rayHitInteractable = hit.collider.GetComponentInParent<IInteractable>();
@@ -194,6 +193,27 @@ public class PlayerInteraction : MonoBehaviour
 
         _focusedInteractable = rayHitInteractable;
 
+        // ==========================================
+        // HIGHLIGHT LOGIC
+        // ==========================================
+        if (_focusedInteractable != _lastHighlighted)
+        {
+            // Выключаем старую обводку (безопасная проверка через MonoBehaviour)
+            if (_lastHighlighted is MonoBehaviour mbOld && mbOld != null)
+                _lastHighlighted.OnHoverExit();
+
+            _lastHighlighted = _focusedInteractable;
+
+            // Включаем новую обводку
+            if (_lastHighlighted is MonoBehaviour mbNew && mbNew != null)
+                _lastHighlighted.OnHoverEnter();
+        }
+        // ==========================================
+
+        // Если мы нашли лису через первый блок if, нам нужно прервать выполнение 
+        // логики "ближайшего" объекта, чтобы подсказка [E] не перепрыгнула на стол
+        if (_focusedInteractable is AnimalAI) return;
+
         // 2. Если рейкаст никого не нашел, скрываем тултип рабочего
         if (rayHitInteractable == null && _lastLookedWorker != null)
         {
@@ -202,7 +222,6 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         // 3. ЛОГИКА ОТОБРАЖЕНИЯ ПОДСКАЗКИ [E]
-        // Если мы смотрим на объект и у него есть текст (например, "Разбудить")
         if (_focusedInteractable != null && !string.IsNullOrEmpty(_focusedInteractable.InteractionPrompt))
         {
             if (_nearestInteractable != _focusedInteractable)
@@ -213,7 +232,7 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
-            // Если под прицелом никого с текстом нет, ищем ближайшего через сферу (как раньше)
+            // Поиск ближайшего через сферу (без изменений)
             Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRadius, interactableLayer);
             IInteractable bestCandidate = null;
             float minDistance = float.MaxValue;
@@ -234,7 +253,7 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
 
-        // 4. Визуальный фидбек прозрачности
+        // 4. Визуальный фидбек прозрачности (без изменений)
         if (_promptRoot != null && _promptRoot.style.display == DisplayStyle.Flex)
         {
             bool isTargeting = (_focusedInteractable != null && _focusedInteractable == _nearestInteractable);

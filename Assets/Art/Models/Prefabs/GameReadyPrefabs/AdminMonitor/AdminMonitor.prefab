@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8775001112117136318}
   - component: {fileID: 6941419849240951686}
   - component: {fileID: 2293544322347486615}
+  - component: {fileID: 1002016991288552962}
   m_Layer: 6
   m_Name: AdminMonitor
   m_TagString: Untagged
@@ -129,6 +130,24 @@ MonoBehaviour:
   prompt: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440"
   pivot: {fileID: 1545267802211939056}
   uiController: {fileID: 0}
+--- !u!114 &1002016991288552962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148698392962082024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 1
+  outlineColor: {r: 0.46160364, g: 0, b: 1, a: 1}
+  outlineWidth: 8
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1001 &1564437064152051715
 PrefabInstance:
   m_ObjectHideFlags: 0

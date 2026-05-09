@@ -33,6 +33,7 @@ public class AnimalAI : MonoBehaviour, IInteractable
     private GameObject _target;
     private bool _isBurst = false;
     private bool _isWalkingSoundPlaying = false;
+    private Outline _outline;
 
     public string InteractionPrompt => _isBurst ? "" : "Лопнуть вредителя";
     public Transform InteractionPivot
@@ -45,6 +46,25 @@ public class AnimalAI : MonoBehaviour, IInteractable
     }
     public InteractionType InteractionType => InteractionType.Click;
     public float HoldDuration => 0;
+
+    public void OnHoverEnter()
+    {
+        if (_outline != null) _outline.enabled = true;
+    }
+
+    public void OnHoverExit()
+    {
+        if (_outline != null) _outline.enabled = false;
+    }
+
+    private void Start()
+    {
+        // Кэшируем компонент один раз при старте
+        _outline = GetComponent<Outline>();
+
+        // На всякий случай гарантируем, что он выключен
+        if (_outline != null) _outline.enabled = false;
+    }
 
     private void Awake()
     {

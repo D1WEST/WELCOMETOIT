@@ -1,5 +1,6 @@
 ﻿using Assets.Modules.Perks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Modules.Interractables.Impl
 {
@@ -17,6 +18,27 @@ namespace Assets.Modules.Interractables.Impl
         public Transform InteractionPivot => interactionPivot;
         public InteractionType InteractionType => InteractionType.Click;
         public float HoldDuration => 0;
+        private Outline _outline;
+
+
+        public void OnHoverEnter()
+        {
+            if (_outline != null) _outline.enabled = true;
+        }
+
+        public void OnHoverExit()
+        {
+            if (_outline != null) _outline.enabled = false;
+        }
+
+        private void Start()
+        {
+            // Кэшируем компонент один раз при старте
+            _outline = GetComponent<Outline>();
+
+            // На всякий случай гарантируем, что он выключен
+            if (_outline != null) _outline.enabled = false;
+        }
 
         public void Interact(GameObject interactor)
         {

@@ -23,6 +23,8 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     private WorkerStatus _lastStatus;
     private bool _lastRestingState;
 
+    private Outline _outline;
+
     public string InteractionPrompt
     {
         get
@@ -37,6 +39,16 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
     public Transform InteractionPivot => transform;
     public InteractionType InteractionType => InteractionType.Click;
     public float HoldDuration => 0;
+
+    public void OnHoverEnter()
+    {
+        if (_outline != null) _outline.enabled = true;
+    }
+
+    public void OnHoverExit()
+    {
+        if (_outline != null) _outline.enabled = false;
+    }
 
     public void Init(WorkerInstance data)
     {
@@ -66,6 +78,15 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         float hoursToFill = Mathf.Lerp(25f, 5f, (statValue - 1) / 9f);
         float secondsToFill = hoursToFill * 3600f;
         return 100f / secondsToFill;
+    }
+
+    private void Start()
+    {
+        // Кэшируем компонент один раз при старте
+        _outline = GetComponent<Outline>();
+
+        // На всякий случай гарантируем, что он выключен
+        if (_outline != null) _outline.enabled = false;
     }
 
     private void Update()

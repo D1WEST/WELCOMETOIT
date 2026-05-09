@@ -44,11 +44,30 @@ namespace Assets.Modules.Interractables.Impl
 
         private RoomManager _roomManager;
 
+        private Outline _outline;
+
         private void Awake() => AllDesks.Add(this);
+
+
+        public void OnHoverEnter()
+        {
+            if (_outline != null) _outline.enabled = true;
+        }
+
+        public void OnHoverExit()
+        {
+            if (_outline != null) _outline.enabled = false;
+        }
 
         private async void Start()
         {
             await UniTask.Delay(200);
+
+            // Кэшируем компонент один раз при старте
+            _outline = GetComponent<Outline>();
+
+            // На всякий случай гарантируем, что он выключен
+            if (_outline != null) _outline.enabled = false;
 
             if (_activeMonitor == null)
             {

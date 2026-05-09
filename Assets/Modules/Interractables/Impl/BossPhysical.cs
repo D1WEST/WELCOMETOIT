@@ -1,7 +1,8 @@
-﻿using System.Threading;
-using Assets.Modules.Perks;
+﻿using Assets.Modules.Perks;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Modules.Interractables.Impl
 {
@@ -17,6 +18,7 @@ namespace Assets.Modules.Interractables.Impl
         public Transform InteractionPivot => transform;
         public InteractionType InteractionType => InteractionType.Click;
         public float HoldDuration => 0;
+        private Outline _outline;
 
         private void Awake()
         {
@@ -25,8 +27,25 @@ namespace Assets.Modules.Interractables.Impl
             _ambientCts = new CancellationTokenSource();
         }
 
+
+
+        public void OnHoverEnter()
+        {
+            if (_outline != null) _outline.enabled = true;
+        }
+
+        public void OnHoverExit()
+        {
+            if (_outline != null) _outline.enabled = false;
+        }
         private void Start()
         {
+            // Кэшируем компонент один раз при старте
+            _outline = GetComponent<Outline>();
+
+            // На всякий случай гарантируем, что он выключен
+            if (_outline != null) _outline.enabled = false;
+
             StartAmbientLogic(_ambientCts.Token).Forget();
         }
 

@@ -24,9 +24,25 @@ namespace Assets.Modules.Interractables.Impl
         public Transform InteractionPivot => interactionPivot;
         public InteractionType InteractionType => type;
         public float HoldDuration => holdDuration; // Если захотите сделать Hold, можно настроить
+        private Outline _outline;
+
+        public void OnHoverEnter()
+        {
+            if (_outline != null) _outline.enabled = true;
+        }
+
+        public void OnHoverExit()
+        {
+            if (_outline != null) _outline.enabled = false;
+        }
 
         private void Start()
         {
+            // Кэшируем компонент один раз при старте
+            _outline = GetComponent<Outline>();
+
+            // На всякий случай гарантируем, что он выключен
+            if (_outline != null) _outline.enabled = false;
             // При старте синхронизируем состояние объектов с переменной isOn
             ApplyState();
         }

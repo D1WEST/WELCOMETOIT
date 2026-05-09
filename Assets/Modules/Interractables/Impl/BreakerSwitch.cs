@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Modules.Interractables.Impl
 {
@@ -36,6 +37,7 @@ namespace Assets.Modules.Interractables.Impl
         public Transform InteractionPivot => interactionPivot;
         public InteractionType InteractionType => interactionType;
         public float HoldDuration => holdDuration;
+        private Outline _outline;
 
         private void Awake()
         {
@@ -45,8 +47,24 @@ namespace Assets.Modules.Interractables.Impl
             }
         }
 
+        public void OnHoverEnter()
+        {
+            if (_outline != null) _outline.enabled = true;
+        }
+
+        public void OnHoverExit()
+        {
+            if (_outline != null) _outline.enabled = false;
+        }
+
         private async void Start()
         {
+            // Кэшируем компонент один раз при старте
+            _outline = GetComponent<Outline>();
+
+            // На всякий случай гарантируем, что он выключен
+            if (_outline != null) _outline.enabled = false;
+
             CalculateNewRandomSpeed();
             ApplyState();
 

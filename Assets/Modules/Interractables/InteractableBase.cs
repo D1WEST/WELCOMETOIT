@@ -17,4 +17,14 @@ public class InteractableBase : MonoBehaviour, IInteractable
     {
         Debug.Log("Действие выполнено!");
     }
+
+    public void OnHoverEnter()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void OnHoverExit()
+    {
+        throw new System.NotImplementedException();
+    }
 }

@@ -11,5 +11,8 @@ namespace Assets.Modules.Interractables
         InteractionType InteractionType { get; }
         float HoldDuration { get; } // Сколько секунд держать
         void Interact(GameObject interactor);
+
+        void OnHoverEnter();
+        void OnHoverExit();
     }
 }
