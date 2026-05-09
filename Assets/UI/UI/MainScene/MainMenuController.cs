@@ -1,7 +1,8 @@
 ﻿using Assets.Modules.Audio;
+using Assets.Modules.Save;
+using Cysharp.Threading.Tasks; // Необходимо для работы с файлами
 using System.Collections.Generic;
 using System.IO;
-using Cysharp.Threading.Tasks; // Необходимо для работы с файлами
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -33,6 +34,28 @@ public class MainMenuController : MonoBehaviour
         _mainMenu = root.Q<VisualElement>("main-menu");
         _optionsMenu = root.Q<VisualElement>("options-menu");
         _rebindList = root.Q<VisualElement>("rebind-list");
+
+        var volSlider = root.Q<Slider>("slider-volume");
+        if (volSlider != null)
+        {
+            volSlider.value = GameDataManager.Instance.playerSettings.volume;
+            volSlider.RegisterValueChangedCallback(evt => {
+                GameDataManager.Instance.playerSettings.volume = evt.newValue;
+                // Можно проиграть короткий звук "бип", чтобы игрок слышал уровень громкости
+            });
+        }
+
+        // Слайдер Сенсы
+        var sensSlider = root.Q<Slider>("slider-sens");
+        if (sensSlider != null)
+        {
+            sensSlider.value = GameDataManager.Instance.playerSettings.sensitivity;
+            sensSlider.RegisterValueChangedCallback(evt => {
+                GameDataManager.Instance.playerSettings.sensitivity = evt.newValue;
+                // Если игрок на сцене - применяем сразу
+                GameDataManager.Instance.ApplySettings();
+            });
+        }
 
         // --- Кнопки главного меню ---
         var btnContinue = root.Q<Button>("btn-continue");

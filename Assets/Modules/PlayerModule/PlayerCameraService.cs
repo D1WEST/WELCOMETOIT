@@ -92,6 +92,12 @@ namespace Assets.Modules.PlayerModule
             SetLookDefaults(_lookType);
         }
 
+        public void SetSensitivity(float value)
+        {
+            _sensetivity = value;
+            Debug.Log($"Сенса обновлена: {value}");
+        }
+
         public void Look(Vector2 lookVectorDelta)
         {
             _lookAction?.Invoke(lookVectorDelta);

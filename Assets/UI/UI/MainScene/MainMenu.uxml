@@ -28,6 +28,13 @@
         </ui:VisualElement>
         <ui:VisualElement name="options-menu" class="options-container" style="display: none;">
             <ui:Label text="SETTINGS" class="options-header"/>
+            <ui:VisualElement class="boss-style-box" style="margin-bottom: 20px;">
+                <ui:Label text="ГРОМКОСТЬ ЗВУКА" style="color: white; font-size: 14px;" />
+                <ui:Slider name="slider-volume" low-value="0" high-value="1" value="0.8" />
+                <ui:Label text="ЧУВСТВИТЕЛЬНОСТЬ МЫШИ" style="color: white; font-size: 14px; margin-top: 10px;" />
+                <ui:Slider name="slider-sens" low-value="0.1" high-value="5" value="1" />
+            </ui:VisualElement>
+
             <ui:ScrollView name="rebind-list" class="rebind-scroll"/>
             <ui:VisualElement class="options-footer">
                 <ui:Button name="btn-save" text="SAVE" class="footer-btn"/>

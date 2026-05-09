@@ -1,5 +1,6 @@
 ﻿using Assets.Modules.Interractables.Impl;
 using Assets.Modules.NPC;
+using Assets.Modules.PlayerModule;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,6 +30,7 @@ namespace Assets.Modules.Save
 
         private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
         private string _checkpointJson;
+        public SettingsData playerSettings = new SettingsData();
 
         private void Awake()
         {
@@ -116,6 +118,10 @@ namespace Assets.Modules.Save
                 currentInvasionEnergy = data.invasionEnergy;
                 bossHintsEnabled = data.bossHintsEnabled;
 
+                playerSettings = data.settings ?? new SettingsData();
+                // Сразу после загрузки применяем настройки
+                ApplySettings();
+
                 if (ShiftManager.Instance != null)
                     ShiftManager.Instance.currentDay = loadedDay;
 
@@ -125,6 +131,15 @@ namespace Assets.Modules.Save
                     if (template != null) worker.avatar = template.avatar;
                 }
             }
+        }
+
+        public void ApplySettings()
+        {
+            // 1. Применяем сенсу к игроку
+            var cameraService = FindFirstObjectByType<PlayerCameraService>();
+            if (cameraService != null) cameraService.SetSensitivity(playerSettings.sensitivity);
+
+            // 2. Громкость в AudioManager применится сама, так как он будет брать её из GameData
         }
 
         public void RefreshMarket()
@@ -283,6 +298,14 @@ namespace Assets.Modules.Save
             public PerkData perks;
             public float invasionEnergy;
             public bool bossHintsEnabled;
+            public SettingsData settings;
+        }
+
+        [System.Serializable]
+        public class SettingsData
+        {
+            public float sensitivity = 1.0f;
+            public float volume = 0.8f;
         }
 
         [System.Serializable]

@@ -17,18 +17,70 @@ namespace Assets.Modules.Save
         private bool _isPaused = false;
         private PlayerInput _playerInput;
 
-        CursorLockMode _lastLockMode = CursorLockMode.None;
-        private bool _lastCursorVisible = false;
+        private VisualElement _mainButtonsBlock;
+        private VisualElement _optionsBlock;
 
         private void Awake()
         {
             _root = uiDocument.rootVisualElement;
+            // Прячем всё сразу
             _root.style.display = DisplayStyle.None;
 
-            // Подписка на кнопки
-            _root.Q<Button>("btn-resume").clicked += TogglePause;
-            _root.Q<Button>("btn-restart").clicked += RestartShift;
-            _root.Q<Button>("btn-main-menu").clicked += ExitToMainMenu;
+            _mainButtonsBlock = _root.Q<VisualElement>("main-buttons");
+            _optionsBlock = _root.Q<VisualElement>("options-view");
+
+            // Подписка на кнопки (безопасная)
+            SetupButton("btn-resume", TogglePause);
+            SetupButton("btn-options", OpenOptions);
+            SetupButton("btn-options-back", CloseOptions);
+            SetupButton("btn-restart", RestartShift);
+            SetupButton("btn-main-menu", ExitToMainMenu);
+        }
+
+        private void SetupButton(string name, System.Action callback)
+        {
+            var btn = _root.Q<Button>(name);
+            if (btn != null) btn.clicked += callback;
+        }
+
+        private void SetupSliders()
+        {
+            if (GameDataManager.Instance == null) return;
+            var settings = GameDataManager.Instance.playerSettings;
+
+            var volSlider = _root.Q<Slider>("slider-volume");
+            if (volSlider != null)
+            {
+                volSlider.value = settings.volume;
+                volSlider.RegisterValueChangedCallback(evt => {
+                    settings.volume = evt.newValue;
+                    AudioManager.Instance.UpdateLiveVolume(evt.newValue);
+                });
+            }
+
+            var sensSlider = _root.Q<Slider>("slider-sens");
+            if (sensSlider != null)
+            {
+                sensSlider.value = settings.sensitivity;
+                sensSlider.RegisterValueChangedCallback(evt => {
+                    settings.sensitivity = evt.newValue;
+                    GameDataManager.Instance.ApplySettings();
+                });
+            }
+        }
+
+        private void OpenOptions()
+        {
+            SetupSliders(); // Обновляем значения перед показом
+            if (_mainButtonsBlock != null) _mainButtonsBlock.style.display = DisplayStyle.None;
+            if (_optionsBlock != null) _optionsBlock.style.display = DisplayStyle.Flex;
+        }
+
+        private void CloseOptions()
+        {
+            if (_mainButtonsBlock != null) _mainButtonsBlock.style.display = DisplayStyle.Flex;
+            if (_optionsBlock != null) _optionsBlock.style.display = DisplayStyle.None;
+            GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
         }
 
         private void OnEnable()
@@ -52,35 +104,28 @@ namespace Assets.Modules.Save
             _isPaused = !_isPaused;
             _root.style.display = _isPaused ? DisplayStyle.Flex : DisplayStyle.None;
 
-            if (_playerInput == null) _playerInput = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInput>();
+            // Если закрываем паузу, всегда возвращаемся к главным кнопкам
+            if (!_isPaused) CloseOptions();
 
-            if (_isPaused)
+            if (_playerInput == null)
             {
-                _lastLockMode = Cursor.lockState;
-                _lastCursorVisible = Cursor.visible;
+                var playerObj = GameObject.FindGameObjectWithTag("Player");
+                if (playerObj != null) _playerInput = playerObj.GetComponent<PlayerInput>();
             }
 
             if (_playerInput != null)
             {
-                // 1. Выключаем ввод
                 _playerInput.enabled = !_isPaused;
 
-                // 2. ВАЖНО: Выключаем скрипт передвижения (чтобы не было инерции ног)
                 if (_playerInput.TryGetComponent<PlayerLocomotion>(out var locomotion))
-                {
                     locomotion.enabled = !_isPaused;
-                }
 
-                // 3. ГЛАВНЫЙ ФИКС: Останавливаем инерцию камеры
                 if (_playerInput.TryGetComponent<PlayerCameraService>(out var cameraService))
-                {
                     cameraService.StopCameraInertia();
-                }
             }
 
-            // Разблокировка курсора
-            Cursor.lockState = _isPaused ? CursorLockMode.None : _lastLockMode;
-            Cursor.visible = _isPaused ? true : _lastCursorVisible;
+            Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = _isPaused;
 
             Time.timeScale = _isPaused ? 0f : 1f;
         }
@@ -88,7 +133,6 @@ namespace Assets.Modules.Save
         private void RestartShift()
         {
             Time.timeScale = 1f;
-            // Используем наш механизм чекпоинтов
             GameDataManager.Instance.RestoreCheckpoint();
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
@@ -96,9 +140,8 @@ namespace Assets.Modules.Save
         private void ExitToMainMenu()
         {
             Time.timeScale = 1f;
-            // Сохраняем прогресс перед выходом
             GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
-            SceneManager.LoadScene(0); // Загружаем сцену с индексом 0 (меню)
+            SceneManager.LoadScene(0);
         }
     }
 }

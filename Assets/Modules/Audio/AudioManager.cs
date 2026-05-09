@@ -1,8 +1,9 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using Assets.Modules.Audio;
+using Assets.Modules.Save;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 using System.Threading;
-using Assets.Modules.Audio;
+using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class AudioManager : MonoBehaviour
 
     private HashSet<string> _activeKeys = new HashSet<string>();
     private Dictionary<string, HashSet<AudioSource>> _playingRegistry = new Dictionary<string, HashSet<AudioSource>>();
+    private float _music1BaseVol, _music2BaseVol;
 
     private void Awake()
     {
@@ -103,6 +105,15 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    public void UpdateLiveVolume(float globalVolume)
+    {
+        // Обновляем громкость на лету, умножая базу на ползунок
+        _musicSource1.volume = _music1BaseVol * globalVolume;
+        _musicSource2.volume = _music2BaseVol * globalVolume;
+        _internalSfxSource2D.volume = globalVolume;
+    }
+
+
     private async UniTaskVoid PlaylistLoop(AudioQuery query, CancellationToken token)
     {
         var relation = _config.FindRelation(query.Key);
@@ -139,16 +150,19 @@ public class AudioManager : MonoBehaviour
             _playingRegistry[query.Key] = new HashSet<AudioSource>();
         _playingRegistry[query.Key].Add(targetSource);
 
+        float globalVol = GameDataManager.Instance.playerSettings.volume;
+
         if (query.IsCycling)
         {
             targetSource.clip = clip;
             targetSource.loop = true;
-            targetSource.volume = query.Volume;
+            targetSource.volume = query.Volume * globalVol;
             targetSource.Play();
         }
         else
         {
-            targetSource.PlayOneShot(clip, query.Volume);
+            
+            targetSource.PlayOneShot(clip, query.Volume * globalVol);
         }
 
         if (!query.IsCycling)
@@ -167,6 +181,8 @@ public class AudioManager : MonoBehaviour
 
         if (active.clip == nextClip && active.isPlaying) return;
 
+        float globalVol = GameDataManager.Instance.playerSettings.volume;
+
         next.clip = nextClip;
         next.loop = loop;
         next.Play();
@@ -175,10 +191,11 @@ public class AudioManager : MonoBehaviour
         float duration = 1.5f;
         while (timer < duration)
         {
+            float currentGlobal = GameDataManager.Instance.playerSettings.volume;
             timer += Time.deltaTime;
             float p = timer / duration;
             active.volume = Mathf.Lerp(active.volume, 0, p); // Плавное затухание музыки
-            next.volume = Mathf.Lerp(0, targetVolume, p);
+            next.volume = Mathf.Lerp(0, targetVolume, p) * currentGlobal;
             await UniTask.Yield();
         }
 
