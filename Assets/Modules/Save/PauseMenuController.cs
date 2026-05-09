@@ -20,16 +20,22 @@ namespace Assets.Modules.Save
         private VisualElement _mainButtonsBlock;
         private VisualElement _optionsBlock;
 
+        // ПЕРЕМЕННЫЕ СОСТОЯНИЯ (Для восстановления после паузы)
+        private CursorLockMode _lastLockMode = CursorLockMode.Locked;
+        private bool _lastCursorVisible = false;
+
+        private bool _wasInputEnabled = true;
+        private bool _wasLocomotionEnabled = true;
+        private bool _wasCameraEnabled = true;
+
         private void Awake()
         {
             _root = uiDocument.rootVisualElement;
-            // Прячем всё сразу
             _root.style.display = DisplayStyle.None;
 
             _mainButtonsBlock = _root.Q<VisualElement>("main-buttons");
             _optionsBlock = _root.Q<VisualElement>("options-view");
 
-            // Подписка на кнопки (безопасная)
             SetupButton("btn-resume", TogglePause);
             SetupButton("btn-options", OpenOptions);
             SetupButton("btn-options-back", CloseOptions);
@@ -39,6 +45,7 @@ namespace Assets.Modules.Save
 
         private void SetupButton(string name, System.Action callback)
         {
+            if (_root == null) return;
             var btn = _root.Q<Button>(name);
             if (btn != null) btn.clicked += callback;
         }
@@ -48,14 +55,12 @@ namespace Assets.Modules.Save
             if (GameDataManager.Instance == null) return;
             var settings = GameDataManager.Instance.playerSettings;
 
-            // Слайдер Громкости
             var volSlider = _root.Q<Slider>("slider-volume");
             var volLabel = _root.Q<Label>("lbl-volume-val");
             if (volSlider != null)
             {
                 volSlider.value = settings.volume;
-                if (volLabel != null) volLabel.text = settings.volume.ToString("F1"); // Формат 0.0
-
+                if (volLabel != null) volLabel.text = settings.volume.ToString("F1");
                 volSlider.RegisterValueChangedCallback(evt => {
                     settings.volume = evt.newValue;
                     if (volLabel != null) volLabel.text = evt.newValue.ToString("F1");
@@ -63,14 +68,12 @@ namespace Assets.Modules.Save
                 });
             }
 
-            // Слайдер Сенсы
             var sensSlider = _root.Q<Slider>("slider-sens");
             var sensLabel = _root.Q<Label>("lbl-sens-val");
             if (sensSlider != null)
             {
                 sensSlider.value = settings.sensitivity;
                 if (sensLabel != null) sensLabel.text = settings.sensitivity.ToString("F1");
-
                 sensSlider.RegisterValueChangedCallback(evt => {
                     settings.sensitivity = evt.newValue;
                     if (sensLabel != null) sensLabel.text = evt.newValue.ToString("F1");
@@ -81,7 +84,7 @@ namespace Assets.Modules.Save
 
         private void OpenOptions()
         {
-            SetupSliders(); // Обновляем значения перед показом
+            SetupSliders();
             if (_mainButtonsBlock != null) _mainButtonsBlock.style.display = DisplayStyle.None;
             if (_optionsBlock != null) _optionsBlock.style.display = DisplayStyle.Flex;
         }
@@ -99,22 +102,15 @@ namespace Assets.Modules.Save
             exitToggleAction.action.performed += OnExitPressed;
         }
 
-        private void OnDisable()
-        {
-            exitToggleAction.action.performed -= OnExitPressed;
-        }
+        private void OnDisable() => exitToggleAction.action.performed -= OnExitPressed;
 
-        private void OnExitPressed(InputAction.CallbackContext context)
-        {
-            TogglePause();
-        }
+        private void OnExitPressed(InputAction.CallbackContext context) => TogglePause();
 
         public void TogglePause()
         {
             _isPaused = !_isPaused;
             _root.style.display = _isPaused ? DisplayStyle.Flex : DisplayStyle.None;
 
-            // Если закрываем паузу, всегда возвращаемся к главным кнопкам
             if (!_isPaused) CloseOptions();
 
             if (_playerInput == null)
@@ -123,21 +119,59 @@ namespace Assets.Modules.Save
                 if (playerObj != null) _playerInput = playerObj.GetComponent<PlayerInput>();
             }
 
-            if (_playerInput != null)
+            if (_isPaused)
             {
-                _playerInput.enabled = !_isPaused;
+                // --- ЗАХВАТ СОСТОЯНИЯ ---
+                _lastLockMode = Cursor.lockState;
+                _lastCursorVisible = Cursor.visible;
 
-                if (_playerInput.TryGetComponent<PlayerLocomotion>(out var locomotion))
-                    locomotion.enabled = !_isPaused;
+                if (_playerInput != null)
+                {
+                    // Запоминаем каждый скрипт отдельно
+                    _wasInputEnabled = _playerInput.enabled;
 
-                if (_playerInput.TryGetComponent<PlayerCameraService>(out var cameraService))
-                    cameraService.StopCameraInertia();
+                    if (_playerInput.TryGetComponent<PlayerLocomotion>(out var locomotion))
+                    {
+                        _wasLocomotionEnabled = locomotion.enabled;
+                        locomotion.enabled = false; // Выключаем на время паузы
+                    }
+
+                    if (_playerInput.TryGetComponent<PlayerCameraService>(out var cameraService))
+                    {
+                        _wasCameraEnabled = cameraService.enabled;
+                        cameraService.StopCameraInertia();
+                        cameraService.enabled = false; // Выключаем на время паузы
+                    }
+
+                    _playerInput.enabled = false;
+                }
+
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                Time.timeScale = 0f;
             }
+            else
+            {
+                // --- ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ ---
+                CloseOptions();
 
-            Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = _isPaused;
+                if (_playerInput != null)
+                {
+                    // Возвращаем каждому скрипту ТО состояние, которое было ДО Esc
+                    _playerInput.enabled = _wasInputEnabled;
 
-            Time.timeScale = _isPaused ? 0f : 1f;
+                    if (_playerInput.TryGetComponent<PlayerLocomotion>(out var locomotion))
+                        locomotion.enabled = _wasLocomotionEnabled;
+
+                    if (_playerInput.TryGetComponent<PlayerCameraService>(out var cameraService))
+                        cameraService.enabled = _wasCameraEnabled;
+                }
+
+                Cursor.lockState = _lastLockMode;
+                Cursor.visible = _lastCursorVisible;
+
+                Time.timeScale = 1f;
+            }
         }
 
         private void RestartShift()
