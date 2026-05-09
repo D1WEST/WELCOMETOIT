@@ -11,13 +11,22 @@
         </ui:VisualElement>
 
         <ui:VisualElement name="options-view" class="boss-style-box" style="width: 450px; padding: 30px; display: none;">
-            <ui:Label text="НАСТРОЙКИ" style="color: white; -unity-font-style: bold; font-size: 24px; margin-bottom: 20px;"/>
-            <ui:Label text="ГРОМКОСТЬ" style="color: gray; font-size: 12px;"/>
-            <ui:Slider name="slider-volume" low-value="0" high-value="1"/>
-            <ui:Label text="ЧУВСТВИТЕЛЬНОСТЬ" style="color: gray; font-size: 12px; margin-top: 15px;"/>
-            <ui:Slider name="slider-sens" low-value="0.1" high-value="5"/>
-            <ui:Button name="btn-options-back" text="НАЗАД" class="menu-button" style="margin-top: 30px; background-color: rgb(68, 68, 68);"/>
-        </ui:VisualElement>
+                <ui:Label text="НАСТРОЙКИ" style="color: white; -unity-font-style: bold; font-size: 24px; margin-bottom: 20px;"/>
+    
+                <ui:Label text="ГРОМКОСТЬ" style="color: white; font-size: 12px;"/>
+                <ui:VisualElement style="flex-direction: row; align-items: center;">
+                   <ui:Label name="lbl-volume-val" text="0.8" style="color: white; width: 40px; -unity-font-style: bold;"/>
+                    <ui:Slider name="slider-volume" low-value="0" high-value="1" style="flex-grow: 1;"/>
+                </ui:VisualElement>
+
+                <ui:Label text="ЧУВСТВИТЕЛЬНОСТЬ" style="color: white; font-size: 12px; margin-top: 15px;"/>
+                <ui:VisualElement style="flex-direction: row; align-items: center;">
+                    <ui:Label name="lbl-sens-val" text="1.0" style="color: white; width: 40px; -unity-font-style: bold;"/>
+                    <ui:Slider name="slider-sens" low-value="0.1" high-value="5" style="flex-grow: 1;"/>
+                </ui:VisualElement>
+
+                <ui:Button name="btn-options-back" text="НАЗАД" class="menu-button" style="margin-top: 30px; background-color: rgb(68, 68, 68);"/>
+            </ui:VisualElement>
 
     </ui:VisualElement>
 </ui:UXML>

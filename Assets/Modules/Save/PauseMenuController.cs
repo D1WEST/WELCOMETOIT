@@ -48,22 +48,32 @@ namespace Assets.Modules.Save
             if (GameDataManager.Instance == null) return;
             var settings = GameDataManager.Instance.playerSettings;
 
+            // Слайдер Громкости
             var volSlider = _root.Q<Slider>("slider-volume");
+            var volLabel = _root.Q<Label>("lbl-volume-val");
             if (volSlider != null)
             {
                 volSlider.value = settings.volume;
+                if (volLabel != null) volLabel.text = settings.volume.ToString("F1"); // Формат 0.0
+
                 volSlider.RegisterValueChangedCallback(evt => {
                     settings.volume = evt.newValue;
+                    if (volLabel != null) volLabel.text = evt.newValue.ToString("F1");
                     AudioManager.Instance.UpdateLiveVolume(evt.newValue);
                 });
             }
 
+            // Слайдер Сенсы
             var sensSlider = _root.Q<Slider>("slider-sens");
+            var sensLabel = _root.Q<Label>("lbl-sens-val");
             if (sensSlider != null)
             {
                 sensSlider.value = settings.sensitivity;
+                if (sensLabel != null) sensLabel.text = settings.sensitivity.ToString("F1");
+
                 sensSlider.RegisterValueChangedCallback(evt => {
                     settings.sensitivity = evt.newValue;
+                    if (sensLabel != null) sensLabel.text = evt.newValue.ToString("F1");
                     GameDataManager.Instance.ApplySettings();
                 });
             }

@@ -47,7 +47,8 @@ namespace Assets.Modules.Save
                 currentDay = currentDay,
                 perks = playerPerks,
                 invasionEnergy = currentInvasionEnergy,
-                bossHintsEnabled = this.bossHintsEnabled
+                bossHintsEnabled = this.bossHintsEnabled,
+                settings = playerSettings
             });
             File.WriteAllText(SavePath, json);
         }
@@ -61,7 +62,8 @@ namespace Assets.Modules.Save
                 currentDay = ShiftManager.Instance != null ? ShiftManager.Instance.currentDay : loadedDay,
                 perks = playerPerks,
                 invasionEnergy = currentInvasionEnergy,
-                bossHintsEnabled = this.bossHintsEnabled
+                bossHintsEnabled = this.bossHintsEnabled,
+                settings = playerSettings
             });
         }
 
@@ -75,6 +77,7 @@ namespace Assets.Modules.Save
             playerPerks = data.perks;
             currentInvasionEnergy = data.invasionEnergy;
             bossHintsEnabled = data.bossHintsEnabled;
+            playerSettings = data.settings;
 
             foreach (var worker in myWorkers)
             {
@@ -83,6 +86,7 @@ namespace Assets.Modules.Save
                 worker.isAssigned = false;
             }
 
+            ApplySettings();
             SaveGame(data.currentDay);
         }
 
