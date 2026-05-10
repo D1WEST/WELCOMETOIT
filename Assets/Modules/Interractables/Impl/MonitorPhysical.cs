@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
-using Assets.Modules.Audio; // Не забудь неймспейс
+using Assets.Modules.Audio;
 using Cysharp.Threading.Tasks;
 
 namespace Assets.Modules.Interractables.Impl
@@ -24,24 +24,34 @@ namespace Assets.Modules.Interractables.Impl
         public Transform InteractionPivot => transform;
         public InteractionType InteractionType => InteractionType.Click;
         public float HoldDuration => 0;
+
         private Outline _outline;
 
         public void OnHoverEnter()
         {
-            if (_outline != null) _outline.enabled = true;
+            // Подсвечиваем только если он не горит "красным алертом" прямо сейчас
+            // Или можно менять цвет на белый при наведении
+            if (_outline != null && sourceDesk != null)
+            {
+                _outline.enabled = true;
+                _outline.OutlineColor = Color.white;
+                _outline.OutlineMode = Outline.Mode.OutlineVisible;
+            }
         }
 
         public void OnHoverExit()
         {
-            if (_outline != null) _outline.enabled = false;
+            // Если монитор на столе, выключаем обводку при уводе взгляда
+            if (_outline != null && sourceDesk != null)
+            {
+                _outline.enabled = false;
+            }
         }
+
         private void Start()
         {
-            // Кэшируем компонент один раз при старте
             _outline = GetComponent<Outline>();
-
-            // На всякий случай гарантируем, что он выключен
-            if (_outline != null) _outline.enabled = false;
+            UpdateOutlineState(); // Проверяем состояние при старте
         }
 
         private void Awake()
@@ -57,11 +67,12 @@ namespace Assets.Modules.Interractables.Impl
         {
             targetWorkplaceId = id;
             sourceDesk = desk;
+            _isCarried = false; // Сбрасываем флаг переноски
+
             SetPhysics(false);
             SetVisualState(true);
+            UpdateOutlineState(); // Выключит красный свет
 
-            // --- ЗВУК: УСТАНОВКА ПК (Индекс 1) ---
-            // Проигрываем, только если игра уже запущена (чтобы не шуметь при загрузке сцены)
             if (Time.timeSinceLevelLoad > 1f)
             {
                 AudioManager.Instance.PlayAudio(
@@ -74,17 +85,18 @@ namespace Assets.Modules.Interractables.Impl
         {
             if (PlayerInteraction.Instance.IsCarryingItem) return;
 
-            // Звук отрывания играет ТОЛЬКО если монитор реально стоял на столе
             if (sourceDesk != null)
             {
-                // --- ЗВУК: ОТРЫВАНИЕ ПК (Индекс 0) ---
                 AudioManager.Instance.PlayAudio(
                     AudioQuery.ByKey("PCDrop").ByIndex(0).WithVolume(0.5f).RandomSound().At(this.transform)
                 ).Forget();
 
                 sourceDesk.OnMonitorManualPickUp();
-                sourceDesk = null; // ОБНУЛЯЕМ ССЫЛКУ ТУТ
+                sourceDesk = null;
             }
+
+            _isCarried = true; // Помечаем что несем
+            UpdateOutlineState(); // Выключит обводку пока в руках
 
             SetVisualState(false);
             PlayerInteraction.Instance.PickUpMonitor(this);
@@ -98,47 +110,62 @@ namespace Assets.Modules.Interractables.Impl
             if (state)
             {
                 if (TryGetComponent<Collider>(out var col)) col.enabled = true;
+
+                // Если физика включена (выбросили предмет), снимаем флаг переноски
+                _isCarried = false;
+                UpdateOutlineState(); // Включит красный алерт если он на полу
             }
         }
 
         public void GetKicked()
         {
-            // Звук отрывания при пинке играет только если он еще на столе
             if (sourceDesk != null)
             {
                 AudioManager.Instance.PlayAudio(
                     AudioQuery.ByKey("PCDrop").ByIndex(0).WithVolume(0.5f).RandomSound().At(this.transform)
                 ).Forget();
-
-                sourceDesk = null; // КРИТИЧЕСКИЙ ФИКС: монитор больше не принадлежит столу
+                sourceDesk = null;
             }
 
             transform.SetParent(null);
             SetPhysics(true);
             SetVisualState(false);
 
-            Vector3 kickDir = (transform.forward + Vector3.up + Random.insideUnitSphere * 0.5f).normalized;
-            float kickPower = 12f;
+            UpdateOutlineState(); // Включит КРАСНЫЙ рентген
 
-            _rb.AddForce(kickDir * kickPower, ForceMode.Impulse);
+            Vector3 kickDir = (transform.forward + Vector3.up + Random.insideUnitSphere * 0.5f).normalized;
+            _rb.AddForce(kickDir * 12f, ForceMode.Impulse);
             _rb.AddTorque(Random.onUnitSphere * 10f, ForceMode.Impulse);
         }
 
-        // --- ЛОГИКА ПАДЕНИЯ НА ПОЛ ---
+        // ГЛАВНЫЙ МЕТОД УПРАВЛЕНИЯ ПОДСВЕТКОЙ
+        private void UpdateOutlineState()
+        {
+            if (_outline == null) return;
+
+            // Если монитор НЕ на столе и НЕ в руках игрока -> КРАСНЫЙ АЛЕРТ
+            if (sourceDesk == null && !_isCarried)
+            {
+                _outline.enabled = true;
+                _outline.OutlineColor = Color.red;
+                _outline.OutlineMode = Outline.Mode.OutlineAll; // Сквозь стены
+                _outline.OutlineWidth = 5f;
+            }
+            else
+            {
+                // В руках или на столе — возвращаем в обычный режим (выключен, ждет наведения)
+                _outline.OutlineColor = Color.white;
+                _outline.OutlineMode = Outline.Mode.OutlineVisible;
+                _outline.enabled = false;
+            }
+        }
+
         private void OnCollisionEnter(Collision collision)
         {
             if (!_rb.isKinematic && collision.relativeVelocity.magnitude > 3f)
             {
-                // Выбираем рандомно между индексом 2 и 3 (твои звуки падения)
                 int fallIndex = Random.Range(2, 4);
-
-                AudioManager.Instance.PlayAudio(
-                    AudioQuery.ByKey("PCDrop")
-                    .ByIndex(fallIndex)
-                    .RandomSound()
-                    .At(this.transform)
-                    .WithVolume(0.3f)
-                ).Forget();
+                AudioManager.Instance.PlayAudio(AudioQuery.ByKey("PCDrop").ByIndex(fallIndex).RandomSound().At(this.transform).WithVolume(0.3f)).Forget();
             }
         }
 
