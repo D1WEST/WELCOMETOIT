@@ -66,13 +66,31 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        // ОСТАВЛЯЕМ ТОЛЬКО ВКЛЮЧЕНИЕ
+        interactAction.action.Enable();
+        dropAction.action.Enable();
+
+        // Подписки на события для HOLD (удержания)
+        interactAction.action.started += OnActionStarted;
+        interactAction.action.canceled += _ => ResetHold();
+
+        // УБРАЛИ ПОДПИСКУ НА DropItem() ТУТ, ТАК КАК МЫ ОБРАБАТЫВАЕМ ЕЁ В UPDATE
+    }
+
     private void OnDisable() => interactAction.action.Disable();
 
     private void DropItem()
     {
+        // ЗАЩИТА: Если монитора нет, выходим
         if (_carriedMonitor == null) return;
 
 
+        // 1. Отключаем "квестовую" подсветку стола, прежде чем выбросить
+        ToggleTargetDeskHighlight(_carriedMonitor.targetWorkplaceId, false);
+
+        // 2. Включаем физику и отцепляем от рук
         _carriedMonitor.transform.SetParent(null);
         _carriedMonitor.SetPhysics(true);
 
@@ -80,11 +98,11 @@ public class PlayerInteraction : MonoBehaviour
 
         if (_carriedMonitor.TryGetComponent<Rigidbody>(out var rb))
         {
-            rb.AddForce(playerCamera.transform.forward * 3f + Vector3.up * 2f, ForceMode.Impulse);
+            // Импульс вперед и чуть вверх
+            rb.AddForce(playerCamera.transform.forward * 4f + Vector3.up * 2f, ForceMode.Impulse);
         }
 
-        ToggleTargetDeskHighlight(_carriedMonitor.targetWorkplaceId, false);
-
+        // 3. Зануляем ссылку в конце
         _carriedMonitor = null;
     }
 
@@ -132,31 +150,6 @@ public class PlayerInteraction : MonoBehaviour
     }
 
     private void LateUpdate() => UpdateUIPosition();
-
-    private void PerformInteraction()
-    {
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
-        {
-            // 1. Если несем монитор и смотрим на НУЖНЫЙ стол
-            if (_carriedMonitor != null && hit.collider.TryGetComponent<WorkplaceInteractable>(out var desk))
-            {
-                if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
-                {
-                    desk.InstallMonitor(_carriedMonitor);
-                    _carriedMonitor.gameObject.SetActive(true);
-                    _carriedMonitor = null;
-                    return;
-                }
-            }
-
-            // 2. Обычный подбор монитора или шлепок
-            if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
-            {
-                interactable.Interact(this.gameObject);
-            }
-        }
-    }
 
     private void FindInteractables()
     {
@@ -278,24 +271,29 @@ public class PlayerInteraction : MonoBehaviour
 
     private void HandleInteractionLogic()
     {
+        // --- 1. ПРИОРИТЕТ: ВЫБРОС (G) ---
+        // Это должно быть самым первым, чтобы работало всегда
         if (_carriedMonitor != null && dropAction.action.WasPressedThisFrame())
         {
             DropItem();
             return;
         }
 
+        // Если ничего не под прицелом — сброс
         if (_focusedInteractable == null)
         {
             ResetHold();
             return;
         }
 
+        // --- 2. ЛОГИКА С МОНИТОРОМ В РУКАХ (УСТАНОВКА) ---
         if (_carriedMonitor != null)
         {
             if (interactAction.action.WasPressedThisFrame())
             {
                 if (_focusedInteractable is WorkplaceInteractable desk)
                 {
+                    // Ставим только если ID совпадает и стол пустой
                     if (desk.workplaceId == _carriedMonitor.targetWorkplaceId && !desk.hasMonitor)
                     {
                         desk.SetQuestHighlight(false);
@@ -307,8 +305,11 @@ public class PlayerInteraction : MonoBehaviour
                     }
                 }
             }
+            // Если в руках монитор — блокируем другие нажатия E (шлепки, меню)
             return;
         }
+
+        // --- 3. ОБЫЧНОЕ ВЗАИМОДЕЙСТВИЕ (E) ---
         if (_focusedInteractable.InteractionType == InteractionType.Click)
         {
             if (interactAction.action.WasPressedThisFrame())
@@ -322,12 +323,8 @@ public class PlayerInteraction : MonoBehaviour
             {
                 _isHolding = true;
                 _holdTimer += Time.deltaTime;
-
                 float progress = Mathf.Clamp01(_holdTimer / _focusedInteractable.HoldDuration);
-                if (_progressFill != null)
-                {
-                    _progressFill.style.width = Length.Percent(progress * 100);
-                }
+                if (_progressFill != null) _progressFill.style.width = Length.Percent(progress * 100);
 
                 if (_holdTimer >= _focusedInteractable.HoldDuration)
                 {
@@ -335,10 +332,7 @@ public class PlayerInteraction : MonoBehaviour
                     ResetHold();
                 }
             }
-            else
-            {
-                ResetHold();
-            }
+            else { ResetHold(); }
         }
     }
 
