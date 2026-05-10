@@ -17,12 +17,6 @@ public class MainMenuController : MonoBehaviour
     private VisualElement _optionsMenu;
     private VisualElement _rebindList;
 
-
-    private void Start()
-    {
-        AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").ByIndex(0).WithVolume(0.06f).Cycle()).Forget();
-    }
-
     // Путь к файлу сохранения — должен быть таким же, как в GameDataManager
     private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
 
@@ -30,34 +24,65 @@ public class MainMenuController : MonoBehaviour
     {
         var root = _uiDocument.rootVisualElement;
 
-        // Кэшируем контейнеры
+        // 1. Сначала ТОЛЬКО ищем элементы UI
         _mainMenu = root.Q<VisualElement>("main-menu");
         _optionsMenu = root.Q<VisualElement>("options-menu");
         _rebindList = root.Q<VisualElement>("rebind-list");
 
+        // Подписки на кнопки (они не зависят от данных, можно тут)
+        SetupButtons(root);
+    }
+
+    private void Start()
+    {
+        // 2. А здесь, когда все Awake прошли, работаем с данными
+        InitializeSettingsUI();
+
+        // Запускаем музыку
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Music").ByIndex(0).WithVolume(0.06f).Cycle()).Forget();
+        }
+    }
+
+    private void InitializeSettingsUI()
+    {
+        if (GameDataManager.Instance == null) return;
+
+        var root = _uiDocument.rootVisualElement;
+        var settings = GameDataManager.Instance.playerSettings;
+
+        // Громкость
         var volSlider = root.Q<Slider>("slider-volume");
         if (volSlider != null)
         {
-            volSlider.value = GameDataManager.Instance.playerSettings.volume;
+            volSlider.value = settings.volume;
             volSlider.RegisterValueChangedCallback(evt => {
-                GameDataManager.Instance.playerSettings.volume = evt.newValue;
-                // Можно проиграть короткий звук "бип", чтобы игрок слышал уровень громкости
+                settings.volume = evt.newValue;
+                AudioManager.Instance.UpdateLiveVolume(evt.newValue);
             });
         }
 
-        // Слайдер Сенсы
+        // Сенса
         var sensSlider = root.Q<Slider>("slider-sens");
         if (sensSlider != null)
         {
-            sensSlider.value = GameDataManager.Instance.playerSettings.sensitivity;
+            sensSlider.value = settings.sensitivity;
             sensSlider.RegisterValueChangedCallback(evt => {
-                GameDataManager.Instance.playerSettings.sensitivity = evt.newValue;
-                // Если игрок на сцене - применяем сразу
+                settings.sensitivity = evt.newValue;
                 GameDataManager.Instance.ApplySettings();
             });
         }
 
-        // --- Кнопки главного меню ---
+        // Проверка сохранения
+        var btnContinue = root.Q<Button>("btn-continue");
+        CheckSaveFile(btnContinue, root.Q<VisualElement>("wrapper-continue"));
+
+        LoadBindings();
+    }
+
+    private void SetupButtons(VisualElement root)
+    {
         var btnContinue = root.Q<Button>("btn-continue");
         var btnNewGame = root.Q<Button>("btn-new-game");
         var btnOptions = root.Q<Button>("btn-options");
@@ -68,19 +93,9 @@ public class MainMenuController : MonoBehaviour
         if (btnOptions != null) btnOptions.clicked += OpenOptions;
         if (btnExit != null) btnExit.clicked += OnExitClicked;
 
-        // --- Кнопки настроек ---
-        var btnBack = root.Q<Button>("btn-back");
-        var btnSave = root.Q<Button>("btn-save");
-        var btnReset = root.Q<Button>("btn-reset");
-
-        if (btnBack != null) btnBack.clicked += CloseOptions;
-        if (btnSave != null) btnSave.clicked += SaveBindings;
-        if (btnReset != null) btnReset.clicked += ResetBindings;
-
-        // --- Проверка сохранения при запуске ---
-        CheckSaveFile(btnContinue, root.Q<VisualElement>("wrapper-continue"));
-
-        LoadBindings();
+        root.Q<Button>("btn-back").clicked += CloseOptions;
+        root.Q<Button>("btn-save").clicked += SaveBindings;
+        root.Q<Button>("btn-reset").clicked += ResetBindings;
     }
 
     private void CheckSaveFile(Button continueBtn, VisualElement wrapper)

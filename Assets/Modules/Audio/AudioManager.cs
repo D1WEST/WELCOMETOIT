@@ -1,9 +1,9 @@
-﻿using Assets.Modules.Audio;
-using Assets.Modules.Save;
-using Cysharp.Threading.Tasks;
+﻿using UnityEngine;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using System.Threading;
-using UnityEngine;
+using Assets.Modules.Audio;
+using Assets.Modules.Save;
 
 public class AudioManager : MonoBehaviour
 {
@@ -11,17 +11,15 @@ public class AudioManager : MonoBehaviour
 
     [SerializeField] private AudioConfig _config;
 
-    // Внутренние источники (только для 2D музыки и UI)
-    private AudioSource _musicSource1;
-    private AudioSource _musicSource2;
-    private AudioSource _internalSfxSource2D;
-
+    private AudioSource _musicSource1, _musicSource2, _internalSfxSource2D;
     private bool _isSource1Active = true;
     private CancellationTokenSource _loopCts;
 
     private HashSet<string> _activeKeys = new HashSet<string>();
     private Dictionary<string, HashSet<AudioSource>> _playingRegistry = new Dictionary<string, HashSet<AudioSource>>();
-    private float _music1BaseVol, _music2BaseVol;
+
+    // Храним базовую громкость, чтобы слайдер настроек работал корректно
+    private float _music1BaseVol = 1f, _music2BaseVol = 1f;
 
     private void Awake()
     {
@@ -40,9 +38,8 @@ public class AudioManager : MonoBehaviour
         _musicSource2 = gameObject.AddComponent<AudioSource>();
         _internalSfxSource2D = gameObject.AddComponent<AudioSource>();
 
-        // Музыкальные источники НЕ должны участвовать в 3D логике
         _musicSource1.spatialBlend = _musicSource2.spatialBlend = _internalSfxSource2D.spatialBlend = 0f;
-        _musicSource1.playOnAwake = _musicSource2.playOnAwake = false;
+        _musicSource1.playOnAwake = _musicSource2.playOnAwake = _internalSfxSource2D.playOnAwake = false;
     }
 
     // МЕТОД ОСТАНОВКИ (Безопасный)
@@ -100,14 +97,13 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            // Это вызов МУЗЫКИ (Crossfade использует только внутренние _musicSource1/2)
             await PerformCrossfade(clip, query.Volume, query.IsCycling);
         }
     }
 
     public void UpdateLiveVolume(float globalVolume)
     {
-        // Обновляем громкость на лету, умножая базу на ползунок
+        // Применяем громкость к текущим источникам, учитывая их "базу"
         _musicSource1.volume = _music1BaseVol * globalVolume;
         _musicSource2.volume = _music2BaseVol * globalVolume;
         _internalSfxSource2D.volume = globalVolume;
@@ -145,12 +141,12 @@ public class AudioManager : MonoBehaviour
             targetSource = ext;
         }
 
-        // Регистрируем
         if (!_playingRegistry.ContainsKey(query.Key))
             _playingRegistry[query.Key] = new HashSet<AudioSource>();
         _playingRegistry[query.Key].Add(targetSource);
 
-        float globalVol = GameDataManager.Instance.playerSettings.volume;
+        // ФИКС: Безопасное получение громкости
+        float globalVol = GetGlobalVolume();
 
         if (query.IsCycling)
         {
@@ -161,7 +157,6 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            
             targetSource.PlayOneShot(clip, query.Volume * globalVol);
         }
 
@@ -176,12 +171,16 @@ public class AudioManager : MonoBehaviour
 
     private async UniTask PerformCrossfade(AudioClip nextClip, float targetVolume, bool loop)
     {
+        if (_musicSource1 == null || _musicSource2 == null) SetupInternalSources();
+
         AudioSource active = _isSource1Active ? _musicSource1 : _musicSource2;
         AudioSource next = _isSource1Active ? _musicSource2 : _musicSource1;
 
         if (active.clip == nextClip && active.isPlaying) return;
 
-        float globalVol = GameDataManager.Instance.playerSettings.volume;
+        // Запоминаем новую базу для того источника, который СТАНЕТ активным
+        if (_isSource1Active) _music2BaseVol = targetVolume;
+        else _music1BaseVol = targetVolume;
 
         next.clip = nextClip;
         next.loop = loop;
@@ -189,18 +188,32 @@ public class AudioManager : MonoBehaviour
 
         float timer = 0;
         float duration = 1.5f;
+        float startActiveVol = active.volume;
+
         while (timer < duration)
         {
-            float currentGlobal = GameDataManager.Instance.playerSettings.volume;
             timer += Time.deltaTime;
             float p = timer / duration;
-            active.volume = Mathf.Lerp(active.volume, 0, p); // Плавное затухание музыки
-            next.volume = Mathf.Lerp(0, targetVolume, p) * currentGlobal;
+
+            // ФИКС: Безопасное получение громкости внутри цикла
+            float liveGlobal = GetGlobalVolume();
+
+            active.volume = Mathf.Lerp(startActiveVol, 0, p);
+            next.volume = Mathf.Lerp(0, targetVolume, p) * liveGlobal;
+
             await UniTask.Yield();
         }
 
         active.Stop();
         _isSource1Active = !_isSource1Active;
+    }
+    private float GetGlobalVolume()
+    {
+        if (GameDataManager.Instance != null && GameDataManager.Instance.playerSettings != null)
+        {
+            return GameDataManager.Instance.playerSettings.volume;
+        }
+        return 1f; // По умолчанию, если менеджер еще не загрузился
     }
 
     private AudioClip ResolveClip(AudioQuery query)
