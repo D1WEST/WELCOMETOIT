@@ -108,20 +108,20 @@ public class WorkerPhysical : MonoBehaviour, IInteractable
         if (_data.status == WorkerStatus.Working)
         {
             AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Keyboard").WithVolume(1f).AsRandomPlaylist().AsKeyInstance().At(this.transform));
-            _data.currentSleepiness += _sleepGrowthPerSec * 3 * gameTimeStep;
-            _data.currentRestlessness += _restlessGrowthPerSec * 3 * gameTimeStep;
-            _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * 4 * gameTimeStep;
+            _data.currentSleepiness += _sleepGrowthPerSec * 1 * gameTimeStep;
+            _data.currentRestlessness += _restlessGrowthPerSec * 1 * gameTimeStep;
+            _data.currentAnger += (_angerGrowthPerSec + _restlessGrowthPerSec * 0.3f + _sleepGrowthPerSec * 0.3f) * 2 * gameTimeStep;
         }
         else if (_data.status == WorkerStatus.Sleeping)
         {
             AudioManager.Instance.PlayAudio(AudioQuery.ByKey("Emotion_Sleepy").WithVolume(0.1f).RandomSound().AsKeyInstance().At(this.transform));
-            _data.currentSleepiness -= (_sleepGrowthPerSec * 4f) * gameTimeStep;
-            _data.currentAnger -= (_angerGrowthPerSec * 4f) * gameTimeStep;
+            _data.currentSleepiness -= (_sleepGrowthPerSec * 7.5f) * gameTimeStep;
+            _data.currentAnger -= (_angerGrowthPerSec * 7.5f) * gameTimeStep;
         }
         else if (_data.status == WorkerStatus.Fidgeting)
         {
-            _data.currentRestlessness -= (_restlessGrowthPerSec * 1.5f) * gameTimeStep;
-            _data.currentAnger -= (_angerGrowthPerSec * 1.5f) * gameTimeStep;
+            _data.currentRestlessness -= (_restlessGrowthPerSec * 5.5f) * gameTimeStep;
+            _data.currentAnger -= (_angerGrowthPerSec * 5.5f) * gameTimeStep;
         }
 
         _data.currentSleepiness = Mathf.Clamp(_data.currentSleepiness, 0, 100.1f);
