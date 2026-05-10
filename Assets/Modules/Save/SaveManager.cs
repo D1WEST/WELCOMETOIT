@@ -137,6 +137,30 @@ namespace Assets.Modules.Save
             }
         }
 
+        public static void SetPlayerInteractivity(bool canInteract)
+        {
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null) return;
+
+            if (player.TryGetComponent<PlayerInteraction>(out var interact))
+            {
+                if (canInteract)
+                    interact.UnlockWithDelay().Forget(); // Безопасный разлок
+                else
+                    interact.IsLocked = true;
+            }
+
+            if (player.TryGetComponent<PlayerLocomotion>(out var loco)) loco.enabled = canInteract;
+            if (player.TryGetComponent<PlayerCameraService>(out var cam))
+            {
+                if (!canInteract) cam.StopCameraInertia();
+                cam.enabled = canInteract;
+            }
+
+            Cursor.lockState = canInteract ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !canInteract;
+        }
+
         public void ApplySettings()
         {
             // 1. Применяем сенсу к игроку

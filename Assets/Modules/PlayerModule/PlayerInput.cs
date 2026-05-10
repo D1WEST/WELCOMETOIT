@@ -7,7 +7,7 @@ namespace Assets.Modules.PlayerModule
     [RequireComponent(typeof(PlayerLocomotion))]
     public class PlayerInput : MonoBehaviour
     {
-        [SerializeField] private PlayerInputActions _playerInputActions;
+        [SerializeField] public PlayerInputActions _playerInputActions;
         [SerializeField] private PlayerLocomotion _playerLocomotion;
         [SerializeField] private PlayerInteraction _playerInteraction;
         [SerializeField] private PlayerCameraService _playerCamera;

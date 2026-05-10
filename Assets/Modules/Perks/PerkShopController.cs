@@ -1,10 +1,12 @@
-﻿using Assets.Modules.PlayerModule;
+﻿using Assets.Modules.Audio; // Добавь этот неймспейс
+using Assets.Modules.PlayerModule;
 using Assets.Modules.Save;
-using Assets.Modules.Audio; // Добавь этот неймспейс
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
+using PlayerInput = Assets.Modules.PlayerModule.PlayerInput;
 
 namespace Assets.Modules.Perks
 {
@@ -69,19 +71,36 @@ namespace Assets.Modules.Perks
             muteBtn.style.backgroundColor = isEnabled ? new Color(0.3f, 0.3f, 0.3f) : new Color(0.2f, 0.5f, 0.2f);
         }
 
+        private async UniTaskVoid ListenForExit()
+        {
+            await UniTask.Delay(150);
+            var overlay = _root.Q<VisualElement>("overlay");
+
+            while (overlay.style.display == DisplayStyle.Flex)
+            {
+                if (Keyboard.current.eKey.wasPressedThisFrame)
+                {
+                    Close();
+                    break;
+                }
+                await UniTask.Yield();
+            }
+        }
+
         public void Open(GameObject player)
         {
-            _root.Q<VisualElement>("overlay").style.display = DisplayStyle.Flex;
+            var overlay = _root.Q<VisualElement>("overlay");
+            if (overlay.style.display == DisplayStyle.Flex) return;
 
-            _cachedPlayer = player.GetComponent<PlayerInput>();
-            if (_cachedPlayer != null) _cachedPlayer.enabled = false;
+            overlay.style.display = DisplayStyle.Flex;
 
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            // ГЛАВНЫЙ ФИКС: Блокируем игрока
+            GameDataManager.SetPlayerInteractivity(false);
 
-            // ЗВУК ОТКРЫТИЯ (Клик, Индекс 6)
+            // Слушаем кнопку E
+            ListenForExit().Forget();
+
             PlayClickSound();
-
             UpdateHintVisibility();
             UpdateMuteButton();
             RefreshUI();
@@ -89,11 +108,12 @@ namespace Assets.Modules.Perks
 
         public void Close()
         {
-            _root.Q<VisualElement>("overlay").style.display = DisplayStyle.None;
-            if (_cachedPlayer != null) _cachedPlayer.enabled = true;
+            var overlay = _root.Q<VisualElement>("overlay");
+            if (overlay.style.display == DisplayStyle.None) return;
+            overlay.style.display = DisplayStyle.None;
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // ГЛАВНЫЙ ФИКС: Разблокируем игрока
+            GameDataManager.SetPlayerInteractivity(true);
 
             GameDataManager.Instance.SaveGame(ShiftManager.Instance.currentDay);
         }

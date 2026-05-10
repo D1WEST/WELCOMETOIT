@@ -1,6 +1,7 @@
 ﻿using Assets.Modules.Interractables;
 using Assets.Modules.Interractables.Impl;
 using Assets.Modules.NPC;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -43,31 +44,26 @@ public class PlayerInteraction : MonoBehaviour
     private bool _isHolding = false;
     private WorkerPhysical _lastLookedWorker;
     private IInteractable _lastHighlighted;
+    public bool IsLocked = false;
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(this);
-    }
+        else { Destroy(this); return; }
 
-    private void OnEnable()
-    {
-        var root = promptTemplate.Instantiate();
-        _promptRoot = root.Q<VisualElement>("prompt-container");
-        _promptRoot.style.display = DisplayStyle.None;
-        uiDocument.rootVisualElement.Add(_promptRoot);
+        // Инициализируем UI строго ОДИН РАЗ
+        if (_promptRoot == null)
+        {
+            var root = promptTemplate.Instantiate();
+            _promptRoot = root.Q<VisualElement>("prompt-container");
+            _promptRoot.style.display = DisplayStyle.None;
+            uiDocument.rootVisualElement.Add(_promptRoot);
 
-        _keyLabel = _promptRoot.Q<Label>("key-label");
-        _promptLabel = _promptRoot.Q<Label>("prompt-label");
-        _progressBg = _promptRoot.Q<VisualElement>("progress-bg");
-        _progressFill = _promptRoot.Q<VisualElement>("progress-fill");
-
-        interactAction.action.Enable();
-        interactAction.action.started += OnActionStarted;
-        interactAction.action.canceled += _ => ResetHold();
-
-        dropAction.action.Enable();
-        dropAction.action.performed += _ => DropItem();
+            _keyLabel = _promptRoot.Q<Label>("key-label");
+            _promptLabel = _promptRoot.Q<Label>("prompt-label");
+            _progressBg = _promptRoot.Q<VisualElement>("progress-bg");
+            _progressFill = _promptRoot.Q<VisualElement>("progress-fill");
+        }
     }
 
     private void OnDisable() => interactAction.action.Disable();
@@ -94,11 +90,25 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
+        // Проверка на уничтоженные объекты
         if (_focusedInteractable is MonoBehaviour mb1 && mb1 == null) _focusedInteractable = null;
         if (_nearestInteractable is MonoBehaviour mb2 && mb2 == null) _nearestInteractable = null;
 
+        // Если заблокированы — ничего не делаем
+        if (IsLocked)
+        {
+            if (_promptRoot.style.display == DisplayStyle.Flex) HideUI();
+            return;
+        }
+
         FindInteractables();
         HandleInteractionLogic();
+    }
+
+    public async UniTaskVoid UnlockWithDelay()
+    {
+        await UniTask.NextFrame(); // Ждем конец текущего кадра, где нажали "E"
+        IsLocked = false;
     }
 
     public void PickUpMonitor(MonitorPhysical monitor)

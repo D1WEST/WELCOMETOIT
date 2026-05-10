@@ -2,9 +2,12 @@
 using Assets.Modules.NPC;
 using Assets.Modules.PlayerModule;
 using Assets.Modules.Save;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
+using PlayerInput = Assets.Modules.PlayerModule.PlayerInput;
 
 public class WorkplaceUIController : MonoBehaviour
 {
@@ -44,30 +47,36 @@ public class WorkplaceUIController : MonoBehaviour
         if (unassignBtn != null) unassignBtn.clicked += Unassign;
     }
 
+    private async UniTaskVoid ListenForExit()
+    {
+        await UniTask.Delay(150); // Защита от мгновенного срабатывания
+        while (_root.style.display == DisplayStyle.Flex)
+        {
+            if (Keyboard.current.eKey.wasPressedThisFrame)
+            {
+                Close();
+                break;
+            }
+            await UniTask.Yield();
+        }
+    }
+
     public void Open(WorkplaceInteractable desk, GameObject player)
     {
-        // Если на столе нет монитора - меню просто не откроется
-        if (!desk.hasMonitor)
-        {
-            return;
-        }
+        if (!desk.hasMonitor || _root.style.display == DisplayStyle.Flex) return;
 
         _targetDesk = desk;
         _root.style.display = DisplayStyle.Flex;
 
-        // Управление видимостью кнопки программно:
         var unassignBtn = _root.Q<Button>("btn-unassign");
         if (unassignBtn != null)
-        {
-            // Показываем кнопку только если на столе ЕСТЬ рабочий
             unassignBtn.style.display = desk.HasWorker ? DisplayStyle.Flex : DisplayStyle.None;
-        }
 
-        _cachedPlayerInput = player.GetComponent<PlayerInput>();
-        if (_cachedPlayerInput != null) _cachedPlayerInput.enabled = false;
+        // ГЛАВНЫЙ ФИКС: Используем общий метод блокировки
+        GameDataManager.SetPlayerInteractivity(false);
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        // Запускаем слушатель кнопки E
+        ListenForExit().Forget();
 
         UpdateHintVisibility();
         RefreshUI();
@@ -178,9 +187,9 @@ public class WorkplaceUIController : MonoBehaviour
 
     public void Close()
     {
+        if (_root.style.display == DisplayStyle.None) return;
         _root.style.display = DisplayStyle.None;
-        if (_cachedPlayerInput != null) _cachedPlayerInput.enabled = true;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+
+        GameDataManager.SetPlayerInteractivity(true);
     }
 }

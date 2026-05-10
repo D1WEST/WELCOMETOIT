@@ -1,12 +1,13 @@
-﻿using Assets.Modules.NPC;
+﻿using Assets.Modules.Audio;
+using Assets.Modules.NPC;
 using Assets.Modules.PlayerModule;
 using Assets.Modules.Save;
-using Assets.Modules.Audio;
-using UnityEngine;
-using UnityEngine.UIElements;
-using Cursor = UnityEngine.Cursor;
-using Position = Assets.Modules.NPC.Position;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
+using PlayerInput = Assets.Modules.PlayerModule.PlayerInput;
+using Position = Assets.Modules.NPC.Position;
 
 public class ComputerUIController : MonoBehaviour
 {
@@ -61,22 +62,36 @@ public class ComputerUIController : MonoBehaviour
         _root.Q<Button>("btn-close").clicked += CloseMenu;
     }
 
+    private async UniTaskVoid ListenForExit()
+    {
+        // Небольшая задержка перед началом прослушивания
+        await UniTask.Delay(100);
+
+        while (_root.style.display == DisplayStyle.Flex)
+        {
+            // Проверяем нажатие E
+            if (Keyboard.current.eKey.wasPressedThisFrame)
+            {
+                CloseMenu();
+                break;
+            }
+            await UniTask.Yield();
+        }
+    }
+
     public void Open(GameObject player)
     {
+        if (_root.style.display == DisplayStyle.Flex) return; // Защита от дубля
+
         _root.style.display = DisplayStyle.Flex;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        // Блокируем игрока
+        GameDataManager.SetPlayerInteractivity(false);
 
-        _cachedPlayerInput = player.GetComponent<PlayerInput>();
-        if (_cachedPlayerInput != null)
-        {
-            _cachedPlayerInput.enabled = false;
-        }
+        // Запускаем слушатель выхода
+        ListenForExit().Forget();
 
-        // --- ЗВУК ЗАХОДА (Индекс 4) ---
         AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(4).RandomSound()).Forget();
-
         UpdateHintVisibility();
         GameDataManager.Instance.RefreshMarket();
         RefreshUI();
@@ -84,18 +99,12 @@ public class ComputerUIController : MonoBehaviour
 
     public void CloseMenu()
     {
+        if (_root.style.display == DisplayStyle.None) return;
         _root.style.display = DisplayStyle.None;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Разблокируем игрока (он подождет 1 кадр внутри метода)
+        GameDataManager.SetPlayerInteractivity(true);
 
-        if (_cachedPlayerInput != null)
-        {
-            _cachedPlayerInput.enabled = true;
-            _cachedPlayerInput = null;
-        }
-
-        // --- ЗВУК ВЫХОДА (Индекс 5) ---
         AudioManager.Instance.PlayAudio(AudioQuery.ByKey("AdminPC").ByIndex(5).RandomSound()).Forget();
     }
 
